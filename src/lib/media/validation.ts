@@ -18,8 +18,10 @@ export function validateMediaFile(
     return { valid: false, message: `Tipe file tidak didukung. Unggah file ${label} saja.` };
   }
 
+  // Android sering mengirim nama file tanpa/berbeda ekstensi; percayai MIME bila cocok.
+  const mimeTrusted = (file.type || "").toLowerCase().startsWith(`${kind}/`);
   const ext = getFileExtension(file.name);
-  if (ext && !MEDIA_EXTENSIONS[kind].includes(ext)) {
+  if (!mimeTrusted && ext && !MEDIA_EXTENSIONS[kind].includes(ext)) {
     return {
       valid: false,
       message: `Format .${ext} tidak didukung. Gunakan ${MEDIA_EXTENSIONS[kind]

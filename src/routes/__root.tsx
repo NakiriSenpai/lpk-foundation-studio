@@ -15,6 +15,7 @@ import { ThemeProvider, themeInitScript } from "@/contexts/theme-context";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { registerServiceWorker } from "@/lib/pwa/register-sw";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/contexts/auth/auth-context";
 
 function NotFoundComponent() {
   return (
@@ -139,11 +140,13 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <ErrorBoundary>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-        </ErrorBoundary>
-        <Toaster />
+        <AuthProvider>
+          <ErrorBoundary>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </ErrorBoundary>
+          <Toaster />
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

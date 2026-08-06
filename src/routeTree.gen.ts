@@ -10,33 +10,193 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ExamStudioRouteImport } from './routes/exam-studio'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as LessonStudioRouteImport } from './routes/lesson-studio'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MateriRouteImport } from './routes/materi'
+import { Route as OwnerRouteImport } from './routes/owner'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as TeacherRouteImport } from './routes/teacher'
+import { Route as TenantRouteImport } from './routes/tenant'
+import { Route as UjianRouteImport } from './routes/ujian'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExamStudioRoute = ExamStudioRouteImport.update({
+  id: '/exam-studio',
+  path: '/exam-studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LessonStudioRoute = LessonStudioRouteImport.update({
+  id: '/lesson-studio',
+  path: '/lesson-studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MateriRoute = MateriRouteImport.update({
+  id: '/materi',
+  path: '/materi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerRoute = OwnerRouteImport.update({
+  id: '/owner',
+  path: '/owner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherRoute = TeacherRouteImport.update({
+  id: '/teacher',
+  path: '/teacher',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TenantRoute = TenantRouteImport.update({
+  id: '/tenant',
+  path: '/tenant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UjianRoute = UjianRouteImport.update({
+  id: '/ujian',
+  path: '/ujian',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRoute
+  '/exam-studio': typeof ExamStudioRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/lesson-studio': typeof LessonStudioRoute
+  '/login': typeof LoginRoute
+  '/materi': typeof MateriRoute
+  '/owner': typeof OwnerRoute
+  '/profile': typeof ProfileRoute
+  '/teacher': typeof TeacherRoute
+  '/tenant': typeof TenantRoute
+  '/ujian': typeof UjianRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRoute
+  '/exam-studio': typeof ExamStudioRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/lesson-studio': typeof LessonStudioRoute
+  '/login': typeof LoginRoute
+  '/materi': typeof MateriRoute
+  '/owner': typeof OwnerRoute
+  '/profile': typeof ProfileRoute
+  '/teacher': typeof TeacherRoute
+  '/tenant': typeof TenantRoute
+  '/ujian': typeof UjianRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRoute
+  '/exam-studio': typeof ExamStudioRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/lesson-studio': typeof LessonStudioRoute
+  '/login': typeof LoginRoute
+  '/materi': typeof MateriRoute
+  '/owner': typeof OwnerRoute
+  '/profile': typeof ProfileRoute
+  '/teacher': typeof TeacherRoute
+  '/tenant': typeof TenantRoute
+  '/ujian': typeof UjianRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/dashboard'
+    | '/exam-studio'
+    | '/leaderboard'
+    | '/lesson-studio'
+    | '/login'
+    | '/materi'
+    | '/owner'
+    | '/profile'
+    | '/teacher'
+    | '/tenant'
+    | '/ujian'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin'
+    | '/dashboard'
+    | '/exam-studio'
+    | '/leaderboard'
+    | '/lesson-studio'
+    | '/login'
+    | '/materi'
+    | '/owner'
+    | '/profile'
+    | '/teacher'
+    | '/tenant'
+    | '/ujian'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/dashboard'
+    | '/exam-studio'
+    | '/leaderboard'
+    | '/lesson-studio'
+    | '/login'
+    | '/materi'
+    | '/owner'
+    | '/profile'
+    | '/teacher'
+    | '/tenant'
+    | '/ujian'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  DashboardRoute: typeof DashboardRoute
+  ExamStudioRoute: typeof ExamStudioRoute
+  LeaderboardRoute: typeof LeaderboardRoute
+  LessonStudioRoute: typeof LessonStudioRoute
+  LoginRoute: typeof LoginRoute
+  MateriRoute: typeof MateriRoute
+  OwnerRoute: typeof OwnerRoute
+  ProfileRoute: typeof ProfileRoute
+  TeacherRoute: typeof TeacherRoute
+  TenantRoute: typeof TenantRoute
+  UjianRoute: typeof UjianRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +208,108 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exam-studio': {
+      id: '/exam-studio'
+      path: '/exam-studio'
+      fullPath: '/exam-studio'
+      preLoaderRoute: typeof ExamStudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lesson-studio': {
+      id: '/lesson-studio'
+      path: '/lesson-studio'
+      fullPath: '/lesson-studio'
+      preLoaderRoute: typeof LessonStudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/materi': {
+      id: '/materi'
+      path: '/materi'
+      fullPath: '/materi'
+      preLoaderRoute: typeof MateriRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner': {
+      id: '/owner'
+      path: '/owner'
+      fullPath: '/owner'
+      preLoaderRoute: typeof OwnerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher': {
+      id: '/teacher'
+      path: '/teacher'
+      fullPath: '/teacher'
+      preLoaderRoute: typeof TeacherRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tenant': {
+      id: '/tenant'
+      path: '/tenant'
+      fullPath: '/tenant'
+      preLoaderRoute: typeof TenantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ujian': {
+      id: '/ujian'
+      path: '/ujian'
+      fullPath: '/ujian'
+      preLoaderRoute: typeof UjianRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  DashboardRoute: DashboardRoute,
+  ExamStudioRoute: ExamStudioRoute,
+  LeaderboardRoute: LeaderboardRoute,
+  LessonStudioRoute: LessonStudioRoute,
+  LoginRoute: LoginRoute,
+  MateriRoute: MateriRoute,
+  OwnerRoute: OwnerRoute,
+  ProfileRoute: ProfileRoute,
+  TeacherRoute: TeacherRoute,
+  TenantRoute: TenantRoute,
+  UjianRoute: UjianRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

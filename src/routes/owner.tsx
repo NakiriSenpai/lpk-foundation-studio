@@ -27,9 +27,14 @@ function OwnerPage() {
             <h1 className="text-xl font-semibold tracking-tight">Panel Pemilik</h1>
             <p className="text-sm text-muted-foreground">Kelola lembaga yang terdaftar.</p>
           </div>
-          <Button asChild className="min-h-11">
-            <Link to="/owner/tenants">Manajemen Tenant</Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild className="min-h-11">
+              <Link to="/owner/tenants">Manajemen Tenant</Link>
+            </Button>
+            <Button asChild variant="outline" className="min-h-11">
+              <Link to="/owner/users">Manajemen User</Link>
+            </Button>
+          </div>
         </section>
       </RequireOwner>
     </AppLayout>

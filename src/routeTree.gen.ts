@@ -22,7 +22,9 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as TeacherRouteImport } from './routes/teacher'
 import { Route as TenantRouteImport } from './routes/tenant'
 import { Route as UjianRouteImport } from './routes/ujian'
+import { Route as AdminUsersRouteImport } from './routes/admin_.users'
 import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
+import { Route as OwnerUsersRouteImport } from './routes/owner_.users'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -89,9 +91,19 @@ const UjianRoute = UjianRouteImport.update({
   path: '/ujian',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin_/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OwnerTenantsRoute = OwnerTenantsRouteImport.update({
   id: '/owner_/tenants',
   path: '/owner/tenants',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerUsersRoute = OwnerUsersRouteImport.update({
+  id: '/owner_/users',
+  path: '/owner/users',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -109,7 +121,9 @@ export interface FileRoutesByFullPath {
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRoute
+  '/admin/users': typeof AdminUsersRoute
   '/owner/tenants': typeof OwnerTenantsRoute
+  '/owner/users': typeof OwnerUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -125,7 +139,9 @@ export interface FileRoutesByTo {
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRoute
+  '/admin/users': typeof AdminUsersRoute
   '/owner/tenants': typeof OwnerTenantsRoute
+  '/owner/users': typeof OwnerUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -142,7 +158,9 @@ export interface FileRoutesById {
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRoute
+  '/admin_/users': typeof AdminUsersRoute
   '/owner_/tenants': typeof OwnerTenantsRoute
+  '/owner_/users': typeof OwnerUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -160,7 +178,9 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/tenant'
     | '/ujian'
+    | '/admin/users'
     | '/owner/tenants'
+    | '/owner/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -176,7 +196,9 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/tenant'
     | '/ujian'
+    | '/admin/users'
     | '/owner/tenants'
+    | '/owner/users'
   id:
     | '__root__'
     | '/'
@@ -192,7 +214,9 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/tenant'
     | '/ujian'
+    | '/admin_/users'
     | '/owner_/tenants'
+    | '/owner_/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -209,7 +233,9 @@ export interface RootRouteChildren {
   TeacherRoute: typeof TeacherRoute
   TenantRoute: typeof TenantRoute
   UjianRoute: typeof UjianRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   OwnerTenantsRoute: typeof OwnerTenantsRoute
+  OwnerUsersRoute: typeof OwnerUsersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -305,11 +331,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UjianRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/users': {
+      id: '/admin_/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/owner_/tenants': {
       id: '/owner_/tenants'
       path: '/owner/tenants'
       fullPath: '/owner/tenants'
       preLoaderRoute: typeof OwnerTenantsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner_/users': {
+      id: '/owner_/users'
+      path: '/owner/users'
+      fullPath: '/owner/users'
+      preLoaderRoute: typeof OwnerUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -329,7 +369,9 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherRoute: TeacherRoute,
   TenantRoute: TenantRoute,
   UjianRoute: UjianRoute,
+  AdminUsersRoute: AdminUsersRoute,
   OwnerTenantsRoute: OwnerTenantsRoute,
+  OwnerUsersRoute: OwnerUsersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

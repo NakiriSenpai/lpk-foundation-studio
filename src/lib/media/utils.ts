@@ -11,10 +11,15 @@ export function getFileExtension(name: string): string {
 export function getMediaType(input: File | string): MediaKind | null {
   const mime = typeof input === "string" ? input : input.type;
   const name = typeof input === "string" ? input : input.name;
+  const lower = (mime || "").toLowerCase();
 
   for (const kind of ["image", "audio"] as MediaKind[]) {
-    if (mime && MEDIA_MIME[kind].includes(mime.toLowerCase())) return kind;
+    if (lower && MEDIA_MIME[kind].includes(lower)) return kind;
   }
+  // Android/Documents Provider kadang mengirim MIME generik atau varian lain.
+  if (lower.startsWith("image/")) return "image";
+  if (lower.startsWith("audio/")) return "audio";
+
   const ext = getFileExtension(name);
   for (const kind of ["image", "audio"] as MediaKind[]) {
     if (ext && MEDIA_EXTENSIONS[kind].includes(ext)) return kind;

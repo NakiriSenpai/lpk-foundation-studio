@@ -3,7 +3,7 @@ import type { ProfileRow } from "@/types/database";
 import { TABLES } from "@/types/database";
 
 const COLUMNS =
-  "id, tenant_id, role, email, full_name, avatar_url, is_active, created_at, updated_at";
+  "id, tenant_id, role, email, full_name, display_name, username, avatar_url, is_active, created_by, last_login_at, created_at, updated_at";
 
 /** Ambil profil milik user tertentu. Mengembalikan null bila belum tersedia. */
 export async function getProfileById(userId: string): Promise<ProfileRow | null> {

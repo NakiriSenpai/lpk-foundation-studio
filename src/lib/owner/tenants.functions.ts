@@ -66,24 +66,36 @@ export const createTenantWithAdmin = createServerFn({ method: "POST" })
     const admin = createClient(url, serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false },
       global: {
+        // Kunci format `sb_secret_` bukan JWT: kirim hanya lewat header apikey.
+        // Hanya hapus Authorization bila isinya memang service key itu sendiri,
+        // supaya permintaan lain (mis. verifikasi token user) tidak ikut rusak.
         fetch: (input, init) => {
           const headers = new Headers(init?.headers);
-          if (serviceKey.startsWith("sb_")) headers.delete("Authorization");
+          if (serviceKey.startsWith("sb_") && headers.get("Authorization") === `Bearer ${serviceKey}`) {
+            headers.delete("Authorization");
+          }
           headers.set("apikey", serviceKey);
           return fetch(input, { ...init, headers });
         },
       },
     });
 
-    // 1) Verifikasi pemanggil adalah Owner.
+    // 1) Verifikasi pemanggil adalah Owner berdasarkan JWT pada request.
     const authHeader = getRequestHeader("authorization") ?? "";
     const token = authHeader.replace(/^Bearer\s+/i, "").trim();
     if (!token) throw new Error("Sesi tidak ditemukan. Silakan masuk kembali.");
 
-    const { data: userData, error: userError } = await admin.auth.getUser(token);
-    if (userError || !userData.user) throw new Error("Sesi tidak valid. Silakan masuk kembali.");
+    // Verifikasi langsung ke endpoint resmi Supabase Auth (bebas dari shim di atas).
+    const verifyResponse = await fetch(`${url.replace(/\/$/, "")}/auth/v1/user`, {
+      headers: { apikey: serviceKey, Authorization: `Bearer ${token}` },
+    });
+    if (!verifyResponse.ok) {
+      throw new Error("Sesi tidak valid. Silakan masuk kembali.");
+    }
+    const verifiedUser = (await verifyResponse.json()) as { id?: string };
+    if (!verifiedUser.id) throw new Error("Sesi tidak valid. Silakan masuk kembali.");
 
-    const ownerId = userData.user.id;
+    const ownerId = verifiedUser.id;
     const { data: ownerProfile } = await admin
       .from("profiles")
       .select("role, is_active")

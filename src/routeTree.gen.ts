@@ -27,6 +27,7 @@ import { Route as AdminUsersRouteImport } from './routes/admin_.users'
 import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
 import { Route as OwnerUsersRouteImport } from './routes/owner_.users'
 import { Route as OwnerExamStudioIndexRouteImport } from './routes/owner_.exam-studio.index'
+import { Route as OwnerExamStudioExamIdRouteImport } from './routes/owner_.exam-studio.$examId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -118,6 +119,11 @@ const OwnerExamStudioIndexRoute = OwnerExamStudioIndexRouteImport.update({
   path: '/owner/exam-studio/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OwnerExamStudioExamIdRoute = OwnerExamStudioExamIdRouteImport.update({
+  id: '/owner_/exam-studio/$examId',
+  path: '/owner/exam-studio/$examId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -137,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersRoute
   '/owner/tenants': typeof OwnerTenantsRoute
   '/owner/users': typeof OwnerUsersRoute
+  '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/owner/exam-studio/': typeof OwnerExamStudioIndexRoute
 }
 export interface FileRoutesByTo {
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/owner/tenants': typeof OwnerTenantsRoute
   '/owner/users': typeof OwnerUsersRoute
+  '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/owner/exam-studio': typeof OwnerExamStudioIndexRoute
 }
 export interface FileRoutesById {
@@ -178,6 +186,7 @@ export interface FileRoutesById {
   '/admin_/users': typeof AdminUsersRoute
   '/owner_/tenants': typeof OwnerTenantsRoute
   '/owner_/users': typeof OwnerUsersRoute
+  '/owner_/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/owner_/exam-studio/': typeof OwnerExamStudioIndexRoute
 }
 export interface FileRouteTypes {
@@ -200,6 +209,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/owner/tenants'
     | '/owner/users'
+    | '/owner/exam-studio/$examId'
     | '/owner/exam-studio/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -220,6 +230,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/owner/tenants'
     | '/owner/users'
+    | '/owner/exam-studio/$examId'
     | '/owner/exam-studio'
   id:
     | '__root__'
@@ -240,6 +251,7 @@ export interface FileRouteTypes {
     | '/admin_/users'
     | '/owner_/tenants'
     | '/owner_/users'
+    | '/owner_/exam-studio/$examId'
     | '/owner_/exam-studio/'
   fileRoutesById: FileRoutesById
 }
@@ -261,6 +273,7 @@ export interface RootRouteChildren {
   AdminUsersRoute: typeof AdminUsersRoute
   OwnerTenantsRoute: typeof OwnerTenantsRoute
   OwnerUsersRoute: typeof OwnerUsersRoute
+  OwnerExamStudioExamIdRoute: typeof OwnerExamStudioExamIdRoute
   OwnerExamStudioIndexRoute: typeof OwnerExamStudioIndexRoute
 }
 
@@ -392,6 +405,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerExamStudioIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/owner_/exam-studio/$examId': {
+      id: '/owner_/exam-studio/$examId'
+      path: '/owner/exam-studio/$examId'
+      fullPath: '/owner/exam-studio/$examId'
+      preLoaderRoute: typeof OwnerExamStudioExamIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -413,6 +433,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminUsersRoute: AdminUsersRoute,
   OwnerTenantsRoute: OwnerTenantsRoute,
   OwnerUsersRoute: OwnerUsersRoute,
+  OwnerExamStudioExamIdRoute: OwnerExamStudioExamIdRoute,
   OwnerExamStudioIndexRoute: OwnerExamStudioIndexRoute,
 }
 export const routeTree = rootRouteImport

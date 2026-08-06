@@ -22,9 +22,18 @@ export const Route = createFileRoute("/owner")({
 function OwnerPage() {
   return (
     <AppLayout>
-      <RequireAuth>
-        <PagePlaceholder title="Pemilik" description="Panel pemilik lembaga." />
-      </RequireAuth>
+      <RequireOwner>
+        <section className="space-y-4">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">Panel Pemilik</h1>
+            <p className="text-sm text-muted-foreground">Kelola lembaga yang terdaftar.</p>
+          </div>
+          <Button asChild className="min-h-11">
+            <Link to="/owner/tenants">Manajemen Tenant</Link>
+          </Button>
+        </section>
+      </RequireOwner>
     </AppLayout>
   );
 }
+

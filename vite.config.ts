@@ -20,6 +20,7 @@ export default defineConfig({
         registerType: "autoUpdate",
         injectRegister: null,
         filename: "sw.js",
+        outDir: "dist/client",
         manifest: false,
         manifestFilename: "manifest.webmanifest",
         devOptions: { enabled: false },

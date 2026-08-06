@@ -5,8 +5,11 @@ export type TenantRow = {
   id: string;
   name: string;
   slug: string;
+  tenant_code: string | null;
+  timezone: string;
   logo_url: string | null;
   is_active: boolean;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -18,8 +21,12 @@ export type ProfileRow = {
   role: AppRole;
   email: string | null;
   full_name: string | null;
+  display_name: string | null;
+  username: string | null;
   avatar_url: string | null;
   is_active: boolean;
+  created_by: string | null;
+  last_login_at: string | null;
   created_at: string;
   updated_at: string;
 };

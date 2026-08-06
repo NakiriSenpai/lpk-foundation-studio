@@ -26,6 +26,7 @@ import { Route as UjianRouteImport } from './routes/ujian'
 import { Route as AdminUsersRouteImport } from './routes/admin_.users'
 import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
 import { Route as OwnerUsersRouteImport } from './routes/owner_.users'
+import { Route as OwnerExamStudioIndexRouteImport } from './routes/owner_.exam-studio.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -112,6 +113,11 @@ const OwnerUsersRoute = OwnerUsersRouteImport.update({
   path: '/owner/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OwnerExamStudioIndexRoute = OwnerExamStudioIndexRouteImport.update({
+  id: '/owner_/exam-studio/',
+  path: '/owner/exam-studio/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersRoute
   '/owner/tenants': typeof OwnerTenantsRoute
   '/owner/users': typeof OwnerUsersRoute
+  '/owner/exam-studio/': typeof OwnerExamStudioIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/owner/tenants': typeof OwnerTenantsRoute
   '/owner/users': typeof OwnerUsersRoute
+  '/owner/exam-studio': typeof OwnerExamStudioIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/admin_/users': typeof AdminUsersRoute
   '/owner_/tenants': typeof OwnerTenantsRoute
   '/owner_/users': typeof OwnerUsersRoute
+  '/owner_/exam-studio/': typeof OwnerExamStudioIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/owner/tenants'
     | '/owner/users'
+    | '/owner/exam-studio/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/owner/tenants'
     | '/owner/users'
+    | '/owner/exam-studio'
   id:
     | '__root__'
     | '/'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/admin_/users'
     | '/owner_/tenants'
     | '/owner_/users'
+    | '/owner_/exam-studio/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -249,6 +261,7 @@ export interface RootRouteChildren {
   AdminUsersRoute: typeof AdminUsersRoute
   OwnerTenantsRoute: typeof OwnerTenantsRoute
   OwnerUsersRoute: typeof OwnerUsersRoute
+  OwnerExamStudioIndexRoute: typeof OwnerExamStudioIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/owner_/exam-studio/': {
+      id: '/owner_/exam-studio/'
+      path: '/owner/exam-studio'
+      fullPath: '/owner/exam-studio/'
+      preLoaderRoute: typeof OwnerExamStudioIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -393,6 +413,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminUsersRoute: AdminUsersRoute,
   OwnerTenantsRoute: OwnerTenantsRoute,
   OwnerUsersRoute: OwnerUsersRoute,
+  OwnerExamStudioIndexRoute: OwnerExamStudioIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -49,10 +49,20 @@ export const createTenantWithAdmin = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { createClient } = await import("@supabase/supabase-js");
 
-    const serviceKey = process.env["LPK_SUPABASE_SERVICE_ROLE_KEY"];
-    if (!serviceKey) throw new Error("Konfigurasi server belum lengkap (service key tidak ada).");
+    // Nama variabel dibaca lentur agar tetap jalan di preview maupun Cloudflare.
+    const serviceKey =
+      process.env["LPK_SUPABASE_SERVICE_ROLE_KEY"] ??
+      process.env["SUPABASE_SERVICE_ROLE_KEY"] ??
+      process.env["LPK_SERVICE_ROLE_KEY"];
+    if (!serviceKey) {
+      throw new Error(
+        "Konfigurasi server belum lengkap: secret LPK_SUPABASE_SERVICE_ROLE_KEY belum tersedia di runtime ini. " +
+          "Tambahkan secret tersebut lalu publish ulang aplikasi.",
+      );
+    }
 
-    const url = process.env["LPK_SUPABASE_URL"] ?? env.supabaseUrl;
+    const url =
+      process.env["LPK_SUPABASE_URL"] ?? process.env["SUPABASE_URL"] ?? env.supabaseUrl;
     const admin = createClient(url, serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false },
       global: {

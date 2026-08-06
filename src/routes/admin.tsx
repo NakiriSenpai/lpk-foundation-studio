@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { PagePlaceholder } from "@/components/common/page-placeholder";
 import { AppLayout } from "@/layouts/app-layout";
+import { Button } from "@/components/ui/button";
 import { RequireAuth } from "@/middleware";
 
 export const Route = createFileRoute("/admin")({
@@ -22,7 +22,15 @@ function AdminPage() {
   return (
     <AppLayout>
       <RequireAuth>
-        <PagePlaceholder title="Admin" description="Panel administrasi lembaga." />
+        <section className="space-y-4">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">Panel Admin</h1>
+            <p className="text-sm text-muted-foreground">Kelola pengguna pada lembaga Anda.</p>
+          </div>
+          <Button asChild className="min-h-11">
+            <Link to="/admin/users">Manajemen User</Link>
+          </Button>
+        </section>
       </RequireAuth>
     </AppLayout>
   );

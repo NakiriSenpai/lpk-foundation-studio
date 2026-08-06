@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { PagePlaceholder } from "@/components/common/page-placeholder";
 import { AppLayout } from "@/layouts/app-layout";
+import { RequireAuth } from "@/middleware";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -20,7 +21,9 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardPage() {
   return (
     <AppLayout>
-      <PagePlaceholder title="Dasbor" description="Ringkasan aktivitas belajar." />
+      <RequireAuth>
+        <PagePlaceholder title="Dasbor" description="Ringkasan aktivitas belajar." />
+      </RequireAuth>
     </AppLayout>
   );
 }

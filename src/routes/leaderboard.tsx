@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { PagePlaceholder } from "@/components/common/page-placeholder";
 import { AppLayout } from "@/layouts/app-layout";
+import { RequireAuth } from "@/middleware";
 
 export const Route = createFileRoute("/leaderboard")({
   head: () => ({
@@ -20,7 +21,9 @@ export const Route = createFileRoute("/leaderboard")({
 function LeaderboardPage() {
   return (
     <AppLayout>
-      <PagePlaceholder title="Peringkat" description="Papan peringkat peserta." />
+      <RequireAuth>
+        <PagePlaceholder title="Peringkat" description="Papan peringkat peserta." />
+      </RequireAuth>
     </AppLayout>
   );
 }

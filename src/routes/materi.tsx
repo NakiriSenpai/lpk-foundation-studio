@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { PagePlaceholder } from "@/components/common/page-placeholder";
 import { AppLayout } from "@/layouts/app-layout";
+import { RequireAuth } from "@/middleware";
 
 export const Route = createFileRoute("/materi")({
   head: () => ({
@@ -20,7 +21,9 @@ export const Route = createFileRoute("/materi")({
 function MateriPage() {
   return (
     <AppLayout>
-      <PagePlaceholder title="Materi" description="Kumpulan materi pembelajaran." />
+      <RequireAuth>
+        <PagePlaceholder title="Materi" description="Kumpulan materi pembelajaran." />
+      </RequireAuth>
     </AppLayout>
   );
 }

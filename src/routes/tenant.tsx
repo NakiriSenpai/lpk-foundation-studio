@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { PagePlaceholder } from "@/components/common/page-placeholder";
 import { AppLayout } from "@/layouts/app-layout";
+import { RequireAuth } from "@/middleware";
 
 export const Route = createFileRoute("/tenant")({
   head: () => ({
@@ -20,7 +21,9 @@ export const Route = createFileRoute("/tenant")({
 function TenantPage() {
   return (
     <AppLayout>
-      <PagePlaceholder title="Tenant" description="Manajemen multi-tenant." />
+      <RequireAuth>
+        <PagePlaceholder title="Tenant" description="Manajemen multi-tenant." />
+      </RequireAuth>
     </AppLayout>
   );
 }

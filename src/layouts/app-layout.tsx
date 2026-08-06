@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 import { ThemeToggle } from "@/components/common/theme-toggle";
+import { AuthButton } from "@/features/auth/components/auth-button";
 import { appConfig } from "@/lib/env";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +24,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
           <Link to="/" className="text-base font-semibold tracking-tight">
             {appConfig.shortName}
           </Link>
-          <ThemeToggle />
+          <div className="flex items-center gap-1">
+            <AuthButton />
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 

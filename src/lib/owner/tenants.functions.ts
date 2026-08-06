@@ -129,7 +129,9 @@ export const createTenantWithAdmin = createServerFn({ method: "POST" })
       .single();
 
     if (tenantError || !createdTenant) {
-      throw new Error(`Gagal membuat tenant: ${tenantError?.message ?? "penyebab tidak diketahui"}`);
+      throw new Error(
+        `Gagal membuat tenant: ${tenantError?.message ?? "penyebab tidak diketahui"}`,
+      );
     }
 
     const tenantId = createdTenant.id as string;

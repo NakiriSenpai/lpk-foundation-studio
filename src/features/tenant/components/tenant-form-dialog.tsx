@@ -22,7 +22,12 @@ import {
 } from "@/components/ui/select";
 import { useCreateTenant } from "@/hooks/owner";
 import { uploadToCloudinary } from "@/services/cloudinary.service";
-import { DEFAULT_TIMEZONE, TIMEZONES, toSlug, toTenantCode } from "@/features/tenant/tenant.constants";
+import {
+  DEFAULT_TIMEZONE,
+  TIMEZONES,
+  toSlug,
+  toTenantCode,
+} from "@/features/tenant/tenant.constants";
 
 type Props = {
   open: boolean;
@@ -56,7 +61,10 @@ export function TenantFormDialog({ open, onOpenChange }: Props) {
     if (!file) return;
     setUploading(true);
     try {
-      const result = await uploadToCloudinary(file, { folder: "lpk/tenants", resourceType: "image" });
+      const result = await uploadToCloudinary(file, {
+        folder: "lpk/tenants",
+        resourceType: "image",
+      });
       set("logoUrl", result.secureUrl);
       toast.success("Logo berhasil diunggah.");
     } catch {

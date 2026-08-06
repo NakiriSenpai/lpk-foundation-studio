@@ -4,7 +4,6 @@ import { AppLayout } from "@/layouts/app-layout";
 import { Button } from "@/components/ui/button";
 import { RequireOwner } from "@/middleware";
 
-
 export const Route = createFileRoute("/owner")({
   head: () => ({
     meta: [
@@ -36,4 +35,3 @@ function OwnerPage() {
     </AppLayout>
   );
 }
-

@@ -153,7 +153,9 @@ export function TenantList() {
         </p>
       ) : (
         <ul className="space-y-2">
-          {data?.rows.map((tenant) => <TenantCard key={tenant.id} tenant={tenant} />)}
+          {data?.rows.map((tenant) => (
+            <TenantCard key={tenant.id} tenant={tenant} />
+          ))}
         </ul>
       )}
 

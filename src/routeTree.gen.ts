@@ -23,6 +23,7 @@ import { Route as TeacherRouteImport } from './routes/teacher'
 import { Route as TenantRouteImport } from './routes/tenant'
 import { Route as UjianRouteImport } from './routes/ujian'
 import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
+import { Route as ApiPublicEnvcheckRouteImport } from './routes/api/public/envcheck'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -94,6 +95,11 @@ const OwnerTenantsRoute = OwnerTenantsRouteImport.update({
   path: '/owner/tenants',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicEnvcheckRoute = ApiPublicEnvcheckRouteImport.update({
+  id: '/api/public/envcheck',
+  path: '/api/public/envcheck',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRoute
   '/owner/tenants': typeof OwnerTenantsRoute
+  '/api/public/envcheck': typeof ApiPublicEnvcheckRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRoute
   '/owner/tenants': typeof OwnerTenantsRoute
+  '/api/public/envcheck': typeof ApiPublicEnvcheckRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRoute
   '/owner_/tenants': typeof OwnerTenantsRoute
+  '/api/public/envcheck': typeof ApiPublicEnvcheckRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/tenant'
     | '/ujian'
     | '/owner/tenants'
+    | '/api/public/envcheck'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/tenant'
     | '/ujian'
     | '/owner/tenants'
+    | '/api/public/envcheck'
   id:
     | '__root__'
     | '/'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/tenant'
     | '/ujian'
     | '/owner_/tenants'
+    | '/api/public/envcheck'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -210,6 +222,7 @@ export interface RootRouteChildren {
   TenantRoute: typeof TenantRoute
   UjianRoute: typeof UjianRoute
   OwnerTenantsRoute: typeof OwnerTenantsRoute
+  ApiPublicEnvcheckRoute: typeof ApiPublicEnvcheckRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerTenantsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/envcheck': {
+      id: '/api/public/envcheck'
+      path: '/api/public/envcheck'
+      fullPath: '/api/public/envcheck'
+      preLoaderRoute: typeof ApiPublicEnvcheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -330,7 +350,18 @@ const rootRouteChildren: RootRouteChildren = {
   TenantRoute: TenantRoute,
   UjianRoute: UjianRoute,
   OwnerTenantsRoute: OwnerTenantsRoute,
+  ApiPublicEnvcheckRoute: ApiPublicEnvcheckRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

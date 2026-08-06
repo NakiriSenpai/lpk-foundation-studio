@@ -17,6 +17,7 @@ import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as LessonStudioRouteImport } from './routes/lesson-studio'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MateriRouteImport } from './routes/materi'
+import { Route as MediaRouteImport } from './routes/media'
 import { Route as OwnerRouteImport } from './routes/owner'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as TeacherRouteImport } from './routes/teacher'
@@ -64,6 +65,11 @@ const LoginRoute = LoginRouteImport.update({
 const MateriRoute = MateriRouteImport.update({
   id: '/materi',
   path: '/materi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MediaRoute = MediaRouteImport.update({
+  id: '/media',
+  path: '/media',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OwnerRoute = OwnerRouteImport.update({
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/lesson-studio': typeof LessonStudioRoute
   '/login': typeof LoginRoute
   '/materi': typeof MateriRoute
+  '/media': typeof MediaRoute
   '/owner': typeof OwnerRoute
   '/profile': typeof ProfileRoute
   '/teacher': typeof TeacherRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/lesson-studio': typeof LessonStudioRoute
   '/login': typeof LoginRoute
   '/materi': typeof MateriRoute
+  '/media': typeof MediaRoute
   '/owner': typeof OwnerRoute
   '/profile': typeof ProfileRoute
   '/teacher': typeof TeacherRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/lesson-studio': typeof LessonStudioRoute
   '/login': typeof LoginRoute
   '/materi': typeof MateriRoute
+  '/media': typeof MediaRoute
   '/owner': typeof OwnerRoute
   '/profile': typeof ProfileRoute
   '/teacher': typeof TeacherRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/lesson-studio'
     | '/login'
     | '/materi'
+    | '/media'
     | '/owner'
     | '/profile'
     | '/teacher'
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/lesson-studio'
     | '/login'
     | '/materi'
+    | '/media'
     | '/owner'
     | '/profile'
     | '/teacher'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/lesson-studio'
     | '/login'
     | '/materi'
+    | '/media'
     | '/owner'
     | '/profile'
     | '/teacher'
@@ -228,6 +240,7 @@ export interface RootRouteChildren {
   LessonStudioRoute: typeof LessonStudioRoute
   LoginRoute: typeof LoginRoute
   MateriRoute: typeof MateriRoute
+  MediaRoute: typeof MediaRoute
   OwnerRoute: typeof OwnerRoute
   ProfileRoute: typeof ProfileRoute
   TeacherRoute: typeof TeacherRoute
@@ -294,6 +307,13 @@ declare module '@tanstack/react-router' {
       path: '/materi'
       fullPath: '/materi'
       preLoaderRoute: typeof MateriRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/media': {
+      id: '/media'
+      path: '/media'
+      fullPath: '/media'
+      preLoaderRoute: typeof MediaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/owner': {
@@ -364,6 +384,7 @@ const rootRouteChildren: RootRouteChildren = {
   LessonStudioRoute: LessonStudioRoute,
   LoginRoute: LoginRoute,
   MateriRoute: MateriRoute,
+  MediaRoute: MediaRoute,
   OwnerRoute: OwnerRoute,
   ProfileRoute: ProfileRoute,
   TeacherRoute: TeacherRoute,
@@ -376,13 +397,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -8,7 +8,18 @@ export const MEDIA_SIZE_LIMIT: Record<MediaKind, number> = {
 
 /** MIME type yang diizinkan per jenis media. */
 export const MEDIA_MIME: Record<MediaKind, readonly string[]> = {
-  image: ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/svg+xml"],
+  image: [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+    "image/svg+xml",
+    "image/gif",
+    "image/bmp",
+    "image/avif",
+    "image/heic",
+    "image/heif",
+  ],
   audio: [
     "audio/mpeg",
     "audio/mp3",

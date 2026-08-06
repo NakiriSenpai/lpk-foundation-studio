@@ -22,6 +22,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as TeacherRouteImport } from './routes/teacher'
 import { Route as TenantRouteImport } from './routes/tenant'
 import { Route as UjianRouteImport } from './routes/ujian'
+import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -88,6 +89,11 @@ const UjianRoute = UjianRouteImport.update({
   path: '/ujian',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OwnerTenantsRoute = OwnerTenantsRouteImport.update({
+  id: '/owner_/tenants',
+  path: '/owner/tenants',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRoute
+  '/owner/tenants': typeof OwnerTenantsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRoute
+  '/owner/tenants': typeof OwnerTenantsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRoute
+  '/owner_/tenants': typeof OwnerTenantsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/tenant'
     | '/ujian'
+    | '/owner/tenants'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/tenant'
     | '/ujian'
+    | '/owner/tenants'
   id:
     | '__root__'
     | '/'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/tenant'
     | '/ujian'
+    | '/owner_/tenants'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -197,6 +209,7 @@ export interface RootRouteChildren {
   TeacherRoute: typeof TeacherRoute
   TenantRoute: typeof TenantRoute
   UjianRoute: typeof UjianRoute
+  OwnerTenantsRoute: typeof OwnerTenantsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UjianRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/owner_/tenants': {
+      id: '/owner_/tenants'
+      path: '/owner/tenants'
+      fullPath: '/owner/tenants'
+      preLoaderRoute: typeof OwnerTenantsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -309,17 +329,8 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherRoute: TeacherRoute,
   TenantRoute: TenantRoute,
   UjianRoute: UjianRoute,
+  OwnerTenantsRoute: OwnerTenantsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

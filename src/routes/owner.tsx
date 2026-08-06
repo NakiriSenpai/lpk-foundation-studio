@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { PagePlaceholder } from "@/components/common/page-placeholder";
 import { AppLayout } from "@/layouts/app-layout";
-import { RequireAuth } from "@/middleware";
+import { Button } from "@/components/ui/button";
+import { RequireOwner } from "@/middleware";
+
 
 export const Route = createFileRoute("/owner")({
   head: () => ({

@@ -289,7 +289,11 @@ export function UserFormDialog({ open, onOpenChange, scope, fixedTenantId, user 
                 className="min-h-11"
                 onChange={(e) => void handleAvatar(e.target.files?.[0])}
               />
-              {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4 text-muted-foreground" />}
+              {uploading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Upload className="size-4 text-muted-foreground" />
+              )}
             </div>
           </div>
 

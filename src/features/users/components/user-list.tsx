@@ -62,7 +62,7 @@ export function UserList({ scope }: Props) {
   }, [tenantsQuery.data]);
 
   const canManage = (user: ProfileRow) =>
-    scope === "owner" || (user.role === "guru" || user.role === "siswa");
+    scope === "owner" || user.role === "guru" || user.role === "siswa";
 
   const toggleActive = async (user: ProfileRow) => {
     try {
@@ -123,13 +123,14 @@ export function UserList({ scope }: Props) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="semua">Semua Role</SelectItem>
-            {(scope === "owner" ? (["owner", "admin", "guru", "siswa"] as const) : (["admin", "guru", "siswa"] as const)).map(
-              (r) => (
-                <SelectItem key={r} value={r}>
-                  {ROLE_LABELS[r]}
-                </SelectItem>
-              ),
-            )}
+            {(scope === "owner"
+              ? (["owner", "admin", "guru", "siswa"] as const)
+              : (["admin", "guru", "siswa"] as const)
+            ).map((r) => (
+              <SelectItem key={r} value={r}>
+                {ROLE_LABELS[r]}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select

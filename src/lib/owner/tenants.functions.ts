@@ -61,8 +61,7 @@ export const createTenantWithAdmin = createServerFn({ method: "POST" })
       );
     }
 
-    const url =
-      process.env["LPK_SUPABASE_URL"] ?? process.env["SUPABASE_URL"] ?? env.supabaseUrl;
+    const url = process.env["LPK_SUPABASE_URL"] ?? process.env["SUPABASE_URL"] ?? env.supabaseUrl;
     const admin = createClient(url, serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false },
       global: {
@@ -71,7 +70,10 @@ export const createTenantWithAdmin = createServerFn({ method: "POST" })
         // supaya permintaan lain (mis. verifikasi token user) tidak ikut rusak.
         fetch: (input, init) => {
           const headers = new Headers(init?.headers);
-          if (serviceKey.startsWith("sb_") && headers.get("Authorization") === `Bearer ${serviceKey}`) {
+          if (
+            serviceKey.startsWith("sb_") &&
+            headers.get("Authorization") === `Bearer ${serviceKey}`
+          ) {
             headers.delete("Authorization");
           }
           headers.set("apikey", serviceKey);

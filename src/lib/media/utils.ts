@@ -11,10 +11,15 @@ export function getFileExtension(name: string): string {
 export function getMediaType(input: File | string): MediaKind | null {
   const mime = typeof input === "string" ? input : input.type;
   const name = typeof input === "string" ? input : input.name;
+  const lower = (mime || "").toLowerCase();
 
   for (const kind of ["image", "audio"] as MediaKind[]) {
-    if (mime && MEDIA_MIME[kind].includes(mime.toLowerCase())) return kind;
+    if (lower && MEDIA_MIME[kind].includes(lower)) return kind;
   }
+  // Android/Documents Provider kadang mengirim MIME generik atau varian lain.
+  if (lower.startsWith("image/")) return "image";
+  if (lower.startsWith("audio/")) return "audio";
+
   const ext = getFileExtension(name);
   for (const kind of ["image", "audio"] as MediaKind[]) {
     if (ext && MEDIA_EXTENSIONS[kind].includes(ext)) return kind;
@@ -42,14 +47,15 @@ export function formatDuration(seconds: number): string {
   return hours > 0 ? `${hours}:${pad(minutes)}:${pad(secs)}` : `${pad(minutes)}:${pad(secs)}`;
 }
 
-/** Nilai atribut accept untuk <input type="file">. */
+/**
+ * Nilai atribut accept untuk <input type="file">.
+ * Sengaja memakai wildcard (image/*, audio/*) agar Android Photo Picker,
+ * Documents Provider, Google Photos, dan galeri bawaan menampilkan semua folder.
+ * Validasi format tetap dilakukan setelah file dipilih.
+ */
 export function acceptMime(kinds: MediaKind | MediaKind[]): string {
   const list = Array.isArray(kinds) ? kinds : [kinds];
-  const values = list.flatMap((kind) => [
-    ...MEDIA_MIME[kind],
-    ...MEDIA_EXTENSIONS[kind].map((ext) => `.${ext}`),
-  ]);
-  return Array.from(new Set(values)).join(",");
+  return Array.from(new Set(list.map((kind) => `${kind}/*`))).join(",");
 }
 
 /** Nama file tanpa ekstensi, untuk keperluan tampilan. */

@@ -34,7 +34,7 @@ export const MEDIA_MIME: Record<MediaKind, readonly string[]> = {
 
 /** Ekstensi yang diizinkan per jenis media (fallback bila MIME kosong). */
 export const MEDIA_EXTENSIONS: Record<MediaKind, readonly string[]> = {
-  image: ["jpg", "jpeg", "png", "webp", "svg"],
+  image: ["jpg", "jpeg", "png", "webp", "svg", "gif", "bmp", "avif", "heic", "heif"],
   audio: ["mp3", "wav", "m4a", "ogg"],
 };
 

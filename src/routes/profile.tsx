@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { PagePlaceholder } from "@/components/common/page-placeholder";
 import { AppLayout } from "@/layouts/app-layout";
+import { RequireAuth } from "@/middleware";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -20,7 +21,9 @@ export const Route = createFileRoute("/profile")({
 function ProfilePage() {
   return (
     <AppLayout>
-      <PagePlaceholder title="Profil" description="Data dan pengaturan akun." />
+      <RequireAuth>
+        <PagePlaceholder title="Profil" description="Data dan pengaturan akun." />
+      </RequireAuth>
     </AppLayout>
   );
 }

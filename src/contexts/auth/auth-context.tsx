@@ -1,15 +1,18 @@
-import { createContext, useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase/client";
 import { getCurrentSession, signInWithPassword, signOut, toAuthUser } from "@/services/auth";
+import { getProfileById } from "@/services/profile";
 import type { AppRole, AuthState, LoginCredentials } from "@/types/auth";
 import { ROLE_RANK } from "@/types/auth";
+import type { ProfileRow } from "@/types/database";
 
 export type AuthContextValue = AuthState & {
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
   hasAnyRole: (roles: readonly AppRole[]) => boolean;
   hasMinimumRole: (role: AppRole) => boolean;
@@ -19,56 +22,87 @@ export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const activeRef = useRef(true);
+
+  // Profil selalu diambil dari tabel `profiles` (source of truth).
+  const loadProfile = useCallback(async (nextSession: Session | null) => {
+    if (!nextSession?.user) {
+      setProfile(null);
+      return;
+    }
+    try {
+      const row = await getProfileById(nextSession.user.id);
+      if (activeRef.current) setProfile(row);
+    } catch {
+      if (activeRef.current) setProfile(null);
+    }
+  }, []);
 
   useEffect(() => {
-    let active = true;
+    activeRef.current = true;
 
     // Listener didaftarkan lebih dulu, lalu restore session yang tersimpan.
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      if (!active) return;
+      if (!activeRef.current) return;
       setSession(nextSession);
       setIsLoading(false);
+      // Panggilan Supabase lain tidak boleh dilakukan langsung di dalam callback.
+      setTimeout(() => void loadProfile(nextSession), 0);
     });
 
-    void getCurrentSession().then((restored) => {
-      if (!active) return;
+    void getCurrentSession().then(async (restored) => {
+      if (!activeRef.current) return;
       setSession(restored);
-      setIsLoading(false);
+      await loadProfile(restored);
+      if (activeRef.current) setIsLoading(false);
     });
 
     return () => {
-      active = false;
+      activeRef.current = false;
       subscription.subscription.unsubscribe();
     };
-  }, []);
+  }, [loadProfile]);
 
-  const login = useCallback(async (credentials: LoginCredentials) => {
-    const next = await signInWithPassword(credentials);
-    setSession(next);
-  }, []);
+  const login = useCallback(
+    async (credentials: LoginCredentials) => {
+      const next = await signInWithPassword(credentials);
+      setSession(next);
+      await loadProfile(next);
+    },
+    [loadProfile],
+  );
 
   const logout = useCallback(async () => {
     await signOut();
     setSession(null);
+    setProfile(null);
   }, []);
 
+  const refreshProfile = useCallback(async () => {
+    await loadProfile(session);
+  }, [loadProfile, session]);
+
   const value = useMemo<AuthContextValue>(() => {
-    const user = toAuthUser(session);
-    const role = user?.role ?? null;
+    const user = toAuthUser(session, profile);
+    const role = profile?.role ?? null;
     return {
       user,
       session,
+      profile,
       role,
+      tenantId: profile?.tenant_id ?? null,
       isAuthenticated: Boolean(session),
       isLoading,
       login,
       logout,
+      refreshProfile,
       hasRole: (target) => role === target,
       hasAnyRole: (roles) => (role ? roles.includes(role) : false),
       hasMinimumRole: (target) => (role ? ROLE_RANK[role] >= ROLE_RANK[target] : false),
     };
-  }, [session, isLoading, login, logout]);
+  }, [session, profile, isLoading, login, logout, refreshProfile]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

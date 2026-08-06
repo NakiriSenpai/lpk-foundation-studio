@@ -2,7 +2,7 @@ import type { Session } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase/client";
 import type { AuthUser, LoginCredentials } from "@/types/auth";
-import { readRole } from "@/types/auth";
+import type { ProfileRow } from "@/types/database";
 
 /** Ubah pesan error Supabase menjadi Bahasa Indonesia. */
 export function translateAuthError(message: string): string {
@@ -16,12 +16,20 @@ export function translateAuthError(message: string): string {
   return "Gagal masuk. Silakan coba lagi.";
 }
 
-export function toAuthUser(session: Session | null): AuthUser | null {
+/**
+ * Identitas aplikasi dibentuk dari tabel `profiles` (source of truth).
+ * Session Supabase Auth hanya menyediakan id dan email.
+ */
+export function toAuthUser(session: Session | null, profile: ProfileRow | null): AuthUser | null {
   if (!session?.user) return null;
   return {
     id: session.user.id,
-    email: session.user.email ?? null,
-    role: readRole(session.user),
+    email: profile?.email ?? session.user.email ?? null,
+    fullName: profile?.full_name ?? null,
+    avatarUrl: profile?.avatar_url ?? null,
+    role: profile?.role ?? null,
+    tenantId: profile?.tenant_id ?? null,
+    isActive: profile?.is_active ?? true,
   };
 }
 

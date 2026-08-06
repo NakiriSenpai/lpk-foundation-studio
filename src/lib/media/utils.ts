@@ -47,14 +47,15 @@ export function formatDuration(seconds: number): string {
   return hours > 0 ? `${hours}:${pad(minutes)}:${pad(secs)}` : `${pad(minutes)}:${pad(secs)}`;
 }
 
-/** Nilai atribut accept untuk <input type="file">. */
+/**
+ * Nilai atribut accept untuk <input type="file">.
+ * Sengaja memakai wildcard (image/*, audio/*) agar Android Photo Picker,
+ * Documents Provider, Google Photos, dan galeri bawaan menampilkan semua folder.
+ * Validasi format tetap dilakukan setelah file dipilih.
+ */
 export function acceptMime(kinds: MediaKind | MediaKind[]): string {
   const list = Array.isArray(kinds) ? kinds : [kinds];
-  const values = list.flatMap((kind) => [
-    ...MEDIA_MIME[kind],
-    ...MEDIA_EXTENSIONS[kind].map((ext) => `.${ext}`),
-  ]);
-  return Array.from(new Set(values)).join(",");
+  return Array.from(new Set(list.map((kind) => `${kind}/*`))).join(",");
 }
 
 /** Nama file tanpa ekstensi, untuk keperluan tampilan. */

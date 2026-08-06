@@ -35,8 +35,8 @@ export async function uploadToCloudinary(
     secureUrl: String(data["secure_url"]),
     format: String(data["format"] ?? ""),
     bytes: Number(data["bytes"] ?? 0),
-    width: typeof data["width"] === "number" ? data["width"] : undefined,
-    height: typeof data["height"] === "number" ? data["height"] : undefined,
+    ...(typeof data["width"] === "number" ? { width: data["width"] } : {}),
+    ...(typeof data["height"] === "number" ? { height: data["height"] } : {}),
     resourceType: String(data["resource_type"] ?? "image"),
   };
 }

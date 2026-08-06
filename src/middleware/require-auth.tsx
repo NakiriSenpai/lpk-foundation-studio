@@ -1,5 +1,5 @@
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import { LoadingScreen } from "@/components/common/loading-screen";
 import { useAuth } from "@/hooks/auth";
@@ -14,12 +14,14 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // Simpan tujuan awal agar tidak tertimpa saat proses pengalihan berlangsung.
+  const intended = useRef(pathname);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      void navigate({ to: "/login", search: { redirect: pathname }, replace: true });
+      void navigate({ to: "/login", search: { redirect: intended.current }, replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate, pathname]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading) return <LoadingScreen label="Memeriksa sesi…" />;
   if (!isAuthenticated) return <LoadingScreen label="Mengalihkan ke halaman masuk…" />;

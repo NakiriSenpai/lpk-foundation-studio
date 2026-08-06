@@ -1,5 +1,5 @@
 import { LogIn, LogOut } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,12 @@ export function AuthButton() {
   const { isAuthenticated, isLoading, logout } = useAuth();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   if (isLoading) return null;
 
   if (!isAuthenticated) {
+    if (pathname === "/login") return null;
     return (
       <Button
         variant="ghost"

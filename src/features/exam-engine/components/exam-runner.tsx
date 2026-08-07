@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Flag,
+  LayoutGrid,
   Loader2,
   Maximize,
   RectangleHorizontal,
@@ -15,6 +16,13 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import {
   useAttemptSession,
@@ -29,13 +37,26 @@ import type { AttemptAnswerRow } from "@/types/attempt";
 import { ATTEMPT_STATUS_LABELS } from "@/types/attempt";
 import { SubmitExamDialog } from "./exam-dialogs";
 import { LockedAudio } from "./locked-audio";
-import { SimpleAudio } from "./simple-audio";
 import { QuestionPalette, type PaletteGroup, type PaletteItem } from "./question-palette";
+import { useAudioPlayed } from "../hooks/use-audio-played";
 import { useExamTimer } from "../hooks/use-exam-timer";
 import { useFullscreenGuard } from "../hooks/use-fullscreen-guard";
 
 type LocalAnswer = { label: AnswerLabel | null; flagged: boolean };
 type LayoutMode = "portrait" | "landscape";
+
+/** Kunci orientasi layar; fallback diam bila peramban tidak mendukung. */
+async function lockOrientation(mode: LayoutMode) {
+  const orientation = (
+    globalThis.screen as (Screen & { orientation?: ScreenOrientation }) | undefined
+  )?.orientation as (ScreenOrientation & { lock?: (o: string) => Promise<void> }) | undefined;
+  if (!orientation || typeof orientation.lock !== "function") return;
+  try {
+    await orientation.lock(mode === "portrait" ? "portrait" : "landscape");
+  } catch {
+    /* fallback: hanya layout yang berubah */
+  }
+}
 
 export function ExamRunner({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
@@ -44,12 +65,14 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
   const setFlagMutation = useSetFlag();
   const recordViolation = useRecordViolation();
   const submit = useSubmitAttempt();
+  const { hasPlayed, markPlayed } = useAudioPlayed(attemptId);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [local, setLocal] = useState<Record<string, LocalAnswer>>({});
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [violations, setViolations] = useState(0);
   const [layout, setLayout] = useState<LayoutMode>("portrait");
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   /** Guard dimatikan begitu proses submit dimulai (BUG 5). */
   const [submitting, setSubmitting] = useState(false);
@@ -188,6 +211,11 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
     });
   };
 
+  const changeLayout = (mode: LayoutMode) => {
+    setLayout(mode);
+    void lockOrientation(mode);
+  };
+
   if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center gap-2 text-muted-foreground">
@@ -234,13 +262,14 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
     );
   }
 
+  /** BUG 2: audio berjalan → SELURUH interaksi terkunci. */
   const navLocked = audioPlaying;
   const isLandscape = layout === "landscape";
-  /** Banner hanya muncul saat benar-benar diperlukan (BUG 17). */
+  /** Banner hanya untuk peramban tanpa Fullscreen API atau saat guard sudah aktif. */
   const showFullscreenBanner = !isFullscreen && !submitting && (isArmed || isUnsupported);
 
   return (
-    <div className={cn("space-y-4", isLandscape ? "pb-4" : "pb-40")}>
+    <div className={cn("space-y-4 pb-8 select-none")} style={{ WebkitUserSelect: "none" }}>
       {/* Header: judul, timer, layout, kumpulkan */}
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-border bg-card p-3">
         <div className="min-w-0">
@@ -257,9 +286,10 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
             size="icon"
             variant="outline"
             className="size-9"
+            disabled={navLocked}
             aria-label={isLandscape ? "Ubah ke tata letak portrait" : "Ubah ke tata letak landscape"}
             title={isLandscape ? "Portrait" : "Landscape"}
-            onClick={() => setLayout(isLandscape ? "portrait" : "landscape")}
+            onClick={() => changeLayout(isLandscape ? "portrait" : "landscape")}
           >
             {isLandscape ? (
               <RectangleVertical className="size-4" />
@@ -273,7 +303,12 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
           >
             {timerLabel}
           </Badge>
-          <Button size="sm" variant="destructive" onClick={() => setConfirmSubmit(true)}>
+          <Button
+            size="sm"
+            variant="destructive"
+            disabled={navLocked}
+            onClick={() => setConfirmSubmit(true)}
+          >
             Kumpulkan
           </Button>
         </div>
@@ -303,8 +338,8 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
             )}
           >
             {isArmed
-              ? `Mode layar penuh nonaktif. Pelanggaran ${violations}/${limit}. Aplikasi mencoba kembali otomatis; ketuk untuk mempercepat.`
-              : "Peramban Anda belum mengizinkan mode layar penuh. Ketuk di sini untuk mengaktifkannya."}
+              ? `Mode layar penuh nonaktif. Pelanggaran ${violations}/${limit} dan terus bertambah setiap 3 detik. Ketuk untuk kembali.`
+              : "Peramban Anda tidak mendukung mode layar penuh."}
           </span>
           <Maximize
             className={cn(
@@ -317,13 +352,13 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
 
       {navLocked ? (
         <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-2 text-center text-xs font-medium text-amber-700 dark:text-amber-300">
-          Audio sedang diputar. Navigasi dan pilihan jawaban terkunci sampai audio selesai.
+          Audio sedang diputar. Semua interaksi terkunci sampai audio selesai.
         </p>
       ) : null}
 
-      {/* Portrait: soal atas, jawaban bawah, palette bawah.
-          Landscape: soal kiri, jawaban kanan, palette samping. */}
-      <div className={cn("grid gap-4", isLandscape && "grid-cols-[1.2fr_1fr]")}>
+      {/* Portrait: soal → jawaban → palette (mengikuti tinggi konten, tidak fixed).
+          Landscape: soal kiri, jawaban kanan, palette lewat popup "Daftar Soal". */}
+      <div className={cn("grid gap-4", isLandscape && "grid-cols-[1.2fr_1fr] items-start")}>
         <Card>
           <CardContent className="space-y-3 p-4">
             <div className="flex items-center justify-between gap-2">
@@ -355,6 +390,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
                 src={current.image_url}
                 alt={`Gambar soal nomor ${activeIndex + 1}`}
                 loading="lazy"
+                draggable={false}
                 className="mx-auto max-h-52 w-auto max-w-full rounded-xl border border-border object-contain sm:max-h-64"
               />
             ) : null}
@@ -362,17 +398,34 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
               <LockedAudio
                 src={current.audio_url}
                 disabled={audioPlaying}
+                alreadyPlayed={hasPlayed(`${current.question_id}:soal`)}
                 onPlayingChange={setAudioPlaying}
+                onFinished={() => markPlayed(`${current.question_id}:soal`)}
               />
             ) : null}
           </CardContent>
         </Card>
 
         <div className="space-y-4">
+          {isLandscape ? (
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={navLocked}
+                onClick={() => setPaletteOpen(true)}
+              >
+                <LayoutGrid className="mr-1.5 size-4" /> Daftar Soal
+              </Button>
+            </div>
+          ) : null}
+
           <Card>
             <CardContent className="space-y-2 p-4">
               {current.answers.map((answer, answerIndex) => {
                 const selected = local[current.question_id]?.label === answer.label;
+                const audioKey = `${current.question_id}:${answer.label}`;
                 return (
                   <button
                     key={answer.label}
@@ -406,6 +459,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
                           src={answer.image_url}
                           alt={`Pilihan ${answerIndex + 1}`}
                           loading="lazy"
+                          draggable={false}
                           className="max-h-28 w-auto max-w-full rounded-lg border border-border object-contain sm:max-h-36"
                         />
                       ) : null}
@@ -415,8 +469,13 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
                           onClick={(event) => event.stopPropagation()}
                           role="presentation"
                         >
-                          <SimpleAudio
+                          <LockedAudio
+                            compact
                             src={answer.audio_url}
+                            disabled={audioPlaying}
+                            alreadyPlayed={hasPlayed(audioKey)}
+                            onPlayingChange={setAudioPlaying}
+                            onFinished={() => markPlayed(audioKey)}
                             label={`Audio pilihan ${answerIndex + 1}`}
                           />
                         </span>
@@ -433,47 +492,47 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
             </CardContent>
           </Card>
 
-          {isLandscape ? (
-            <Card>
-              <CardContent className="p-4">
-                <QuestionPalette
-                  groups={paletteGroups}
-                  activeIndex={activeIndex}
-                  disabled={navLocked}
-                  onJump={setActiveIndex}
-                />
-                <Separator className="my-3" />
-                <NavButtons
-                  activeIndex={activeIndex}
-                  total={questions.length}
-                  disabled={navLocked}
-                  onChange={setActiveIndex}
-                />
-              </CardContent>
-            </Card>
-          ) : null}
+          <NavButtons
+            activeIndex={activeIndex}
+            total={questions.length}
+            disabled={navLocked}
+            onChange={setActiveIndex}
+          />
         </div>
       </div>
 
-      {/* Palette & navigasi bawah untuk portrait */}
+      {/* Palette mengalir mengikuti konten (portrait) — tidak menutupi soal. */}
       {!isLandscape ? (
-        <div className="fixed inset-x-0 bottom-0 z-50 max-h-[45vh] overflow-y-auto border-t border-border bg-background/95 p-3 backdrop-blur">
+        <Card>
+          <CardContent className="p-4">
+            <QuestionPalette
+              groups={paletteGroups}
+              activeIndex={activeIndex}
+              disabled={navLocked}
+              onJump={setActiveIndex}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <Dialog open={paletteOpen} onOpenChange={(open) => setPaletteOpen(open && !navLocked)}>
+        <DialogContent className="max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Daftar Soal</DialogTitle>
+            <DialogDescription>Pilih nomor soal untuk berpindah.</DialogDescription>
+          </DialogHeader>
+          <Separator />
           <QuestionPalette
             groups={paletteGroups}
             activeIndex={activeIndex}
             disabled={navLocked}
-            onJump={setActiveIndex}
+            onJump={(index) => {
+              setActiveIndex(index);
+              setPaletteOpen(false);
+            }}
           />
-          <div className="mt-3">
-            <NavButtons
-              activeIndex={activeIndex}
-              total={questions.length}
-              disabled={navLocked}
-              onChange={setActiveIndex}
-            />
-          </div>
-        </div>
-      ) : null}
+        </DialogContent>
+      </Dialog>
 
       <SubmitExamDialog
         open={confirmSubmit}

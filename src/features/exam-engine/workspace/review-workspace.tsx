@@ -1,0 +1,317 @@
+import { useMemo, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import {
+  BookOpen,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  CircleSlash,
+  Loader2,
+  XCircle,
+} from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useAttemptReview } from "@/hooks/attempt";
+import { listLessonTitles } from "@/services/lesson";
+import type { AnswerLabel } from "@/types/exam";
+import { OpenLessonDialog } from "../components/open-lesson-dialog";
+import { AudioButton, AudioManagerProvider } from "./audio-manager";
+import { AnswerShell, QuestionStem } from "./question-stem";
+import { useLandscapeLock } from "./use-landscape";
+import { WorkspaceShell } from "./workspace-shell";
+import type { PaletteGroup, PaletteItem } from "./workspace-sidebar";
+
+/** Review memakai Workspace yang sama dengan Exam, ditambah pembahasan. */
+export function ReviewWorkspace({ attemptId }: { attemptId: string }) {
+  return (
+    <AudioManagerProvider attemptId={attemptId} lockAfterPlay={false}>
+      <ReviewWorkspaceInner attemptId={attemptId} />
+    </AudioManagerProvider>
+  );
+}
+
+function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
+  const navigate = useNavigate();
+  const { data, isLoading, isError, error } = useAttemptReview(attemptId);
+  const { isPortrait, retry } = useLandscapeLock();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [collapsed, setCollapsed] = useState(false);
+  const [lessonDialog, setLessonDialog] = useState<{ id: string; title: string } | null>(null);
+
+  const questions = useMemo(() => data?.snapshot.questions ?? [], [data]);
+  const lessonIds = questions.map((q) => q.lesson_id).filter((id): id is string => Boolean(id));
+  const { data: lessonTitles } = useQuery({
+    queryKey: ["lesson-titles", lessonIds.slice().sort().join(",")],
+    queryFn: () => listLessonTitles(lessonIds),
+    enabled: lessonIds.length > 0,
+    staleTime: 300_000,
+  });
+
+  const selectedByQuestion = useMemo(
+    () =>
+      new Map<string, AnswerLabel | null>(
+        (data?.answers ?? []).map((row) => [row.question_id, row.selected_label]),
+      ),
+    [data],
+  );
+
+  const paletteGroups: PaletteGroup[] = useMemo(() => {
+    const snapshot = data?.snapshot;
+    if (!snapshot) return [];
+    const items: PaletteItem[] = questions.map((q, index) => {
+      const selected = selectedByQuestion.get(q.question_id) ?? null;
+      return {
+        questionId: q.question_id,
+        index,
+        status: !selected ? "unanswered" : selected === q.correct_label ? "correct" : "wrong",
+        flagged: false,
+      };
+    });
+    const groups: PaletteGroup[] = [];
+    for (const s of snapshot.sections) {
+      const list = items.filter((p) => questions[p.index]?.section_id === s.section_id);
+      if (list.length > 0) groups.push({ id: s.section_id, title: s.title, items: list });
+    }
+    const grouped = new Set(groups.flatMap((g) => g.items.map((i) => i.questionId)));
+    const rest = items.filter((p) => !grouped.has(p.questionId));
+    if (rest.length > 0) groups.push({ id: "lainnya", title: "Lainnya", items: rest });
+    return groups;
+  }, [data, questions, selectedByQuestion]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center gap-2 text-muted-foreground">
+        <Loader2 className="size-5 animate-spin" /> Memuat review…
+      </div>
+    );
+  }
+
+  const question = questions[activeIndex];
+  if (isError || !data || !question) {
+    return (
+      <Card>
+        <CardContent className="space-y-3 p-6 text-center">
+          <p className="font-medium text-foreground">
+            {error instanceof Error ? error.message : "Review tidak dapat dimuat."}
+          </p>
+          <Button onClick={() => void navigate({ to: "/ujian" })}>Kembali ke daftar ujian</Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const snapshot = data.snapshot;
+  const section = snapshot.sections.find((s) => s.section_id === question.section_id);
+  const selected = selectedByQuestion.get(question.question_id) ?? null;
+  const correct = question.correct_label;
+  const status = !selected ? "kosong" : selected === correct ? "benar" : "salah";
+  const lessonTitle = question.lesson_id ? lessonTitles?.[question.lesson_id] : undefined;
+
+  const exitWorkspace = (to: "hasil" | "ujian") => {
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
+    if (to === "hasil") {
+      void navigate({ to: "/ujian/hasil/$attemptId", params: { attemptId } });
+    } else {
+      void navigate({ to: "/ujian" });
+    }
+  };
+
+  const openLesson = () => {
+    if (!lessonDialog) return;
+    const lessonId = lessonDialog.id;
+    setLessonDialog(null);
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
+    void navigate({ to: "/materi", search: { lesson: lessonId } });
+  };
+
+  return (
+    <>
+      <WorkspaceShell
+        portrait={isPortrait}
+        onRotateRetry={retry}
+        sidebar={{
+          groups: paletteGroups,
+          activeIndex,
+          collapsed,
+          disabled: false,
+          mode: "review",
+          onToggle: () => setCollapsed((v) => !v),
+          onJump: (index) => setActiveIndex(index),
+        }}
+        header={
+          <>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-foreground">
+                Review — {snapshot.exam.title}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                {questions.length} soal · dari snapshot ujian
+              </p>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => exitWorkspace("hasil")}>
+              Hasil
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => exitWorkspace("ujian")}>
+              Keluar
+            </Button>
+          </>
+        }
+        footer={
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={activeIndex === 0}
+              onClick={() => setActiveIndex((i) => Math.max(0, i - 1))}
+            >
+              <ChevronLeft className="mr-1 size-4" /> Sebelumnya
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={activeIndex >= questions.length - 1}
+              onClick={() => setActiveIndex((i) => Math.min(questions.length - 1, i + 1))}
+            >
+              Berikutnya <ChevronRight className="ml-1 size-4" />
+            </Button>
+          </div>
+        }
+      >
+        <div className="grid gap-3 lg:grid-cols-2 lg:items-start">
+          <div className="space-y-3">
+            <QuestionStem
+              questionId={question.question_id}
+              number={activeIndex + 1}
+              total={questions.length}
+              sectionTitle={section?.title}
+              sectionInstruction={section?.instruction}
+              text={question.text}
+              imageUrl={question.image_url}
+              audioUrl={question.audio_url}
+              right={
+                <Badge
+                  variant={
+                    status === "benar"
+                      ? "default"
+                      : status === "salah"
+                        ? "destructive"
+                        : "secondary"
+                  }
+                  className="gap-1.5"
+                >
+                  {status === "benar" ? (
+                    <CheckCircle2 className="size-3.5" />
+                  ) : status === "salah" ? (
+                    <XCircle className="size-3.5" />
+                  ) : (
+                    <CircleSlash className="size-3.5" />
+                  )}
+                  {status === "benar" ? "Benar" : status === "salah" ? "Salah" : "Tidak dijawab"}
+                </Badge>
+              }
+            />
+
+            <div className="space-y-2 rounded-xl border border-border bg-card p-3 text-sm">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Pembahasan
+                </p>
+                <p className="whitespace-pre-wrap text-foreground">
+                  {question.explanation?.trim() ? question.explanation : "Belum ada pembahasan."}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Grammar Tag
+                </p>
+                {question.grammar_tags.length > 0 ? (
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {question.grammar_tags.map((tag) => (
+                      <Badge key={tag.id} variant="secondary">
+                        {tag.name}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">Belum dihubungkan.</p>
+                )}
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Materi Terkait
+                </p>
+                {question.lesson_id && lessonTitle ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-1"
+                    onClick={() =>
+                      setLessonDialog({ id: question.lesson_id as string, title: lessonTitle })
+                    }
+                  >
+                    <BookOpen className="mr-1.5 size-4" />
+                    {lessonTitle}
+                  </Button>
+                ) : (
+                  <p className="text-muted-foreground">Belum dihubungkan.</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {question.answers.map((answer, answerIndex) => {
+              const isCorrect = answer.label === correct;
+              const isChosen = answer.label === selected;
+              return (
+                <AnswerShell
+                  key={answer.label}
+                  index={answerIndex}
+                  tone={isCorrect ? "correct" : isChosen ? "wrong" : undefined}
+                >
+                  {answer.text ? (
+                    <span className="block whitespace-pre-wrap text-sm text-foreground">
+                      {answer.text}
+                    </span>
+                  ) : null}
+                  {answer.image_url ? (
+                    <img
+                      src={answer.image_url}
+                      alt={`Pilihan ${answerIndex + 1}`}
+                      loading="lazy"
+                      draggable={false}
+                      className="h-[88px] w-auto max-w-full rounded-lg border border-border object-contain"
+                    />
+                  ) : null}
+                  {answer.audio_url ? (
+                    <AudioButton
+                      size="sm"
+                      audioKey={`review:${question.question_id}:${answer.label}`}
+                      src={answer.audio_url}
+                      label={`Audio pilihan ${answerIndex + 1}`}
+                    />
+                  ) : null}
+                  <span className="flex flex-wrap gap-2 text-xs">
+                    {isChosen ? <Badge variant="outline">Jawaban Anda</Badge> : null}
+                    {isCorrect ? <Badge variant="outline">Jawaban Benar</Badge> : null}
+                  </span>
+                </AnswerShell>
+              );
+            })}
+          </div>
+        </div>
+      </WorkspaceShell>
+
+      <OpenLessonDialog
+        open={Boolean(lessonDialog)}
+        lessonTitle={lessonDialog?.title ?? ""}
+        onOpenChange={(open) => !open && setLessonDialog(null)}
+        onConfirm={openLesson}
+      />
+    </>
+  );
+}

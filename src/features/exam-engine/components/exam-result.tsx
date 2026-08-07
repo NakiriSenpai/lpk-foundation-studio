@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, CheckCircle2, CircleSlash, Loader2, RotateCcw, XCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -7,14 +8,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAttemptResult, useStartAttempt } from "@/hooks/attempt";
+import { cn } from "@/lib/utils";
 import { formatDurasi } from "@/types/attempt";
 import { formatTanggal } from "@/utils/format";
+import { lockOrientation, useExamLayout } from "../hooks/use-exam-layout";
 
 /** Result Page — hanya MEMBACA hasil yang sudah dihitung saat submit. */
 export function ExamResult({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useAttemptResult(attemptId);
   const startAttempt = useStartAttempt();
+  /** BUG 2: Result tetap fullscreen dan mengikuti orientasi halaman ujian. */
+  const { layout, isLandscape } = useExamLayout(attemptId);
+
+  useEffect(() => {
+    void lockOrientation(layout);
+  }, [layout]);
+
+  const exitExam = () => {
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
+    void navigate({ to: "/ujian" });
+  };
+
 
   if (isLoading) {
     return (

@@ -196,7 +196,7 @@ export function QuestionFormDialog({
     const correctFilled = filled.some((a) => a.label === correct);
     if (!correctFilled) return setError("Jawaban benar harus termasuk pilihan yang diisi.");
 
-    const payload = {
+    const payload: QuestionBankInput = {
       text: text.trim(),
       image_url: imageUrl,
       audio_url: audioUrl,
@@ -206,8 +206,8 @@ export function QuestionFormDialog({
       lesson_id: lessonId === NO_LESSON ? null : lessonId,
       question_type: questionType,
       visibility,
-      source_type: "exam" as const,
-      created_from: examId,
+      source_type: sourceType,
+      created_from: createdFrom ?? examId ?? null,
       grammar_tag_ids: tagIds,
       tag_ids: generalTagIds,
       new_tags: newTags,
@@ -221,16 +221,25 @@ export function QuestionFormDialog({
     };
 
     try {
-      if (question) {
+      if (onSubmitQuestion) {
+        await onSubmitQuestion(payload, question?.question_id ?? null);
+        if (question && isArchived !== (question.is_archived ?? false)) {
+          await archiveQuestion.mutateAsync({ id: question.question_id, isArchived });
+        }
+        toast.success(question ? "Soal diperbarui." : "Soal ditambahkan ke Question Bank.");
+      } else if (question) {
         await updateQuestion.mutateAsync({ id: question.question_id, input: payload });
         if (isArchived !== (question.is_archived ?? false)) {
           await archiveQuestion.mutateAsync({ id: question.question_id, isArchived });
         }
         toast.success("Soal diperbarui.");
-      } else {
+      } else if (examId) {
         await createQuestion.mutateAsync({ examId, sectionId, input: payload });
         toast.success("Soal ditambahkan dan tersimpan ke Question Bank.");
+      } else {
+        throw new Error("Target penyimpanan soal tidak tersedia.");
       }
+
       onOpenChange(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan.");

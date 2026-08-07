@@ -13,7 +13,12 @@ import {
   markQuestionsUsed,
   updateBankQuestion,
 } from "@/services/question-bank";
-import type { GrammarTagRow, QuestionBankInput, QuestionBankRow } from "@/types/question-bank";
+import type {
+  GrammarTagRow,
+  QuestionBankInput,
+  QuestionBankRow,
+  TagRow,
+} from "@/types/question-bank";
 
 export type ExamStatusFilter = "semua" | ExamStatus;
 export type ExamCategoryFilter = "semua" | string;
@@ -163,7 +168,7 @@ export async function reorderSections(ids: string[]) {
 // ---------- QUESTION (referensi ke Question Bank) ----------
 
 const QUESTION_SELECT = `id, exam_id, section_id, question_id, order_index, created_at, updated_at,
-  question:questions(*, answers:question_answers(*), tag_links:question_grammar_tags(tag:grammar_tags(*)))`;
+  question:questions(*, answers:question_answers(*), tag_links:question_grammar_tags(tag:grammar_tags(*)), general_tag_links:question_tags(tag:tags(*)))`;
 
 type RawRef = {
   id: string;
@@ -173,7 +178,12 @@ type RawRef = {
   order_index: number;
   created_at: string;
   updated_at: string;
-  question: (QuestionBankRow & { tag_links?: { tag: GrammarTagRow | null }[] | null }) | null;
+  question:
+    | (QuestionBankRow & {
+        tag_links?: { tag: GrammarTagRow | null }[] | null;
+        general_tag_links?: { tag: TagRow | null }[] | null;
+      })
+    | null;
 };
 
 export async function listQuestions(examId: string): Promise<ExamQuestionWithAnswers[]> {
@@ -205,9 +215,15 @@ export async function listQuestions(examId: string): Promise<ExamQuestionWithAns
         difficulty: q.difficulty,
         lesson_id: q.lesson_id,
         source_type: q.source_type,
+        origin: q.origin,
+        question_type: q.question_type,
+        visibility: q.visibility,
+        version: q.version,
+        is_archived: q.is_archived,
         used_count: q.used_count,
         last_used_at: q.last_used_at,
         grammar_tags: (q.tag_links ?? []).map((l) => l.tag).filter(Boolean) as GrammarTagRow[],
+        tags: (q.general_tag_links ?? []).map((l) => l.tag).filter(Boolean) as TagRow[],
         answers: (q.answers ?? []).slice().sort((a, b) => a.label.localeCompare(b.label)),
       };
     });
@@ -222,6 +238,7 @@ export async function createQuestion(
   const questionId = await createBankQuestion({
     ...input,
     source_type: "exam",
+    origin: "exam",
     created_from: examId,
   });
   await attachQuestionsToExam(examId, sectionId, [questionId]);

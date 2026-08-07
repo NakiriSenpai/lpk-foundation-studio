@@ -31,12 +31,27 @@ import { SOURCE_LABELS, type QuestionBankFilters } from "@/types/question-bank";
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  examId: string;
+  /** Exam tujuan. Kosong bila dipakai dari Lesson Studio. */
+  examId?: string;
   sectionId: string;
+  /** Kata benda tujuan pada pesan sukses ("exam" / "lesson"). */
+  targetLabel?: string;
+  /** Override penambahan referensi (Lesson Studio). Mengembalikan jumlah soal baru. */
+  onAttach?: (questionIds: string[]) => Promise<number | unknown>;
+  /** Status pending dari mutation eksternal. */
+  attaching?: boolean;
 };
 
 /** Dialog memilih soal dari Question Bank. Soal TIDAK diduplikasi, hanya direferensikan. */
-export function QuestionPickerDialog({ open, onOpenChange, examId, sectionId }: Props) {
+export function QuestionPickerDialog({
+  open,
+  onOpenChange,
+  examId,
+  sectionId,
+  targetLabel = "exam",
+  onAttach,
+  attaching = false,
+}: Props) {
   const [filters, setFilters] = useState<QuestionBankFilters>({
     search: "",
     source: "semua",
@@ -64,17 +79,23 @@ export function QuestionPickerDialog({ open, onOpenChange, examId, sectionId }: 
   const handleAdd = async () => {
     if (selected.length === 0) return;
     try {
-      const added = await attach.mutateAsync({ examId, sectionId, questionIds: selected });
+      const added = onAttach
+        ? await onAttach(selected)
+        : examId
+          ? await attach.mutateAsync({ examId, sectionId, questionIds: selected })
+          : null;
+      if (added === null) throw new Error("Target penambahan soal tidak tersedia.");
       toast.success(
         typeof added === "number" && added === 0
-          ? "Soal sudah ada di exam ini."
-          : "Soal ditambahkan ke exam.",
+          ? `Soal sudah ada di ${targetLabel} ini.`
+          : `Soal ditambahkan ke ${targetLabel}.`,
       );
       onOpenChange(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal menambahkan soal.");
     }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -151,7 +151,7 @@ export async function startAttempt(examId: string): Promise<AttemptRow> {
       status: "in_progress",
       started_at: startedAt.toISOString(),
       expires_at: expiresAt.toISOString(),
-      duration_minutes: exam.duration_minutes,
+      duration_minutes: durationMinutes,
       total_questions: payload.questions.length,
       fullscreen_limit: FULLSCREEN_VIOLATION_LIMIT,
     })

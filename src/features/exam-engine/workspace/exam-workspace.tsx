@@ -68,9 +68,9 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     setViolations(data.attempt.fullscreen_violations);
   }, [data]);
 
-  const finishRef = useRef<((reason: "manual" | "time_up" | "fullscreen_violation") => void) | null>(
-    null,
-  );
+  const finishRef = useRef<
+    ((reason: "manual" | "time_up" | "fullscreen_violation") => void) | null
+  >(null);
 
   const fullscreen = useFullscreenManager({
     active: Boolean(isRunning) && !submitting,

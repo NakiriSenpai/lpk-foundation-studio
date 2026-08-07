@@ -77,13 +77,16 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
           </div>
           <Button
             size="sm"
-            onClick={() =>
-              void navigate({ to: "/ujian/review/$attemptId", params: { attemptId } })
-            }
+            onClick={() => void navigate({ to: "/ujian/review/$attemptId", params: { attemptId } })}
           >
             Review
           </Button>
-          <Button size="sm" variant="secondary" disabled={startAttempt.isPending} onClick={tryAgain}>
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={startAttempt.isPending}
+            onClick={tryAgain}
+          >
             {startAttempt.isPending ? (
               <Loader2 className="mr-1.5 size-4 animate-spin" />
             ) : (

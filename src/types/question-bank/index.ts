@@ -3,9 +3,24 @@
 import type { ExamDifficulty } from "@/types/exam";
 
 export type QuestionSourceType = "exam" | "lesson" | "import" | "manual";
+export type QuestionOrigin = "manual" | "exam" | "lesson" | "import";
+export type QuestionType =
+  | "reading"
+  | "listening"
+  | "grammar"
+  | "vocabulary"
+  | "conversation"
+  | "mixed";
+export type QuestionVisibility = "private" | "public";
 export type MediaFilter = "semua" | "image" | "audio" | "none";
 
 export type GrammarTagRow = {
+  id: string;
+  slug: string;
+  name: string;
+};
+
+export type TagRow = {
   id: string;
   slug: string;
   name: string;
@@ -38,14 +53,24 @@ export type QuestionBankRow = {
   difficulty: ExamDifficulty;
   lesson_id: string | null;
   source_type: QuestionSourceType;
+  origin: QuestionOrigin;
+  question_type: QuestionType;
+  visibility: QuestionVisibility;
+  version: number;
+  is_archived: boolean;
+  correct_count: number;
+  wrong_count: number;
+  skip_count: number;
   created_from: string | null;
   used_count: number;
   last_used_at: string | null;
   created_by: string | null;
+  updated_by: string | null;
   created_at: string;
   updated_at: string;
   answers: QuestionAnswerRow[];
   grammar_tags: GrammarTagRow[];
+  tags: TagRow[];
   lesson: LessonRow | null;
 };
 
@@ -66,8 +91,13 @@ export type QuestionBankInput = {
   difficulty: ExamDifficulty;
   lesson_id: string | null;
   source_type: QuestionSourceType;
+  origin?: QuestionOrigin;
+  question_type: QuestionType;
+  visibility: QuestionVisibility;
   created_from: string | null;
   grammar_tag_ids: string[];
+  tag_ids?: string[];
+  new_tags?: string[];
   answers: QuestionAnswerInput[];
 };
 
@@ -78,6 +108,11 @@ export type QuestionBankFilters = {
   category?: "semua" | string;
   difficulty?: "semua" | ExamDifficulty;
   media?: MediaFilter;
+  questionType?: "semua" | QuestionType;
+  visibility?: "semua" | QuestionVisibility;
+  origin?: "semua" | QuestionOrigin;
+  tag?: "semua" | string;
+  archived?: "aktif" | "arsip" | "semua";
   page?: number;
   pageSize?: number;
 };
@@ -96,6 +131,8 @@ export const QUESTION_TABLES = {
   grammarTags: "grammar_tags",
   questionGrammarTags: "question_grammar_tags",
   lessons: "lessons",
+  tags: "tags",
+  questionTags: "question_tags",
 } as const;
 
 export const SOURCE_LABELS: Record<QuestionSourceType, string> = {
@@ -103,4 +140,25 @@ export const SOURCE_LABELS: Record<QuestionSourceType, string> = {
   lesson: "Lesson Studio",
   import: "Import",
   manual: "Manual",
+};
+
+export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
+  reading: "Reading",
+  listening: "Listening",
+  grammar: "Grammar",
+  vocabulary: "Vocabulary",
+  conversation: "Conversation",
+  mixed: "Mixed",
+};
+
+export const ORIGIN_LABELS: Record<QuestionOrigin, string> = {
+  manual: "Manual",
+  exam: "Exam Studio",
+  lesson: "Lesson Studio",
+  import: "Import",
+};
+
+export const VISIBILITY_LABELS: Record<QuestionVisibility, string> = {
+  private: "Privat",
+  public: "Publik",
 };

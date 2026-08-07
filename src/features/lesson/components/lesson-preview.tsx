@@ -165,7 +165,7 @@ export function LessonPreview({
                         </audio>
                       ) : null}
                       <ul className="space-y-1 text-sm">
-                        {question.answers.map((answer) => (
+                        {question.answers.map((answer, answerIndex) => (
                           <li
                             key={answer.id}
                             className={
@@ -174,7 +174,8 @@ export function LessonPreview({
                                 : "px-2 py-1"
                             }
                           >
-                            {answer.label}. {answer.text}
+                            {answerIndex + 1}. {answer.text}
+
                           </li>
                         ))}
                       </ul>

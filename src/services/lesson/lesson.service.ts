@@ -97,7 +97,35 @@ export async function listLessonsAdmin({
   };
 }
 
+/** Materi untuk siswa: hanya lesson berstatus Published (tenant discope oleh RLS). */
+export async function listPublishedLessons(): Promise<LessonDetailRow[]> {
+  const { data, error } = await supabase
+    .from(LESSON_TABLES.lessons)
+    .select("*")
+    .eq("status", "published")
+    .order("updated_at", { ascending: false });
+  if (error) throw new Error("Gagal memuat materi.");
+  return (data as LessonDetailRow[] | null) ?? [];
+}
+
+/** Judul lesson berdasarkan daftar id (dipakai Review untuk Materi Terkait). */
+export async function listLessonTitles(ids: string[]): Promise<Record<string, string>> {
+  const unique = Array.from(new Set(ids.filter(Boolean)));
+  if (unique.length === 0) return {};
+  const { data, error } = await supabase
+    .from(LESSON_TABLES.lessons)
+    .select("id, title")
+    .in("id", unique);
+  if (error) return {};
+  const map: Record<string, string> = {};
+  for (const row of ((data as { id: string; title: string }[] | null) ?? [])) {
+    map[row.id] = row.title;
+  }
+  return map;
+}
+
 export async function getLesson(lessonId: string): Promise<LessonDetailRow> {
+
   const { data, error } = await supabase
     .from(LESSON_TABLES.lessons)
     .select("*")

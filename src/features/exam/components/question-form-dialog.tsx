@@ -302,23 +302,23 @@ export function QuestionFormDialog({
           <div className="space-y-3">
             <Label>Pilihan Jawaban</Label>
             <RadioGroup value={correct} onValueChange={(v) => setCorrect(v as AnswerLabel)}>
-              {answers.map((answer) => (
+              {answers.map((answer, answerIndex) => (
                 <div key={answer.label} className="space-y-2 rounded-lg border p-3">
                   <div className="flex items-center gap-2">
                     <RadioGroupItem value={answer.label} id={`correct-${answer.label}`} />
                     <Label htmlFor={`correct-${answer.label}`} className="w-6 font-semibold">
-                      {answer.label}
+                      {answerIndex + 1}
                     </Label>
                     <Input
                       value={answer.text}
                       onChange={(e) => setAnswer(answer.label, { text: e.target.value })}
-                      placeholder={`Jawaban ${answer.label}`}
+                      placeholder={`Jawaban ${answerIndex + 1}`}
                     />
                   </div>
-                  {mediaSlot(`Gambar ${answer.label}`, "image", answer.image_url, (url) =>
+                  {mediaSlot(`Gambar ${answerIndex + 1}`, "image", answer.image_url, (url) =>
                     setAnswer(answer.label, { image_url: url }),
                   )}
-                  {mediaSlot(`Audio ${answer.label}`, "audio", answer.audio_url, (url) =>
+                  {mediaSlot(`Audio ${answerIndex + 1}`, "audio", answer.audio_url, (url) =>
                     setAnswer(answer.label, { audio_url: url }),
                   )}
                 </div>

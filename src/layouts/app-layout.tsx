@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { AuthButton } from "@/features/auth/components/auth-button";
@@ -14,8 +14,29 @@ const navItems = [
   { to: "/profile", label: "Profil" },
 ] as const;
 
+/** Bottom navigation disembunyikan saat ujian berjalan di mode layar penuh. */
+function useIsFullscreen() {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  useEffect(() => {
+    const handler = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    handler();
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
+  return isFullscreen;
+}
+
 export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isFullscreen = useIsFullscreen();
+  if (isFullscreen) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <main className="mx-auto w-full max-w-5xl px-3 py-3">{children}</main>
+      </div>
+    );
+  }
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">

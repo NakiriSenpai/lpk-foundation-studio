@@ -69,7 +69,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
               ? "Batas pelanggaran layar penuh tercapai. Ujian dikumpulkan otomatis."
               : "Ujian berhasil dikumpulkan.",
         );
-        void navigate({ to: "/ujian" });
+        void navigate({ to: "/ujian/hasil/$attemptId", params: { attemptId } });
       } catch (submitError) {
         submittingRef.current = false;
         toast.error(submitError instanceof Error ? submitError.message : "Gagal mengumpulkan ujian.");
@@ -176,7 +176,18 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
           <p className="text-sm text-muted-foreground">
             Attempt ini sudah selesai ({ATTEMPT_STATUS_LABELS[attempt.status]}).
           </p>
-          <Button onClick={() => void navigate({ to: "/ujian" })}>Kembali ke daftar ujian</Button>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button
+              onClick={() =>
+                void navigate({ to: "/ujian/hasil/$attemptId", params: { attemptId } })
+              }
+            >
+              Lihat hasil
+            </Button>
+            <Button variant="outline" onClick={() => void navigate({ to: "/ujian" })}>
+              Kembali ke daftar ujian
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );

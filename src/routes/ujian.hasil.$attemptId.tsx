@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { ExamResult } from "@/features/exam-engine/components/exam-result";
+import { ResultWorkspace } from "@/features/exam-engine/workspace/result-workspace";
 
 export const Route = createFileRoute("/ujian/hasil/$attemptId")({
   head: () => ({
@@ -22,5 +22,5 @@ export const Route = createFileRoute("/ujian/hasil/$attemptId")({
 
 function HasilUjianPage() {
   const { attemptId } = Route.useParams();
-  return <ExamResult attemptId={attemptId} />;
+  return <ResultWorkspace attemptId={attemptId} />;
 }

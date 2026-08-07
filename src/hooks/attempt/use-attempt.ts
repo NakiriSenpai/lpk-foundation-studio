@@ -75,3 +75,27 @@ export function useSubmitAttempt() {
     },
   });
 }
+
+/** Result page: baca hasil tersimpan, tidak pernah menghitung ulang. */
+export function useAttemptResult(attemptId: string) {
+  return useQuery({
+    queryKey: ["attempt-result", attemptId],
+    queryFn: () => getAttemptResult(attemptId),
+    enabled: Boolean(attemptId),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+}
+
+/** Review page: baca snapshot beku milik attempt. */
+export function useAttemptReview(attemptId: string) {
+  return useQuery({
+    queryKey: ["attempt-review", attemptId],
+    queryFn: () => getAttemptReview(attemptId),
+    enabled: Boolean(attemptId),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+}

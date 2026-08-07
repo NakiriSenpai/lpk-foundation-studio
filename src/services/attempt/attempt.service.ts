@@ -135,8 +135,12 @@ export async function startAttempt(examId: string): Promise<AttemptRow> {
   const { payload, studentPayload } = await buildSnapshot(exam);
   if (payload.questions.length === 0) throw new Error("Ujian ini belum memiliki soal.");
 
+  // PROTEKSI: durasi tidak valid (0/null) pernah membuat ujian langsung "waktu habis".
+  const rawDuration = Number(exam.duration_minutes);
+  const durationMinutes = Number.isFinite(rawDuration) && rawDuration > 0 ? rawDuration : 60;
+
   const startedAt = new Date();
-  const expiresAt = new Date(startedAt.getTime() + exam.duration_minutes * 60_000);
+  const expiresAt = new Date(startedAt.getTime() + durationMinutes * 60_000);
 
   const { data: attempt, error } = await supabase
     .from(ATTEMPT_TABLES.attempts)

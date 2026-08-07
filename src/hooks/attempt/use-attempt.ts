@@ -72,6 +72,7 @@ export function useSubmitAttempt() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["my-attempts"] });
       void queryClient.invalidateQueries({ queryKey: ["attempt-session"] });
+      void queryClient.invalidateQueries({ queryKey: ["attempt-result"] });
     },
   });
 }

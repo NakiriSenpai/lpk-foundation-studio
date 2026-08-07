@@ -253,7 +253,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
 
   /** BUG 2: audio berjalan → SELURUH interaksi terkunci. */
   const navLocked = audioPlaying;
-  const isLandscape = layout === "landscape";
+  /** Banner selalu tampil saat keluar fullscreen (Sprint 10E BUG 1). */
   /** Banner hanya untuk peramban tanpa Fullscreen API atau saat guard sudah aktif. */
   const showFullscreenBanner = !isFullscreen && !submitting && (isArmed || isUnsupported);
 
@@ -278,7 +278,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
             disabled={navLocked}
             aria-label={isLandscape ? "Ubah ke tata letak portrait" : "Ubah ke tata letak landscape"}
             title={isLandscape ? "Portrait" : "Landscape"}
-            onClick={() => changeLayout(isLandscape ? "portrait" : "landscape")}
+            onClick={() => setLayout(isLandscape ? "portrait" : "landscape")}
           >
             {isLandscape ? (
               <RectangleVertical className="size-4" />
@@ -300,6 +300,17 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
           >
             Kumpulkan
           </Button>
+          {/* BUG 4 & 6: Timer, Kumpulkan, dan Daftar Soal sejajar satu baris. */}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={navLocked}
+            onClick={() => setPaletteOpen(true)}
+          >
+            <LayoutGrid className="mr-1.5 size-4" /> Daftar Soal
+          </Button>
+
         </div>
       </div>
 

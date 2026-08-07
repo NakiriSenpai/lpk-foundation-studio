@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronUp,
   GripVertical,
+  Library,
   Pencil,
   Plus,
   Trash2,
@@ -35,6 +36,7 @@ import {
 import type { ExamQuestionWithAnswers, ExamSectionRow } from "@/types/exam";
 import { QuestionFormDialog } from "./question-form-dialog";
 import { SectionFormDialog } from "./section-form-dialog";
+import { QuestionPickerDialog } from "@/features/question-bank/components/question-picker-dialog";
 
 type Props = { examId: string };
 
@@ -48,6 +50,7 @@ export function ExamEditor({ examId }: Props) {
   const [questionOpen, setQuestionOpen] = useState(false);
   const [questionSectionId, setQuestionSectionId] = useState<string>("");
   const [questionEdit, setQuestionEdit] = useState<ExamQuestionWithAnswers | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [dragId, setDragId] = useState<string | null>(null);
 
   const deleteSection = useDeleteSection();
@@ -239,7 +242,17 @@ export function ExamEditor({ examId }: Props) {
                       setQuestionOpen(true);
                     }}
                   >
-                    <Plus className="mr-1 size-4" /> Soal
+                    <Plus className="mr-1 size-4" /> Soal Baru
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      setQuestionSectionId(section.id);
+                      setPickerOpen(true);
+                    }}
+                  >
+                    <Library className="mr-1 size-4" /> Ambil dari Bank
                   </Button>
                 </div>
 
@@ -307,10 +320,15 @@ export function ExamEditor({ examId }: Props) {
                               size="sm"
                               variant="outline"
                               onClick={async () => {
-                                if (!window.confirm("Hapus soal ini?")) return;
+                                if (
+                                  !window.confirm(
+                                    "Lepas soal ini dari exam? Soal tetap tersimpan di Question Bank.",
+                                  )
+                                )
+                                  return;
                                 try {
                                   await deleteQuestion.mutateAsync(question.id);
-                                  toast.success("Soal dihapus.");
+                                  toast.success("Soal dilepas dari exam.");
                                 } catch (err) {
                                   toast.error(
                                     err instanceof Error ? err.message : "Gagal menghapus soal.",
@@ -338,6 +356,14 @@ export function ExamEditor({ examId }: Props) {
         examId={examId}
         section={sectionEdit}
       />
+      {questionSectionId ? (
+        <QuestionPickerDialog
+          open={pickerOpen}
+          onOpenChange={setPickerOpen}
+          examId={examId}
+          sectionId={questionSectionId}
+        />
+      ) : null}
       {questionSectionId ? (
         <QuestionFormDialog
           open={questionOpen}

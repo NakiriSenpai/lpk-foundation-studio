@@ -230,16 +230,40 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
         <button
           type="button"
           onClick={() => void requestFullscreen()}
-          className="flex w-full items-center gap-3 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-left"
+          className={cn(
+            "flex w-full items-center gap-3 rounded-xl border p-3 text-left",
+            isArmed
+              ? "border-destructive/40 bg-destructive/10"
+              : "border-amber-500/40 bg-amber-500/10",
+          )}
         >
-          <AlertTriangle className="size-5 shrink-0 text-destructive" />
-          <span className="flex-1 text-sm text-destructive">
-            Mode layar penuh nonaktif. Pelanggaran {violations}/{limit}. Ketuk untuk kembali ke
-            layar penuh — ujian dikumpulkan otomatis jika batas tercapai.
+          <AlertTriangle
+            className={cn(
+              "size-5 shrink-0",
+              isArmed ? "text-destructive" : "text-amber-700 dark:text-amber-300",
+            )}
+          />
+          <span
+            className={cn(
+              "flex-1 text-sm",
+              isArmed ? "text-destructive" : "text-amber-700 dark:text-amber-300",
+            )}
+          >
+            {isArmed
+              ? `Mode layar penuh nonaktif. Pelanggaran ${violations}/${limit}. Ketuk untuk kembali ke layar penuh — ujian dikumpulkan otomatis jika batas tercapai.`
+              : isUnsupported
+                ? "Peramban Anda belum mengizinkan mode layar penuh. Ketuk di sini untuk mengaktifkannya. Belum ada pelanggaran yang dicatat."
+                : "Ketuk untuk masuk ke mode layar penuh sebelum mulai mengerjakan. Belum ada pelanggaran yang dicatat."}
           </span>
-          <Maximize className="size-5 shrink-0 text-destructive" />
+          <Maximize
+            className={cn(
+              "size-5 shrink-0",
+              isArmed ? "text-destructive" : "text-amber-700 dark:text-amber-300",
+            )}
+          />
         </button>
       ) : null}
+
 
       {navLocked ? (
         <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-2 text-center text-xs font-medium text-amber-700 dark:text-amber-300">

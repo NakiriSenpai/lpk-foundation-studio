@@ -21,8 +21,38 @@ export type AttemptRow = {
   auto_submitted: boolean;
   submit_reason: string | null;
   score: number;
+  correct_count: number;
+  wrong_count: number;
+  skipped_count: number;
+  passed: boolean;
+  duration_seconds: number;
+  submitted_at: string | null;
+  scored_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+/** Hasil ujian permanen (Sprint 10B). Dihitung sekali saat submit. */
+export type AttemptResultRow = {
+  id: string;
+  attempt_id: string;
+  exam_id: string;
+  user_id: string;
+  tenant_id: string | null;
+  exam_title: string;
+  total_questions: number;
+  correct_count: number;
+  wrong_count: number;
+  skipped_count: number;
+  score: number;
+  passing_score: number;
+  passed: boolean;
+  duration_seconds: number;
+  started_at: string;
+  submitted_at: string;
+  auto_submitted: boolean;
+  submit_reason: string | null;
+  created_at: string;
 };
 
 /** Jawaban pada snapshot versi siswa (tanpa kunci jawaban). */

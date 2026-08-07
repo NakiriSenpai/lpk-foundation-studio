@@ -40,23 +40,12 @@ import { LockedAudio } from "./locked-audio";
 import { QuestionPalette, type PaletteGroup, type PaletteItem } from "./question-palette";
 import { useAudioPlayed } from "../hooks/use-audio-played";
 import { useExamTimer } from "../hooks/use-exam-timer";
+import { useExamLayout } from "../hooks/use-exam-layout";
 import { useFullscreenGuard } from "../hooks/use-fullscreen-guard";
 
-type LocalAnswer = { label: AnswerLabel | null; flagged: boolean };
-type LayoutMode = "portrait" | "landscape";
 
-/** Kunci orientasi layar; fallback diam bila peramban tidak mendukung. */
-async function lockOrientation(mode: LayoutMode) {
-  const orientation = (
-    globalThis.screen as (Screen & { orientation?: ScreenOrientation }) | undefined
-  )?.orientation as (ScreenOrientation & { lock?: (o: string) => Promise<void> }) | undefined;
-  if (!orientation || typeof orientation.lock !== "function") return;
-  try {
-    await orientation.lock(mode === "portrait" ? "portrait" : "landscape");
-  } catch {
-    /* fallback: hanya layout yang berubah */
-  }
-}
+type LocalAnswer = { label: AnswerLabel | null; flagged: boolean };
+
 
 export function ExamRunner({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
@@ -71,7 +60,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
   const [local, setLocal] = useState<Record<string, LocalAnswer>>({});
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [violations, setViolations] = useState(0);
-  const [layout, setLayout] = useState<LayoutMode>("portrait");
+  const { isLandscape, setLayout } = useExamLayout(attemptId);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   /** Guard dimatikan begitu proses submit dimulai (BUG 5). */
@@ -102,7 +91,9 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
       setConfirmSubmit(false);
       try {
         await submit.mutateAsync({ attemptId, reason });
-        if (document.fullscreenElement) await document.exitFullscreen().catch(() => undefined);
+        // Sprint 10E BUG 2: JANGAN keluar fullscreen setelah submit —
+        // halaman Hasil tetap berada dalam mode layar penuh.
+
         toast.success(
           reason === "time_up"
             ? "Waktu habis. Ujian dikumpulkan otomatis."
@@ -211,10 +202,8 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
     });
   };
 
-  const changeLayout = (mode: LayoutMode) => {
-    setLayout(mode);
-    void lockOrientation(mode);
-  };
+
+
 
   if (isLoading) {
     return (

@@ -31,6 +31,7 @@ import { Route as OwnerExamStudioIndexRouteImport } from './routes/owner_.exam-s
 import { Route as OwnerExamStudioExamIdRouteImport } from './routes/owner_.exam-studio.$examId'
 import { Route as OwnerLessonStudioIndexRouteImport } from './routes/owner_.lesson-studio.index'
 import { Route as OwnerLessonStudioLessonIdIndexRouteImport } from './routes/owner_.lesson-studio.$lessonId.index'
+import { Route as OwnerLessonStudioLessonIdPreviewRouteImport } from './routes/owner_.lesson-studio.$lessonId.preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -143,6 +144,12 @@ const OwnerLessonStudioLessonIdIndexRoute =
     path: '/owner/lesson-studio/$lessonId/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const OwnerLessonStudioLessonIdPreviewRoute =
+  OwnerLessonStudioLessonIdPreviewRouteImport.update({
+    id: '/owner_/lesson-studio/$lessonId/preview',
+    path: '/owner/lesson-studio/$lessonId/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/owner/exam-studio/': typeof OwnerExamStudioIndexRoute
   '/owner/lesson-studio/': typeof OwnerLessonStudioIndexRoute
+  '/owner/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
   '/owner/lesson-studio/$lessonId/': typeof OwnerLessonStudioLessonIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -190,6 +198,7 @@ export interface FileRoutesByTo {
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/owner/exam-studio': typeof OwnerExamStudioIndexRoute
   '/owner/lesson-studio': typeof OwnerLessonStudioIndexRoute
+  '/owner/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
   '/owner/lesson-studio/$lessonId': typeof OwnerLessonStudioLessonIdIndexRoute
 }
 export interface FileRoutesById {
@@ -215,6 +224,7 @@ export interface FileRoutesById {
   '/owner_/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/owner_/exam-studio/': typeof OwnerExamStudioIndexRoute
   '/owner_/lesson-studio/': typeof OwnerLessonStudioIndexRoute
+  '/owner_/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
   '/owner_/lesson-studio/$lessonId/': typeof OwnerLessonStudioLessonIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -241,6 +251,7 @@ export interface FileRouteTypes {
     | '/owner/exam-studio/$examId'
     | '/owner/exam-studio/'
     | '/owner/lesson-studio/'
+    | '/owner/lesson-studio/$lessonId/preview'
     | '/owner/lesson-studio/$lessonId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -265,6 +276,7 @@ export interface FileRouteTypes {
     | '/owner/exam-studio/$examId'
     | '/owner/exam-studio'
     | '/owner/lesson-studio'
+    | '/owner/lesson-studio/$lessonId/preview'
     | '/owner/lesson-studio/$lessonId'
   id:
     | '__root__'
@@ -289,6 +301,7 @@ export interface FileRouteTypes {
     | '/owner_/exam-studio/$examId'
     | '/owner_/exam-studio/'
     | '/owner_/lesson-studio/'
+    | '/owner_/lesson-studio/$lessonId/preview'
     | '/owner_/lesson-studio/$lessonId/'
   fileRoutesById: FileRoutesById
 }
@@ -314,6 +327,7 @@ export interface RootRouteChildren {
   OwnerExamStudioExamIdRoute: typeof OwnerExamStudioExamIdRoute
   OwnerExamStudioIndexRoute: typeof OwnerExamStudioIndexRoute
   OwnerLessonStudioIndexRoute: typeof OwnerLessonStudioIndexRoute
+  OwnerLessonStudioLessonIdPreviewRoute: typeof OwnerLessonStudioLessonIdPreviewRoute
   OwnerLessonStudioLessonIdIndexRoute: typeof OwnerLessonStudioLessonIdIndexRoute
 }
 
@@ -473,6 +487,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerLessonStudioLessonIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/owner_/lesson-studio/$lessonId/preview': {
+      id: '/owner_/lesson-studio/$lessonId/preview'
+      path: '/owner/lesson-studio/$lessonId/preview'
+      fullPath: '/owner/lesson-studio/$lessonId/preview'
+      preLoaderRoute: typeof OwnerLessonStudioLessonIdPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -498,6 +519,7 @@ const rootRouteChildren: RootRouteChildren = {
   OwnerExamStudioExamIdRoute: OwnerExamStudioExamIdRoute,
   OwnerExamStudioIndexRoute: OwnerExamStudioIndexRoute,
   OwnerLessonStudioIndexRoute: OwnerLessonStudioIndexRoute,
+  OwnerLessonStudioLessonIdPreviewRoute: OwnerLessonStudioLessonIdPreviewRoute,
   OwnerLessonStudioLessonIdIndexRoute: OwnerLessonStudioLessonIdIndexRoute,
 }
 export const routeTree = rootRouteImport

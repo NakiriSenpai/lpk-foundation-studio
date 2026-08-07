@@ -30,6 +30,7 @@ import { Route as OwnerUsersRouteImport } from './routes/owner_.users'
 import { Route as OwnerExamStudioIndexRouteImport } from './routes/owner_.exam-studio.index'
 import { Route as OwnerExamStudioExamIdRouteImport } from './routes/owner_.exam-studio.$examId'
 import { Route as OwnerLessonStudioIndexRouteImport } from './routes/owner_.lesson-studio.index'
+import { Route as OwnerLessonStudioLessonIdIndexRouteImport } from './routes/owner_.lesson-studio.$lessonId.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -136,6 +137,12 @@ const OwnerLessonStudioIndexRoute = OwnerLessonStudioIndexRouteImport.update({
   path: '/owner/lesson-studio/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OwnerLessonStudioLessonIdIndexRoute =
+  OwnerLessonStudioLessonIdIndexRouteImport.update({
+    id: '/owner_/lesson-studio/$lessonId/',
+    path: '/owner/lesson-studio/$lessonId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -159,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/owner/exam-studio/': typeof OwnerExamStudioIndexRoute
   '/owner/lesson-studio/': typeof OwnerLessonStudioIndexRoute
+  '/owner/lesson-studio/$lessonId/': typeof OwnerLessonStudioLessonIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -182,6 +190,7 @@ export interface FileRoutesByTo {
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/owner/exam-studio': typeof OwnerExamStudioIndexRoute
   '/owner/lesson-studio': typeof OwnerLessonStudioIndexRoute
+  '/owner/lesson-studio/$lessonId': typeof OwnerLessonStudioLessonIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -206,6 +215,7 @@ export interface FileRoutesById {
   '/owner_/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/owner_/exam-studio/': typeof OwnerExamStudioIndexRoute
   '/owner_/lesson-studio/': typeof OwnerLessonStudioIndexRoute
+  '/owner_/lesson-studio/$lessonId/': typeof OwnerLessonStudioLessonIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/owner/exam-studio/$examId'
     | '/owner/exam-studio/'
     | '/owner/lesson-studio/'
+    | '/owner/lesson-studio/$lessonId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -254,6 +265,7 @@ export interface FileRouteTypes {
     | '/owner/exam-studio/$examId'
     | '/owner/exam-studio'
     | '/owner/lesson-studio'
+    | '/owner/lesson-studio/$lessonId'
   id:
     | '__root__'
     | '/'
@@ -277,6 +289,7 @@ export interface FileRouteTypes {
     | '/owner_/exam-studio/$examId'
     | '/owner_/exam-studio/'
     | '/owner_/lesson-studio/'
+    | '/owner_/lesson-studio/$lessonId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -301,6 +314,7 @@ export interface RootRouteChildren {
   OwnerExamStudioExamIdRoute: typeof OwnerExamStudioExamIdRoute
   OwnerExamStudioIndexRoute: typeof OwnerExamStudioIndexRoute
   OwnerLessonStudioIndexRoute: typeof OwnerLessonStudioIndexRoute
+  OwnerLessonStudioLessonIdIndexRoute: typeof OwnerLessonStudioLessonIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -452,6 +466,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerLessonStudioIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/owner_/lesson-studio/$lessonId/': {
+      id: '/owner_/lesson-studio/$lessonId/'
+      path: '/owner/lesson-studio/$lessonId'
+      fullPath: '/owner/lesson-studio/$lessonId/'
+      preLoaderRoute: typeof OwnerLessonStudioLessonIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -477,6 +498,7 @@ const rootRouteChildren: RootRouteChildren = {
   OwnerExamStudioExamIdRoute: OwnerExamStudioExamIdRoute,
   OwnerExamStudioIndexRoute: OwnerExamStudioIndexRoute,
   OwnerLessonStudioIndexRoute: OwnerLessonStudioIndexRoute,
+  OwnerLessonStudioLessonIdIndexRoute: OwnerLessonStudioLessonIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

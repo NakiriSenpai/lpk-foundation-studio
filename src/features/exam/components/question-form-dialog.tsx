@@ -115,7 +115,7 @@ export function QuestionFormDialog({
   const lessonQuery = useLessons();
   const createQuestion = useCreateQuestion();
   const updateQuestion = useUpdateQuestion();
-  const pending = createQuestion.isPending || updateQuestion.isPending;
+  const pending = createQuestion.isPending || updateQuestion.isPending || submitting;
 
   useEffect(() => {
     if (!open) return;
@@ -160,7 +160,7 @@ export function QuestionFormDialog({
       setIsArchived(false);
       setCategory("umum");
       setDifficulty("sedang");
-      setLessonId(NO_LESSON);
+      setLessonId(defaultLessonId ?? NO_LESSON);
       setExplanation("");
       setAnswers(emptyAnswers());
       setCorrect("A");
@@ -280,7 +280,7 @@ export function QuestionFormDialog({
         <DialogHeader>
           <DialogTitle>{question ? "Ubah Soal" : "Tambah Soal"}</DialogTitle>
           <DialogDescription>
-            Soal baru otomatis tersimpan ke Question Bank sehingga dapat dipakai ulang.
+            {description}
           </DialogDescription>
         </DialogHeader>
 

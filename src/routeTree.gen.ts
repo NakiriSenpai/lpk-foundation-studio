@@ -29,6 +29,7 @@ import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
 import { Route as OwnerUsersRouteImport } from './routes/owner_.users'
 import { Route as OwnerExamStudioIndexRouteImport } from './routes/owner_.exam-studio.index'
 import { Route as OwnerExamStudioExamIdRouteImport } from './routes/owner_.exam-studio.$examId'
+import { Route as OwnerLessonStudioIndexRouteImport } from './routes/owner_.lesson-studio.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -130,6 +131,11 @@ const OwnerExamStudioExamIdRoute = OwnerExamStudioExamIdRouteImport.update({
   path: '/owner/exam-studio/$examId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OwnerLessonStudioIndexRoute = OwnerLessonStudioIndexRouteImport.update({
+  id: '/owner_/lesson-studio/',
+  path: '/owner/lesson-studio/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/owner/users': typeof OwnerUsersRoute
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/owner/exam-studio/': typeof OwnerExamStudioIndexRoute
+  '/owner/lesson-studio/': typeof OwnerLessonStudioIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/owner/users': typeof OwnerUsersRoute
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/owner/exam-studio': typeof OwnerExamStudioIndexRoute
+  '/owner/lesson-studio': typeof OwnerLessonStudioIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -197,6 +205,7 @@ export interface FileRoutesById {
   '/owner_/users': typeof OwnerUsersRoute
   '/owner_/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/owner_/exam-studio/': typeof OwnerExamStudioIndexRoute
+  '/owner_/lesson-studio/': typeof OwnerLessonStudioIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -221,6 +230,7 @@ export interface FileRouteTypes {
     | '/owner/users'
     | '/owner/exam-studio/$examId'
     | '/owner/exam-studio/'
+    | '/owner/lesson-studio/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -243,6 +253,7 @@ export interface FileRouteTypes {
     | '/owner/users'
     | '/owner/exam-studio/$examId'
     | '/owner/exam-studio'
+    | '/owner/lesson-studio'
   id:
     | '__root__'
     | '/'
@@ -265,6 +276,7 @@ export interface FileRouteTypes {
     | '/owner_/users'
     | '/owner_/exam-studio/$examId'
     | '/owner_/exam-studio/'
+    | '/owner_/lesson-studio/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -288,6 +300,7 @@ export interface RootRouteChildren {
   OwnerUsersRoute: typeof OwnerUsersRoute
   OwnerExamStudioExamIdRoute: typeof OwnerExamStudioExamIdRoute
   OwnerExamStudioIndexRoute: typeof OwnerExamStudioIndexRoute
+  OwnerLessonStudioIndexRoute: typeof OwnerLessonStudioIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -432,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerExamStudioExamIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/owner_/lesson-studio/': {
+      id: '/owner_/lesson-studio/'
+      path: '/owner/lesson-studio'
+      fullPath: '/owner/lesson-studio/'
+      preLoaderRoute: typeof OwnerLessonStudioIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -456,17 +476,8 @@ const rootRouteChildren: RootRouteChildren = {
   OwnerUsersRoute: OwnerUsersRoute,
   OwnerExamStudioExamIdRoute: OwnerExamStudioExamIdRoute,
   OwnerExamStudioIndexRoute: OwnerExamStudioIndexRoute,
+  OwnerLessonStudioIndexRoute: OwnerLessonStudioIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

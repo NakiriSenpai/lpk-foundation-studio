@@ -165,7 +165,7 @@ export function QuestionFormDialog({
       setAnswers(emptyAnswers());
       setCorrect("A");
     }
-  }, [open, question]);
+  }, [open, question, defaultLessonId]);
 
   const setAnswer = (label: AnswerLabel, patch: Partial<AnswerState>) =>
     setAnswers((prev) => prev.map((a) => (a.label === label ? { ...a, ...patch } : a)));

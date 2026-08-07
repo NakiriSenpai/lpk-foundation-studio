@@ -24,6 +24,7 @@ import { Route as TeacherRouteImport } from './routes/teacher'
 import { Route as TenantRouteImport } from './routes/tenant'
 import { Route as UjianRouteImport } from './routes/ujian'
 import { Route as AdminUsersRouteImport } from './routes/admin_.users'
+import { Route as OwnerQuestionBankRouteImport } from './routes/owner_.question-bank'
 import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
 import { Route as OwnerUsersRouteImport } from './routes/owner_.users'
 import { Route as OwnerExamStudioIndexRouteImport } from './routes/owner_.exam-studio.index'
@@ -104,6 +105,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OwnerQuestionBankRoute = OwnerQuestionBankRouteImport.update({
+  id: '/owner_/question-bank',
+  path: '/owner/question-bank',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OwnerTenantsRoute = OwnerTenantsRouteImport.update({
   id: '/owner_/tenants',
   path: '/owner/tenants',
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRoute
   '/admin/users': typeof AdminUsersRoute
+  '/owner/question-bank': typeof OwnerQuestionBankRoute
   '/owner/tenants': typeof OwnerTenantsRoute
   '/owner/users': typeof OwnerUsersRoute
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRoute
   '/admin/users': typeof AdminUsersRoute
+  '/owner/question-bank': typeof OwnerQuestionBankRoute
   '/owner/tenants': typeof OwnerTenantsRoute
   '/owner/users': typeof OwnerUsersRoute
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
@@ -184,6 +192,7 @@ export interface FileRoutesById {
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRoute
   '/admin_/users': typeof AdminUsersRoute
+  '/owner_/question-bank': typeof OwnerQuestionBankRoute
   '/owner_/tenants': typeof OwnerTenantsRoute
   '/owner_/users': typeof OwnerUsersRoute
   '/owner_/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
@@ -207,6 +216,7 @@ export interface FileRouteTypes {
     | '/tenant'
     | '/ujian'
     | '/admin/users'
+    | '/owner/question-bank'
     | '/owner/tenants'
     | '/owner/users'
     | '/owner/exam-studio/$examId'
@@ -228,6 +238,7 @@ export interface FileRouteTypes {
     | '/tenant'
     | '/ujian'
     | '/admin/users'
+    | '/owner/question-bank'
     | '/owner/tenants'
     | '/owner/users'
     | '/owner/exam-studio/$examId'
@@ -249,6 +260,7 @@ export interface FileRouteTypes {
     | '/tenant'
     | '/ujian'
     | '/admin_/users'
+    | '/owner_/question-bank'
     | '/owner_/tenants'
     | '/owner_/users'
     | '/owner_/exam-studio/$examId'
@@ -271,6 +283,7 @@ export interface RootRouteChildren {
   TenantRoute: typeof TenantRoute
   UjianRoute: typeof UjianRoute
   AdminUsersRoute: typeof AdminUsersRoute
+  OwnerQuestionBankRoute: typeof OwnerQuestionBankRoute
   OwnerTenantsRoute: typeof OwnerTenantsRoute
   OwnerUsersRoute: typeof OwnerUsersRoute
   OwnerExamStudioExamIdRoute: typeof OwnerExamStudioExamIdRoute
@@ -384,6 +397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/owner_/question-bank': {
+      id: '/owner_/question-bank'
+      path: '/owner/question-bank'
+      fullPath: '/owner/question-bank'
+      preLoaderRoute: typeof OwnerQuestionBankRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/owner_/tenants': {
       id: '/owner_/tenants'
       path: '/owner/tenants'
@@ -431,6 +451,7 @@ const rootRouteChildren: RootRouteChildren = {
   TenantRoute: TenantRoute,
   UjianRoute: UjianRoute,
   AdminUsersRoute: AdminUsersRoute,
+  OwnerQuestionBankRoute: OwnerQuestionBankRoute,
   OwnerTenantsRoute: OwnerTenantsRoute,
   OwnerUsersRoute: OwnerUsersRoute,
   OwnerExamStudioExamIdRoute: OwnerExamStudioExamIdRoute,

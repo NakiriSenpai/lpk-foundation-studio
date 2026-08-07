@@ -1,4 +1,12 @@
-/** Tipe domain Exam Studio (Sprint 6). */
+/** Tipe domain Exam Studio (Sprint 6 & 7). */
+
+import type {
+  GrammarTagRow,
+  QuestionAnswerRow,
+  QuestionSourceType,
+} from "@/types/question-bank";
+
+export type { GrammarTagRow, QuestionAnswerRow, QuestionSourceType };
 
 export type ExamStatus = "draft" | "published" | "archived";
 export type ExamDifficulty = "mudah" | "sedang" | "sulit";
@@ -37,35 +45,32 @@ export type ExamSectionRow = {
   updated_at: string;
 };
 
-/** Baris tabel public.exam_questions — Exam hanya menyimpan referensi soal. */
-export type ExamQuestionRow = {
+/** Baris referensi soal pada exam (Sprint 7: exam hanya menyimpan referensi). */
+export type ExamQuestionRef = {
   id: string;
   exam_id: string;
   section_id: string;
+  question_id: string;
   order_index: number;
-  text: string;
-  image_url: string | null;
-  audio_url: string | null;
-  grammar_tag: string | null;
-  explanation: string | null;
-  lesson_ref: string | null;
   created_at: string;
   updated_at: string;
 };
 
-/** Baris tabel public.exam_answers */
-export type ExamAnswerRow = {
-  id: string;
-  question_id: string;
-  label: AnswerLabel;
-  text: string | null;
+/** Referensi soal + data soal dari Question Bank (flatten agar mudah dipakai UI). */
+export type ExamQuestionWithAnswers = ExamQuestionRef & {
+  text: string;
   image_url: string | null;
   audio_url: string | null;
-  is_correct: boolean;
-  created_at: string;
+  explanation: string | null;
+  category: string;
+  difficulty: ExamDifficulty;
+  lesson_id: string | null;
+  source_type: QuestionSourceType;
+  used_count: number;
+  last_used_at: string | null;
+  grammar_tags: GrammarTagRow[];
+  answers: QuestionAnswerRow[];
 };
-
-export type ExamQuestionWithAnswers = ExamQuestionRow & { answers: ExamAnswerRow[] };
 
 export type ExamInput = {
   title: string;
@@ -86,27 +91,8 @@ export type SectionInput = {
   instruction: string;
 };
 
-export type AnswerInput = {
-  label: AnswerLabel;
-  text: string;
-  image_url: string | null;
-  audio_url: string | null;
-  is_correct: boolean;
-};
-
-export type QuestionInput = {
-  text: string;
-  image_url: string | null;
-  audio_url: string | null;
-  grammar_tag: string;
-  explanation: string;
-  lesson_ref: string;
-  answers: AnswerInput[];
-};
-
 export const EXAM_TABLES = {
   exams: "exams",
   sections: "exam_sections",
   questions: "exam_questions",
-  answers: "exam_answers",
 } as const;

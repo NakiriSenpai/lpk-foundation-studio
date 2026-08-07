@@ -78,9 +78,17 @@ export type LessonQuestionWithAnswers = LessonQuestionRef & {
   explanation: string | null;
   category: string;
   difficulty: ExamDifficulty;
+  question_type: QuestionType;
+  visibility: QuestionVisibility;
+  origin: QuestionOrigin;
+  source_type: QuestionSourceType;
+  version: number;
+  is_archived: boolean;
   grammar_tags: GrammarTagRow[];
+  tags: TagRow[];
   answers: QuestionAnswerRow[];
 };
+
 
 export type LessonInput = {
   title: string;

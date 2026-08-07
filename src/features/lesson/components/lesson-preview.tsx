@@ -112,7 +112,10 @@ export function LessonPreview({
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary">{CATEGORY_LABELS[lesson.category] ?? lesson.category}</Badge>
           <Badge variant="outline">{EXAM_DIFFICULTY_LABELS[lesson.difficulty]}</Badge>
-          <Badge variant="outline">{LESSON_STATUS_LABELS[lesson.status]}</Badge>
+          {variant === "studio" ? (
+            <Badge variant="outline">{LESSON_STATUS_LABELS[lesson.status]}</Badge>
+          ) : null}
+
         </div>
       </header>
 

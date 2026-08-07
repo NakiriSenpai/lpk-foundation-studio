@@ -34,7 +34,17 @@ function shuffled<T>(items: T[]): T[] {
 async function buildSnapshot(exam: ExamRow) {
   const [sections, questions] = await Promise.all([listSections(exam.id), listQuestions(exam.id)]);
 
-  const ordered = exam.shuffle_questions ? shuffled(questions) : questions;
+  // Acak soal HANYA di dalam section masing-masing; urutan section tetap.
+  const sectionOrder = sections.map((s) => s.id);
+  const ordered = exam.shuffle_questions
+    ? [
+        ...sectionOrder.flatMap((sectionId) =>
+          shuffled(questions.filter((q) => q.section_id === sectionId)),
+        ),
+        ...questions.filter((q) => !sectionOrder.includes(q.section_id)),
+      ]
+    : questions;
+
   const full: SnapshotQuestion[] = ordered.map((q, index) => {
     const answers = exam.shuffle_answers ? shuffled(q.answers) : q.answers;
     const correct = q.answers.find((a) => a.is_correct) ?? null;

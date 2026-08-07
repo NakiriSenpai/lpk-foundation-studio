@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { AlertTriangle, ChevronLeft, ChevronRight, Flag, Loader2, Maximize } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  Flag,
+  Loader2,
+  Maximize,
+  RectangleHorizontal,
+  RectangleVertical,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -18,12 +27,15 @@ import { cn } from "@/lib/utils";
 import type { AnswerLabel } from "@/types/exam";
 import type { AttemptAnswerRow } from "@/types/attempt";
 import { ATTEMPT_STATUS_LABELS } from "@/types/attempt";
+import { SubmitExamDialog } from "./exam-dialogs";
 import { LockedAudio } from "./locked-audio";
-import { QuestionPalette, type PaletteItem } from "./question-palette";
+import { SimpleAudio } from "./simple-audio";
+import { QuestionPalette, type PaletteGroup, type PaletteItem } from "./question-palette";
 import { useExamTimer } from "../hooks/use-exam-timer";
 import { useFullscreenGuard } from "../hooks/use-fullscreen-guard";
 
 type LocalAnswer = { label: AnswerLabel | null; flagged: boolean };
+type LayoutMode = "portrait" | "landscape";
 
 export function ExamRunner({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
@@ -37,6 +49,10 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
   const [local, setLocal] = useState<Record<string, LocalAnswer>>({});
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [violations, setViolations] = useState(0);
+  const [layout, setLayout] = useState<LayoutMode>("portrait");
+  const [confirmSubmit, setConfirmSubmit] = useState(false);
+  /** Guard dimatikan begitu proses submit dimulai (BUG 5). */
+  const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
 
   const attempt = data?.attempt;
@@ -59,6 +75,8 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
     async (reason: "manual" | "time_up" | "fullscreen_violation") => {
       if (submittingRef.current) return;
       submittingRef.current = true;
+      setSubmitting(true);
+      setConfirmSubmit(false);
       try {
         await submit.mutateAsync({ attemptId, reason });
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => undefined);
@@ -72,6 +90,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
         void navigate({ to: "/ujian/hasil/$attemptId", params: { attemptId } });
       } catch (submitError) {
         submittingRef.current = false;
+        setSubmitting(false);
         toast.error(
           submitError instanceof Error ? submitError.message : "Gagal mengumpulkan ujian.",
         );
@@ -92,8 +111,9 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
   }, [isRunning, timerReady, remaining, finish]);
 
   const handleViolation = useCallback(() => {
-    if (!isRunning) return;
+    if (!isRunning || submittingRef.current) return;
     void recordViolation.mutateAsync(attemptId).then((count) => {
+      if (submittingRef.current) return;
       setViolations(count);
       if (count >= limit) {
         void finish("fullscreen_violation");
@@ -104,7 +124,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
   }, [attemptId, finish, isRunning, limit, recordViolation]);
 
   const { isFullscreen, isArmed, isUnsupported, requestFullscreen } = useFullscreenGuard({
-    enabled: Boolean(isRunning),
+    enabled: Boolean(isRunning) && !submitting,
     onViolation: handleViolation,
   });
 
@@ -118,6 +138,21 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
     answered: Boolean(local[q.question_id]?.label),
     flagged: Boolean(local[q.question_id]?.flagged),
   }));
+
+  // Palette dikelompokkan per section (BUG 13).
+  const paletteGroups: PaletteGroup[] = useMemo(() => {
+    if (!snapshot) return [];
+    const groups: PaletteGroup[] = [];
+    for (const s of snapshot.sections) {
+      const items = palette.filter((p) => questions[p.index]?.section_id === s.section_id);
+      if (items.length > 0) groups.push({ id: s.section_id, title: s.title, items });
+    }
+    const grouped = new Set(groups.flatMap((g) => g.items.map((i) => i.questionId)));
+    const rest = palette.filter((p) => !grouped.has(p.questionId));
+    if (rest.length > 0) groups.push({ id: "lainnya", title: "Lainnya", items: rest });
+    return groups;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [snapshot, questions, local]);
 
   const answeredCount = palette.filter((p) => p.answered).length;
 
@@ -200,11 +235,14 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
   }
 
   const navLocked = audioPlaying;
+  const isLandscape = layout === "landscape";
+  /** Banner hanya muncul saat benar-benar diperlukan (BUG 17). */
+  const showFullscreenBanner = !isFullscreen && !submitting && (isArmed || isUnsupported);
 
   return (
-    <div className="space-y-4 pb-28 landscape:pb-4">
-      {/* Header: judul, timer, pelanggaran */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3">
+    <div className={cn("space-y-4", isLandscape ? "pb-4" : "pb-40")}>
+      {/* Header: judul, timer, layout, kumpulkan */}
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-border bg-card p-3">
         <div className="min-w-0">
           <h1 className="truncate text-base font-semibold text-foreground">
             {snapshot.exam.title}
@@ -213,20 +251,35 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
             {answeredCount}/{questions.length} soal terjawab · Auto save aktif
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            className="size-9"
+            aria-label={isLandscape ? "Ubah ke tata letak portrait" : "Ubah ke tata letak landscape"}
+            title={isLandscape ? "Portrait" : "Landscape"}
+            onClick={() => setLayout(isLandscape ? "portrait" : "landscape")}
+          >
+            {isLandscape ? (
+              <RectangleVertical className="size-4" />
+            ) : (
+              <RectangleHorizontal className="size-4" />
+            )}
+          </Button>
           <Badge
             variant={remaining <= 60 ? "destructive" : "secondary"}
             className="tabular-nums text-sm"
           >
             {timerLabel}
           </Badge>
-          <Button size="sm" variant="destructive" onClick={() => void finish("manual")}>
+          <Button size="sm" variant="destructive" onClick={() => setConfirmSubmit(true)}>
             Kumpulkan
           </Button>
         </div>
       </div>
 
-      {!isFullscreen ? (
+      {showFullscreenBanner ? (
         <button
           type="button"
           onClick={() => void requestFullscreen()}
@@ -250,10 +303,8 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
             )}
           >
             {isArmed
-              ? `Mode layar penuh nonaktif. Pelanggaran ${violations}/${limit}. Ketuk untuk kembali ke layar penuh — ujian dikumpulkan otomatis jika batas tercapai.`
-              : isUnsupported
-                ? "Peramban Anda belum mengizinkan mode layar penuh. Ketuk di sini untuk mengaktifkannya. Belum ada pelanggaran yang dicatat."
-                : "Ketuk untuk masuk ke mode layar penuh sebelum mulai mengerjakan. Belum ada pelanggaran yang dicatat."}
+              ? `Mode layar penuh nonaktif. Pelanggaran ${violations}/${limit}. Aplikasi mencoba kembali otomatis; ketuk untuk mempercepat.`
+              : "Peramban Anda belum mengizinkan mode layar penuh. Ketuk di sini untuk mengaktifkannya."}
           </span>
           <Maximize
             className={cn(
@@ -264,7 +315,6 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
         </button>
       ) : null}
 
-
       {navLocked ? (
         <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-2 text-center text-xs font-medium text-amber-700 dark:text-amber-300">
           Audio sedang diputar. Navigasi dan pilihan jawaban terkunci sampai audio selesai.
@@ -273,7 +323,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
 
       {/* Portrait: soal atas, jawaban bawah, palette bawah.
           Landscape: soal kiri, jawaban kanan, palette samping. */}
-      <div className="grid gap-4 landscape:grid-cols-[1.2fr_1fr] lg:grid-cols-[1.2fr_1fr]">
+      <div className={cn("grid gap-4", isLandscape && "grid-cols-[1.2fr_1fr]")}>
         <Card>
           <CardContent className="space-y-3 p-4">
             <div className="flex items-center justify-between gap-2">
@@ -305,7 +355,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
                 src={current.image_url}
                 alt={`Gambar soal nomor ${activeIndex + 1}`}
                 loading="lazy"
-                className="w-full rounded-xl border border-border object-contain"
+                className="mx-auto max-h-52 w-auto max-w-full rounded-xl border border-border object-contain sm:max-h-64"
               />
             ) : null}
             {current.audio_url ? (
@@ -321,7 +371,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
         <div className="space-y-4">
           <Card>
             <CardContent className="space-y-2 p-4">
-              {current.answers.map((answer) => {
+              {current.answers.map((answer, answerIndex) => {
                 const selected = local[current.question_id]?.label === answer.label;
                 return (
                   <button
@@ -345,7 +395,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
                           : "border-border text-foreground",
                       )}
                     >
-                      {answer.label}
+                      {answerIndex + 1}
                     </span>
                     <span className="min-w-0 flex-1 space-y-2">
                       {answer.text ? (
@@ -354,10 +404,27 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
                       {answer.image_url ? (
                         <img
                           src={answer.image_url}
-                          alt={`Pilihan ${answer.label}`}
+                          alt={`Pilihan ${answerIndex + 1}`}
                           loading="lazy"
-                          className="max-h-40 rounded-lg border border-border object-contain"
+                          className="max-h-28 w-auto max-w-full rounded-lg border border-border object-contain sm:max-h-36"
                         />
+                      ) : null}
+                      {answer.audio_url ? (
+                        <span
+                          className="block"
+                          onClick={(event) => event.stopPropagation()}
+                          role="presentation"
+                        >
+                          <SimpleAudio
+                            src={answer.audio_url}
+                            label={`Audio pilihan ${answerIndex + 1}`}
+                          />
+                        </span>
+                      ) : null}
+                      {!answer.text && !answer.image_url && !answer.audio_url ? (
+                        <span className="block text-sm text-muted-foreground">
+                          Pilihan {answerIndex + 1}
+                        </span>
                       ) : null}
                     </span>
                   </button>
@@ -366,43 +433,55 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
             </CardContent>
           </Card>
 
-          <Card className="hidden landscape:block lg:block">
-            <CardContent className="p-4">
-              <QuestionPalette
-                items={palette}
-                activeIndex={activeIndex}
-                disabled={navLocked}
-                onJump={setActiveIndex}
-              />
-              <Separator className="my-3" />
-              <NavButtons
-                activeIndex={activeIndex}
-                total={questions.length}
-                disabled={navLocked}
-                onChange={setActiveIndex}
-              />
-            </CardContent>
-          </Card>
+          {isLandscape ? (
+            <Card>
+              <CardContent className="p-4">
+                <QuestionPalette
+                  groups={paletteGroups}
+                  activeIndex={activeIndex}
+                  disabled={navLocked}
+                  onJump={setActiveIndex}
+                />
+                <Separator className="my-3" />
+                <NavButtons
+                  activeIndex={activeIndex}
+                  total={questions.length}
+                  disabled={navLocked}
+                  onChange={setActiveIndex}
+                />
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
       </div>
 
       {/* Palette & navigasi bawah untuk portrait */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 p-3 backdrop-blur landscape:hidden lg:hidden">
-        <QuestionPalette
-          items={palette}
-          activeIndex={activeIndex}
-          disabled={navLocked}
-          onJump={setActiveIndex}
-        />
-        <div className="mt-3">
-          <NavButtons
+      {!isLandscape ? (
+        <div className="fixed inset-x-0 bottom-0 z-50 max-h-[45vh] overflow-y-auto border-t border-border bg-background/95 p-3 backdrop-blur">
+          <QuestionPalette
+            groups={paletteGroups}
             activeIndex={activeIndex}
-            total={questions.length}
             disabled={navLocked}
-            onChange={setActiveIndex}
+            onJump={setActiveIndex}
           />
+          <div className="mt-3">
+            <NavButtons
+              activeIndex={activeIndex}
+              total={questions.length}
+              disabled={navLocked}
+              onChange={setActiveIndex}
+            />
+          </div>
         </div>
-      </div>
+      ) : null}
+
+      <SubmitExamDialog
+        open={confirmSubmit}
+        unanswered={questions.length - answeredCount}
+        onOpenChange={setConfirmSubmit}
+        onConfirm={() => void finish("manual")}
+        pending={submitting}
+      />
     </div>
   );
 }

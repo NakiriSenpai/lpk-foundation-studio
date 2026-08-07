@@ -63,7 +63,14 @@ function BlockView({ block }: { block: LessonBlockRow }) {
   }
 }
 
-export function LessonPreview({ lessonId }: { lessonId: string }) {
+export function LessonPreview({
+  lessonId,
+  variant = "studio",
+}: {
+  lessonId: string;
+  /** "siswa" dipakai halaman Materi: tanpa tombol editor & tanpa badge status. */
+  variant?: "studio" | "siswa";
+}) {
   const lessonQuery = useLesson(lessonId);
   const sectionsQuery = useLessonSections(lessonId);
   const blocksQuery = useLessonBlocks(lessonId);
@@ -81,11 +88,14 @@ export function LessonPreview({ lessonId }: { lessonId: string }) {
 
   return (
     <article className="space-y-5">
-      <Button asChild variant="ghost" size="sm" className="-ml-2">
-        <Link to="/owner/lesson-studio/$lessonId" params={{ lessonId }}>
-          <ArrowLeft className="mr-1 size-4" /> Kembali ke editor
-        </Link>
-      </Button>
+      {variant === "studio" ? (
+        <Button asChild variant="ghost" size="sm" className="-ml-2">
+          <Link to="/owner/lesson-studio/$lessonId" params={{ lessonId }}>
+            <ArrowLeft className="mr-1 size-4" /> Kembali ke editor
+          </Link>
+        </Button>
+      ) : null}
+
 
       <header className="space-y-2">
         {lesson.thumbnail_url ? (
@@ -102,7 +112,10 @@ export function LessonPreview({ lessonId }: { lessonId: string }) {
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary">{CATEGORY_LABELS[lesson.category] ?? lesson.category}</Badge>
           <Badge variant="outline">{EXAM_DIFFICULTY_LABELS[lesson.difficulty]}</Badge>
-          <Badge variant="outline">{LESSON_STATUS_LABELS[lesson.status]}</Badge>
+          {variant === "studio" ? (
+            <Badge variant="outline">{LESSON_STATUS_LABELS[lesson.status]}</Badge>
+          ) : null}
+
         </div>
       </header>
 
@@ -152,7 +165,7 @@ export function LessonPreview({ lessonId }: { lessonId: string }) {
                         </audio>
                       ) : null}
                       <ul className="space-y-1 text-sm">
-                        {question.answers.map((answer) => (
+                        {question.answers.map((answer, answerIndex) => (
                           <li
                             key={answer.id}
                             className={
@@ -161,7 +174,8 @@ export function LessonPreview({ lessonId }: { lessonId: string }) {
                                 : "px-2 py-1"
                             }
                           >
-                            {answer.label}. {answer.text}
+                            {answerIndex + 1}. {answer.text}
+
                           </li>
                         ))}
                       </ul>

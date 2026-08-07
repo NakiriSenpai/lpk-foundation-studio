@@ -34,6 +34,7 @@ import { Route as OwnerExamStudioExamIdRouteImport } from './routes/owner_.exam-
 import { Route as OwnerLessonStudioIndexRouteImport } from './routes/owner_.lesson-studio.index'
 import { Route as UjianHasilAttemptIdRouteImport } from './routes/ujian.hasil.$attemptId'
 import { Route as UjianReviewAttemptIdRouteImport } from './routes/ujian.review.$attemptId'
+import { Route as UjianRiwayatExamIdRouteImport } from './routes/ujian.riwayat.$examId'
 import { Route as OwnerLessonStudioLessonIdIndexRouteImport } from './routes/owner_.lesson-studio.$lessonId.index'
 import { Route as OwnerLessonStudioLessonIdPreviewRouteImport } from './routes/owner_.lesson-studio.$lessonId.preview'
 
@@ -162,6 +163,11 @@ const UjianReviewAttemptIdRoute = UjianReviewAttemptIdRouteImport.update({
   path: '/review/$attemptId',
   getParentRoute: () => UjianRoute,
 } as any)
+const UjianRiwayatExamIdRoute = UjianRiwayatExamIdRouteImport.update({
+  id: '/riwayat/$examId',
+  path: '/riwayat/$examId',
+  getParentRoute: () => UjianRoute,
+} as any)
 const OwnerLessonStudioLessonIdIndexRoute =
   OwnerLessonStudioLessonIdIndexRouteImport.update({
     id: '/owner_/lesson-studio/$lessonId/',
@@ -199,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
+  '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
   '/owner/exam-studio/': typeof OwnerExamStudioIndexRoute
   '/owner/lesson-studio/': typeof OwnerLessonStudioIndexRoute
   '/owner/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
@@ -227,6 +234,7 @@ export interface FileRoutesByTo {
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
+  '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
   '/owner/exam-studio': typeof OwnerExamStudioIndexRoute
   '/owner/lesson-studio': typeof OwnerLessonStudioIndexRoute
   '/owner/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
@@ -257,6 +265,7 @@ export interface FileRoutesById {
   '/owner_/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
+  '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
   '/owner_/exam-studio/': typeof OwnerExamStudioIndexRoute
   '/owner_/lesson-studio/': typeof OwnerLessonStudioIndexRoute
   '/owner_/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
@@ -288,6 +297,7 @@ export interface FileRouteTypes {
     | '/owner/exam-studio/$examId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
+    | '/ujian/riwayat/$examId'
     | '/owner/exam-studio/'
     | '/owner/lesson-studio/'
     | '/owner/lesson-studio/$lessonId/preview'
@@ -316,6 +326,7 @@ export interface FileRouteTypes {
     | '/owner/exam-studio/$examId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
+    | '/ujian/riwayat/$examId'
     | '/owner/exam-studio'
     | '/owner/lesson-studio'
     | '/owner/lesson-studio/$lessonId/preview'
@@ -345,6 +356,7 @@ export interface FileRouteTypes {
     | '/owner_/exam-studio/$examId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
+    | '/ujian/riwayat/$examId'
     | '/owner_/exam-studio/'
     | '/owner_/lesson-studio/'
     | '/owner_/lesson-studio/$lessonId/preview'
@@ -554,6 +566,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UjianReviewAttemptIdRouteImport
       parentRoute: typeof UjianRoute
     }
+    '/ujian/riwayat/$examId': {
+      id: '/ujian/riwayat/$examId'
+      path: '/riwayat/$examId'
+      fullPath: '/ujian/riwayat/$examId'
+      preLoaderRoute: typeof UjianRiwayatExamIdRouteImport
+      parentRoute: typeof UjianRoute
+    }
     '/owner_/lesson-studio/$lessonId/': {
       id: '/owner_/lesson-studio/$lessonId/'
       path: '/owner/lesson-studio/$lessonId'
@@ -576,6 +595,7 @@ interface UjianRouteChildren {
   UjianIndexRoute: typeof UjianIndexRoute
   UjianHasilAttemptIdRoute: typeof UjianHasilAttemptIdRoute
   UjianReviewAttemptIdRoute: typeof UjianReviewAttemptIdRoute
+  UjianRiwayatExamIdRoute: typeof UjianRiwayatExamIdRoute
 }
 
 const UjianRouteChildren: UjianRouteChildren = {
@@ -583,6 +603,7 @@ const UjianRouteChildren: UjianRouteChildren = {
   UjianIndexRoute: UjianIndexRoute,
   UjianHasilAttemptIdRoute: UjianHasilAttemptIdRoute,
   UjianReviewAttemptIdRoute: UjianReviewAttemptIdRoute,
+  UjianRiwayatExamIdRoute: UjianRiwayatExamIdRoute,
 }
 
 const UjianRouteWithChildren = UjianRoute._addFileChildren(UjianRouteChildren)
@@ -615,13 +636,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

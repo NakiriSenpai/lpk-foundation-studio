@@ -1,16 +1,19 @@
 import { supabase } from "@/lib/supabase/client";
 import {
   EXAM_TABLES,
-  type ExamAnswerRow,
   type ExamInput,
-  type ExamQuestionRow,
   type ExamQuestionWithAnswers,
   type ExamRow,
   type ExamSectionRow,
   type ExamStatus,
-  type QuestionInput,
   type SectionInput,
 } from "@/types/exam";
+import {
+  createBankQuestion,
+  markQuestionsUsed,
+  updateBankQuestion,
+} from "@/services/question-bank";
+import type { GrammarTagRow, QuestionBankInput, QuestionBankRow } from "@/types/question-bank";
 
 export type ExamStatusFilter = "semua" | ExamStatus;
 export type ExamCategoryFilter = "semua" | string;
@@ -157,96 +160,108 @@ export async function reorderSections(ids: string[]) {
   }
 }
 
-// ---------- QUESTION ----------
+// ---------- QUESTION (referensi ke Question Bank) ----------
+
+const QUESTION_SELECT = `id, exam_id, section_id, question_id, order_index, created_at, updated_at,
+  question:questions(*, answers:question_answers(*), tag_links:question_grammar_tags(tag:grammar_tags(*)))`;
+
+type RawRef = {
+  id: string;
+  exam_id: string;
+  section_id: string;
+  question_id: string;
+  order_index: number;
+  created_at: string;
+  updated_at: string;
+  question: (QuestionBankRow & { tag_links?: { tag: GrammarTagRow | null }[] | null }) | null;
+};
 
 export async function listQuestions(examId: string): Promise<ExamQuestionWithAnswers[]> {
   const { data, error } = await supabase
     .from(EXAM_TABLES.questions)
-    .select("*")
+    .select(QUESTION_SELECT)
     .eq("exam_id", examId)
     .order("order_index", { ascending: true });
   if (error) throw new Error("Gagal memuat soal.");
 
-  const questions = (data as ExamQuestionRow[] | null) ?? [];
-  if (questions.length === 0) return [];
-
-  const { data: answerData, error: answerError } = await supabase
-    .from(EXAM_TABLES.answers)
-    .select("*")
-    .in(
-      "question_id",
-      questions.map((q) => q.id),
-    )
-    .order("label", { ascending: true });
-  if (answerError) throw new Error("Gagal memuat jawaban.");
-
-  const answers = (answerData as ExamAnswerRow[] | null) ?? [];
-  return questions.map((question) => ({
-    ...question,
-    answers: answers.filter((answer) => answer.question_id === question.id),
-  }));
+  const rows = (data as unknown as RawRef[] | null) ?? [];
+  return rows
+    .filter((row) => row.question)
+    .map((row) => {
+      const q = row.question!;
+      return {
+        id: row.id,
+        exam_id: row.exam_id,
+        section_id: row.section_id,
+        question_id: row.question_id,
+        order_index: row.order_index,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        text: q.text,
+        image_url: q.image_url,
+        audio_url: q.audio_url,
+        explanation: q.explanation,
+        category: q.category,
+        difficulty: q.difficulty,
+        lesson_id: q.lesson_id,
+        source_type: q.source_type,
+        used_count: q.used_count,
+        last_used_at: q.last_used_at,
+        grammar_tags: (q.tag_links ?? []).map((l) => l.tag).filter(Boolean) as GrammarTagRow[],
+        answers: (q.answers ?? []).slice().sort((a, b) => a.label.localeCompare(b.label)),
+      };
+    });
 }
 
+/** Buat soal baru: tersimpan ke Question Bank lalu direferensikan oleh exam. */
 export async function createQuestion(
   examId: string,
   sectionId: string,
-  input: QuestionInput,
+  input: QuestionBankInput,
 ): Promise<void> {
-  const siblings = await listQuestions(examId);
-  const orderIndex = siblings.filter((q) => q.section_id === sectionId).length;
-
-  const { data, error } = await supabase
-    .from(EXAM_TABLES.questions)
-    .insert({
-      exam_id: examId,
-      section_id: sectionId,
-      order_index: orderIndex,
-      text: input.text,
-      image_url: input.image_url,
-      audio_url: input.audio_url,
-      grammar_tag: input.grammar_tag || null,
-      explanation: input.explanation || null,
-      lesson_ref: input.lesson_ref || null,
-    })
-    .select("id")
-    .single();
-  if (error || !data) throw new Error("Gagal menyimpan soal.");
-
-  const questionId = (data as { id: string }).id;
-  const { error: answerError } = await supabase
-    .from(EXAM_TABLES.answers)
-    .insert(input.answers.map((answer) => ({ ...answer, question_id: questionId })));
-  if (answerError) {
-    // Rollback manual agar tidak menyisakan soal tanpa jawaban.
-    await supabase.from(EXAM_TABLES.questions).delete().eq("id", questionId);
-    throw new Error("Gagal menyimpan pilihan jawaban.");
-  }
+  const questionId = await createBankQuestion({
+    ...input,
+    source_type: "exam",
+    created_from: examId,
+  });
+  await attachQuestionsToExam(examId, sectionId, [questionId]);
 }
 
-export async function updateQuestion(questionId: string, input: QuestionInput): Promise<void> {
-  const { error } = await supabase
-    .from(EXAM_TABLES.questions)
-    .update({
-      text: input.text,
-      image_url: input.image_url,
-      audio_url: input.audio_url,
-      grammar_tag: input.grammar_tag || null,
-      explanation: input.explanation || null,
-      lesson_ref: input.lesson_ref || null,
-    })
-    .eq("id", questionId);
-  if (error) throw new Error("Gagal memperbarui soal.");
+/** Tambahkan soal dari Question Bank tanpa duplikasi (hanya referensi). */
+export async function attachQuestionsToExam(
+  examId: string,
+  sectionId: string,
+  questionIds: string[],
+): Promise<number> {
+  if (questionIds.length === 0) return 0;
+  const existing = await listQuestions(examId);
+  const already = new Set(existing.map((q) => q.question_id));
+  const fresh = questionIds.filter((id) => !already.has(id));
+  if (fresh.length === 0) return 0;
 
-  await supabase.from(EXAM_TABLES.answers).delete().eq("question_id", questionId);
-  const { error: answerError } = await supabase
-    .from(EXAM_TABLES.answers)
-    .insert(input.answers.map((answer) => ({ ...answer, question_id: questionId })));
-  if (answerError) throw new Error("Gagal memperbarui pilihan jawaban.");
+  let orderIndex = existing.filter((q) => q.section_id === sectionId).length;
+  const payload = fresh.map((question_id) => ({
+    exam_id: examId,
+    section_id: sectionId,
+    question_id,
+    order_index: orderIndex++,
+  }));
+
+  const { error } = await supabase.from(EXAM_TABLES.questions).insert(payload);
+  if (error) throw new Error("Gagal menambahkan soal ke exam.");
+  await markQuestionsUsed(fresh);
+  return fresh.length;
 }
 
-export async function deleteQuestion(questionId: string) {
-  const { error } = await supabase.from(EXAM_TABLES.questions).delete().eq("id", questionId);
-  if (error) throw new Error("Gagal menghapus soal.");
+/** Perbarui soal (data master ada di Question Bank). */
+export async function updateQuestion(questionId: string, input: QuestionBankInput): Promise<void> {
+  await updateBankQuestion(questionId, input);
+}
+
+/** Lepas referensi soal dari exam. Soal tetap tersimpan di Question Bank. */
+export async function deleteQuestion(refId: string) {
+  const { error } = await supabase.from(EXAM_TABLES.questions).delete().eq("id", refId);
+  if (error) throw new Error("Gagal menghapus soal dari exam.");
 }
 
 /** Simpan urutan soal (drag & drop atau pindah nomor). */

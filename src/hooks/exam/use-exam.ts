@@ -11,6 +11,7 @@ import {
   listExams,
   listQuestions,
   listSections,
+  attachQuestionsToExam,
   reorderQuestions,
   reorderSections,
   setExamStatus,
@@ -19,7 +20,8 @@ import {
   updateSection,
   type ExamListParams,
 } from "@/services/exam";
-import type { ExamInput, ExamStatus, QuestionInput, SectionInput } from "@/types/exam";
+import type { ExamInput, ExamStatus, SectionInput } from "@/types/exam";
+import type { QuestionBankInput } from "@/types/question-bank";
 
 export function useExams(params: ExamListParams) {
   return useQuery({
@@ -87,10 +89,14 @@ export const useDeleteSection = () => useExamMutation<string>(deleteSection);
 export const useReorderSections = () => useExamMutation<string[]>(reorderSections);
 
 export const useCreateQuestion = () =>
-  useExamMutation<{ examId: string; sectionId: string; input: QuestionInput }>(
+  useExamMutation<{ examId: string; sectionId: string; input: QuestionBankInput }>(
     ({ examId, sectionId, input }) => createQuestion(examId, sectionId, input),
   );
 export const useUpdateQuestion = () =>
-  useExamMutation<{ id: string; input: QuestionInput }>(({ id, input }) => updateQuestion(id, input));
+  useExamMutation<{ id: string; input: QuestionBankInput }>(({ id, input }) => updateQuestion(id, input));
+export const useAttachQuestions = () =>
+  useExamMutation<{ examId: string; sectionId: string; questionIds: string[] }>(
+    ({ examId, sectionId, questionIds }) => attachQuestionsToExam(examId, sectionId, questionIds),
+  );
 export const useDeleteQuestion = () => useExamMutation<string>(deleteQuestion);
 export const useReorderQuestions = () => useExamMutation<string[]>(reorderQuestions);

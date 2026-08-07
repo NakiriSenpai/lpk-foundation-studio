@@ -81,7 +81,11 @@ export function ExamReview({ attemptId }: { attemptId: string }) {
                 <Badge variant="outline">Soal {index + 1}</Badge>
                 <Badge
                   variant={
-                    status === "benar" ? "default" : status === "salah" ? "destructive" : "secondary"
+                    status === "benar"
+                      ? "default"
+                      : status === "salah"
+                        ? "destructive"
+                        : "secondary"
                   }
                   className="gap-1.5"
                 >

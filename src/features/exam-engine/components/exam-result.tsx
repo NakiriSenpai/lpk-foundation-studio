@@ -1,12 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  CircleSlash,
-  Loader2,
-  RotateCcw,
-  XCircle,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle2, CircleSlash, Loader2, RotateCcw, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -57,7 +50,12 @@ export function ExamResult({ attemptId }: { attemptId: string }) {
   const stats = [
     { label: "Benar", value: data.correct_count, icon: CheckCircle2, tone: "text-emerald-600" },
     { label: "Salah", value: data.wrong_count, icon: XCircle, tone: "text-destructive" },
-    { label: "Kosong", value: data.skipped_count, icon: CircleSlash, tone: "text-muted-foreground" },
+    {
+      label: "Kosong",
+      value: data.skipped_count,
+      icon: CircleSlash,
+      tone: "text-muted-foreground",
+    },
   ];
 
   return (
@@ -76,10 +74,7 @@ export function ExamResult({ attemptId }: { attemptId: string }) {
             <p className="text-sm text-muted-foreground">
               Passing score: {Number(data.passing_score).toLocaleString("id-ID")}
             </p>
-            <Badge
-              variant={data.passed ? "default" : "destructive"}
-              className="px-4 py-1 text-sm"
-            >
+            <Badge variant={data.passed ? "default" : "destructive"} className="px-4 py-1 text-sm">
               {data.passed ? "LULUS" : "TIDAK LULUS"}
             </Badge>
           </div>

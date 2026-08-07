@@ -25,5 +25,7 @@ export function formatRemaining(totalSeconds: number): string {
   const minutes = Math.floor((s % 3600) / 60);
   const seconds = s % 60;
   const pad = (value: number) => String(value).padStart(2, "0");
-  return hours > 0 ? `${pad(hours)}:${pad(minutes)}:${pad(seconds)}` : `${pad(minutes)}:${pad(seconds)}`;
+  return hours > 0
+    ? `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+    : `${pad(minutes)}:${pad(seconds)}`;
 }

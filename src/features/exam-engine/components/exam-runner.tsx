@@ -72,7 +72,9 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
         void navigate({ to: "/ujian/hasil/$attemptId", params: { attemptId } });
       } catch (submitError) {
         submittingRef.current = false;
-        toast.error(submitError instanceof Error ? submitError.message : "Gagal mengumpulkan ujian.");
+        toast.error(
+          submitError instanceof Error ? submitError.message : "Gagal mengumpulkan ujian.",
+        );
       }
     },
     [attemptId, navigate, submit],
@@ -200,13 +202,18 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
       {/* Header: judul, timer, pelanggaran */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3">
         <div className="min-w-0">
-          <h1 className="truncate text-base font-semibold text-foreground">{snapshot.exam.title}</h1>
+          <h1 className="truncate text-base font-semibold text-foreground">
+            {snapshot.exam.title}
+          </h1>
           <p className="text-xs text-muted-foreground">
             {answeredCount}/{questions.length} soal terjawab · Auto save aktif
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant={remaining <= 60 ? "destructive" : "secondary"} className="tabular-nums text-sm">
+          <Badge
+            variant={remaining <= 60 ? "destructive" : "secondary"}
+            className="tabular-nums text-sm"
+          >
             {timerLabel}
           </Badge>
           <Button size="sm" variant="destructive" onClick={() => void finish("manual")}>
@@ -223,8 +230,8 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
         >
           <AlertTriangle className="size-5 shrink-0 text-destructive" />
           <span className="flex-1 text-sm text-destructive">
-            Mode layar penuh nonaktif. Pelanggaran {violations}/{limit}. Ketuk untuk kembali ke layar
-            penuh — ujian dikumpulkan otomatis jika batas tercapai.
+            Mode layar penuh nonaktif. Pelanggaran {violations}/{limit}. Ketuk untuk kembali ke
+            layar penuh — ujian dikumpulkan otomatis jika batas tercapai.
           </span>
           <Maximize className="size-5 shrink-0 text-destructive" />
         </button>

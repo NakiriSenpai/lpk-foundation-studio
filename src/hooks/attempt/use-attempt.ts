@@ -16,7 +16,11 @@ import {
 } from "@/services/attempt";
 
 export function useAvailableExams() {
-  return useQuery({ queryKey: ["available-exams"], queryFn: listAvailableExams, staleTime: 30_000 });
+  return useQuery({
+    queryKey: ["available-exams"],
+    queryFn: listAvailableExams,
+    staleTime: 30_000,
+  });
 }
 
 export function useMyAttempts() {

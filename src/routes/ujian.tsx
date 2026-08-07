@@ -1,6 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { PagePlaceholder } from "@/components/common/page-placeholder";
 import { AppLayout } from "@/layouts/app-layout";
 import { RequireAuth } from "@/middleware";
 
@@ -15,14 +14,14 @@ export const Route = createFileRoute("/ujian")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: UjianPage,
+  component: UjianLayout,
 });
 
-function UjianPage() {
+function UjianLayout() {
   return (
     <AppLayout>
       <RequireAuth>
-        <PagePlaceholder title="Ujian" description="Daftar dan pelaksanaan ujian." />
+        <Outlet />
       </RequireAuth>
     </AppLayout>
   );

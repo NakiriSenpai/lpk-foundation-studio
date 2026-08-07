@@ -59,9 +59,7 @@ export function StartExamDialog({
               </ul>
               <div className="space-y-1 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-amber-700 dark:text-amber-300">
                 <p>Ujian berjalan dalam mode layar penuh. Keluar dari layar penuh dicatat.</p>
-                <p>
-                  Bila batas pelanggaran tercapai atau waktu habis, ujian dikumpulkan otomatis.
-                </p>
+                <p>Bila batas pelanggaran tercapai atau waktu habis, ujian dikumpulkan otomatis.</p>
                 <p>Audio soal hanya dapat diputar satu kali (otomatis diulang 1 kali).</p>
               </div>
             </div>

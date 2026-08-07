@@ -93,9 +93,7 @@ export function ExamStartList() {
                   <Button
                     className="h-11 w-full"
                     disabled={start.isPending}
-                    onClick={() =>
-                      active ? setContinueTarget(active.id) : setStartTarget(exam)
-                    }
+                    onClick={() => (active ? setContinueTarget(active.id) : setStartTarget(exam))}
                   >
                     <PlayCircle className="mr-2 size-4" />
                     {active ? "Lanjutkan Ujian" : "Mulai Ujian"}

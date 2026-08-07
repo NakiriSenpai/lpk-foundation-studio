@@ -40,23 +40,10 @@ import { LockedAudio } from "./locked-audio";
 import { QuestionPalette, type PaletteGroup, type PaletteItem } from "./question-palette";
 import { useAudioPlayed } from "../hooks/use-audio-played";
 import { useExamTimer } from "../hooks/use-exam-timer";
+import { useExamLayout } from "../hooks/use-exam-layout";
 import { useFullscreenGuard } from "../hooks/use-fullscreen-guard";
 
 type LocalAnswer = { label: AnswerLabel | null; flagged: boolean };
-type LayoutMode = "portrait" | "landscape";
-
-/** Kunci orientasi layar; fallback diam bila peramban tidak mendukung. */
-async function lockOrientation(mode: LayoutMode) {
-  const orientation = (
-    globalThis.screen as (Screen & { orientation?: ScreenOrientation }) | undefined
-  )?.orientation as (ScreenOrientation & { lock?: (o: string) => Promise<void> }) | undefined;
-  if (!orientation || typeof orientation.lock !== "function") return;
-  try {
-    await orientation.lock(mode === "portrait" ? "portrait" : "landscape");
-  } catch {
-    /* fallback: hanya layout yang berubah */
-  }
-}
 
 export function ExamRunner({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
@@ -71,7 +58,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
   const [local, setLocal] = useState<Record<string, LocalAnswer>>({});
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [violations, setViolations] = useState(0);
-  const [layout, setLayout] = useState<LayoutMode>("portrait");
+  const { isLandscape, setLayout } = useExamLayout(attemptId);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   /** Guard dimatikan begitu proses submit dimulai (BUG 5). */
@@ -102,7 +89,9 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
       setConfirmSubmit(false);
       try {
         await submit.mutateAsync({ attemptId, reason });
-        if (document.fullscreenElement) await document.exitFullscreen().catch(() => undefined);
+        // Sprint 10E BUG 2: JANGAN keluar fullscreen setelah submit —
+        // halaman Hasil tetap berada dalam mode layar penuh.
+
         toast.success(
           reason === "time_up"
             ? "Waktu habis. Ujian dikumpulkan otomatis."
@@ -211,11 +200,6 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
     });
   };
 
-  const changeLayout = (mode: LayoutMode) => {
-    setLayout(mode);
-    void lockOrientation(mode);
-  };
-
   if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center gap-2 text-muted-foreground">
@@ -264,9 +248,9 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
 
   /** BUG 2: audio berjalan → SELURUH interaksi terkunci. */
   const navLocked = audioPlaying;
-  const isLandscape = layout === "landscape";
+  /** Banner selalu tampil saat keluar fullscreen (Sprint 10E BUG 1). */
   /** Banner hanya untuk peramban tanpa Fullscreen API atau saat guard sudah aktif. */
-  const showFullscreenBanner = !isFullscreen && !submitting && (isArmed || isUnsupported);
+  const showFullscreenBanner = !isFullscreen && !submitting && !isUnsupported;
 
   return (
     <div className={cn("space-y-4 pb-8 select-none")} style={{ WebkitUserSelect: "none" }}>
@@ -287,9 +271,11 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
             variant="outline"
             className="size-9"
             disabled={navLocked}
-            aria-label={isLandscape ? "Ubah ke tata letak portrait" : "Ubah ke tata letak landscape"}
+            aria-label={
+              isLandscape ? "Ubah ke tata letak portrait" : "Ubah ke tata letak landscape"
+            }
             title={isLandscape ? "Portrait" : "Landscape"}
-            onClick={() => changeLayout(isLandscape ? "portrait" : "landscape")}
+            onClick={() => setLayout(isLandscape ? "portrait" : "landscape")}
           >
             {isLandscape ? (
               <RectangleVertical className="size-4" />
@@ -311,15 +297,23 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
           >
             Kumpulkan
           </Button>
+          {/* BUG 4 & 6: Timer, Kumpulkan, dan Daftar Soal sejajar satu baris. */}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={navLocked}
+            onClick={() => setPaletteOpen(true)}
+          >
+            <LayoutGrid className="mr-1.5 size-4" /> Daftar Soal
+          </Button>
         </div>
       </div>
 
       {showFullscreenBanner ? (
-        <button
-          type="button"
-          onClick={() => void requestFullscreen()}
+        <div
           className={cn(
-            "flex w-full items-center gap-3 rounded-xl border p-3 text-left",
+            "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl border p-3 sm:flex sm:justify-between",
             isArmed
               ? "border-destructive/40 bg-destructive/10"
               : "border-amber-500/40 bg-amber-500/10",
@@ -331,23 +325,27 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
               isArmed ? "text-destructive" : "text-amber-700 dark:text-amber-300",
             )}
           />
-          <span
+          <div
             className={cn(
-              "flex-1 text-sm",
+              "min-w-0 text-sm sm:flex-1",
               isArmed ? "text-destructive" : "text-amber-700 dark:text-amber-300",
             )}
           >
-            {isArmed
-              ? `Mode layar penuh nonaktif. Pelanggaran ${violations}/${limit} dan terus bertambah setiap 3 detik. Ketuk untuk kembali.`
-              : "Peramban Anda tidak mendukung mode layar penuh."}
-          </span>
-          <Maximize
-            className={cn(
-              "size-5 shrink-0",
-              isArmed ? "text-destructive" : "text-amber-700 dark:text-amber-300",
-            )}
-          />
-        </button>
+            <p className="font-medium">Anda keluar dari mode layar penuh.</p>
+            <p className="text-xs">
+              Kembali ke mode layar penuh untuk melanjutkan ujian.
+              {isArmed ? ` Pelanggaran ${violations}/${limit} dan bertambah setiap 3 detik.` : null}
+            </p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            className="col-span-2 w-full sm:w-auto"
+            onClick={() => void requestFullscreen()}
+          >
+            <Maximize className="mr-1.5 size-4" /> Masuk Fullscreen
+          </Button>
+        </div>
       ) : null}
 
       {navLocked ? (
@@ -407,20 +405,6 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
         </Card>
 
         <div className="space-y-4">
-          {isLandscape ? (
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={navLocked}
-                onClick={() => setPaletteOpen(true)}
-              >
-                <LayoutGrid className="mr-1.5 size-4" /> Daftar Soal
-              </Button>
-            </div>
-          ) : null}
-
           <Card>
             <CardContent className="space-y-2 p-4">
               {current.answers.map((answer, answerIndex) => {
@@ -501,19 +485,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
         </div>
       </div>
 
-      {/* Palette mengalir mengikuti konten (portrait) — tidak menutupi soal. */}
-      {!isLandscape ? (
-        <Card>
-          <CardContent className="p-4">
-            <QuestionPalette
-              groups={paletteGroups}
-              activeIndex={activeIndex}
-              disabled={navLocked}
-              onJump={setActiveIndex}
-            />
-          </CardContent>
-        </Card>
-      ) : null}
+      {/* BUG 6: palette hanya melalui popup "Daftar Soal" (portrait & landscape). */}
 
       <Dialog open={paletteOpen} onOpenChange={(open) => setPaletteOpen(open && !navLocked)}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">

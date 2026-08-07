@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,7 +25,14 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { MediaPicker } from "@/features/media/components/media-picker";
 import { useCreateQuestion, useUpdateQuestion } from "@/hooks/exam";
-import { ANSWER_LABELS, GRAMMAR_TAGS } from "@/features/exam/exam.constants";
+import { useGrammarTags, useLessons } from "@/hooks/question-bank";
+import {
+  ANSWER_LABELS,
+  CATEGORY_LABELS,
+  EXAM_CATEGORIES,
+  EXAM_DIFFICULTY_LABELS,
+} from "@/features/exam/exam.constants";
+import type { ExamDifficulty } from "@/types/exam";
 import type { AnswerLabel, ExamQuestionWithAnswers, MediaSlot } from "./question-types";
 
 type Props = {
@@ -45,6 +53,8 @@ type AnswerState = {
 const emptyAnswers = (): AnswerState[] =>
   ANSWER_LABELS.map((label) => ({ label, text: "", image_url: null, audio_url: null }));
 
+const NO_LESSON = "none";
+
 export function QuestionFormDialog({
   open,
   onOpenChange,
@@ -55,13 +65,17 @@ export function QuestionFormDialog({
   const [text, setText] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [grammarTag, setGrammarTag] = useState<string>("pola-kalimat");
+  const [tagIds, setTagIds] = useState<string[]>([]);
+  const [category, setCategory] = useState<string>("umum");
+  const [difficulty, setDifficulty] = useState<ExamDifficulty>("sedang");
+  const [lessonId, setLessonId] = useState<string>(NO_LESSON);
   const [explanation, setExplanation] = useState("");
-  const [lessonRef, setLessonRef] = useState("");
   const [answers, setAnswers] = useState<AnswerState[]>(emptyAnswers());
   const [correct, setCorrect] = useState<AnswerLabel>("A");
   const [error, setError] = useState<string | null>(null);
 
+  const grammarQuery = useGrammarTags();
+  const lessonQuery = useLessons();
   const createQuestion = useCreateQuestion();
   const updateQuestion = useUpdateQuestion();
   const pending = createQuestion.isPending || updateQuestion.isPending;
@@ -73,9 +87,11 @@ export function QuestionFormDialog({
       setText(question.text);
       setImageUrl(question.image_url);
       setAudioUrl(question.audio_url);
-      setGrammarTag(question.grammar_tag ?? "pola-kalimat");
+      setTagIds(question.grammar_tags.map((t) => t.id));
+      setCategory(question.category ?? "umum");
+      setDifficulty(question.difficulty ?? "sedang");
+      setLessonId(question.lesson_id ?? NO_LESSON);
       setExplanation(question.explanation ?? "");
-      setLessonRef(question.lesson_ref ?? "");
       setAnswers(
         ANSWER_LABELS.map((label) => {
           const found = question.answers.find((a) => a.label === label);
@@ -92,9 +108,11 @@ export function QuestionFormDialog({
       setText("");
       setImageUrl(null);
       setAudioUrl(null);
-      setGrammarTag("pola-kalimat");
+      setTagIds([]);
+      setCategory("umum");
+      setDifficulty("sedang");
+      setLessonId(NO_LESSON);
       setExplanation("");
-      setLessonRef("");
       setAnswers(emptyAnswers());
       setCorrect("A");
     }
@@ -103,13 +121,16 @@ export function QuestionFormDialog({
   const setAnswer = (label: AnswerLabel, patch: Partial<AnswerState>) =>
     setAnswers((prev) => prev.map((a) => (a.label === label ? { ...a, ...patch } : a)));
 
+  const toggleTag = (id: string) =>
+    setTagIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
 
     if (text.trim().length < 3) return setError("Teks soal minimal 3 karakter.");
     if (!explanation.trim()) return setError("Pembahasan wajib diisi.");
-    if (!grammarTag) return setError("Grammar tag wajib dipilih.");
+    if (tagIds.length === 0) return setError("Pilih minimal satu grammar tag.");
 
     const filled = answers.filter((a) => a.text.trim() || a.image_url || a.audio_url);
     if (filled.length < 2) return setError("Minimal dua pilihan jawaban harus diisi.");
@@ -120,9 +141,13 @@ export function QuestionFormDialog({
       text: text.trim(),
       image_url: imageUrl,
       audio_url: audioUrl,
-      grammar_tag: grammarTag,
       explanation: explanation.trim(),
-      lesson_ref: lessonRef.trim(),
+      category,
+      difficulty,
+      lesson_id: lessonId === NO_LESSON ? null : lessonId,
+      source_type: "exam" as const,
+      created_from: examId,
+      grammar_tag_ids: tagIds,
       answers: answers.map((a) => ({
         label: a.label,
         text: a.text.trim(),
@@ -134,11 +159,11 @@ export function QuestionFormDialog({
 
     try {
       if (question) {
-        await updateQuestion.mutateAsync({ id: question.id, input: payload });
+        await updateQuestion.mutateAsync({ id: question.question_id, input: payload });
         toast.success("Soal diperbarui.");
       } else {
         await createQuestion.mutateAsync({ examId, sectionId, input: payload });
-        toast.success("Soal ditambahkan.");
+        toast.success("Soal ditambahkan dan tersimpan ke Question Bank.");
       }
       onOpenChange(false);
     } catch (err) {
@@ -172,13 +197,15 @@ export function QuestionFormDialog({
     </div>
   );
 
+  const lessons = lessonQuery.data ?? [];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{question ? "Ubah Soal" : "Tambah Soal"}</DialogTitle>
           <DialogDescription>
-            Media diunggah melalui Media Foundation. Pembahasan dan grammar tag wajib diisi.
+            Soal baru otomatis tersimpan ke Question Bank sehingga dapat dipakai ulang.
           </DialogDescription>
         </DialogHeader>
 
@@ -228,19 +255,63 @@ export function QuestionFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Grammar Tag</Label>
-            <Select value={grammarTag} onValueChange={setGrammarTag}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {GRAMMAR_TAGS.map((tag) => (
-                  <SelectItem key={tag} value={tag}>
-                    {tag}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Grammar Tag (boleh lebih dari satu)</Label>
+            <div className="flex flex-wrap gap-2">
+              {(grammarQuery.data ?? []).map((tag) => {
+                const active = tagIds.includes(tag.id);
+                return (
+                  <Badge
+                    key={tag.id}
+                    role="button"
+                    tabIndex={0}
+                    variant={active ? "default" : "outline"}
+                    className="cursor-pointer px-3 py-1.5 text-xs"
+                    onClick={() => toggleTag(tag.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") toggleTag(tag.id);
+                    }}
+                  >
+                    {tag.name}
+                  </Badge>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Kategori</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {EXAM_CATEGORIES.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {CATEGORY_LABELS[item] ?? item}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Kesulitan</Label>
+              <Select
+                value={difficulty}
+                onValueChange={(v) => setDifficulty(v as ExamDifficulty)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(EXAM_DIFFICULTY_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -255,13 +326,23 @@ export function QuestionFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="q-lesson">Lesson Reference (placeholder)</Label>
-            <Input
-              id="q-lesson"
-              value={lessonRef}
-              onChange={(e) => setLessonRef(e.target.value)}
-              placeholder="Contoh: materi-partikel-wa"
-            />
+            <Label>Lesson Reference</Label>
+            <Select value={lessonId} onValueChange={setLessonId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Tanpa lesson" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NO_LESSON}>Tanpa lesson</SelectItem>
+                {lessons.map((lesson) => (
+                  <SelectItem key={lesson.id} value={lesson.id}>
+                    {lesson.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Daftar lesson akan terisi setelah Lesson Studio tersedia.
+            </p>
           </div>
 
           {error ? <p className="text-sm text-destructive">{error}</p> : null}

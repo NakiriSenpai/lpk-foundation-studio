@@ -1,14 +1,16 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, BookOpen, CheckCircle2, CircleSlash, Loader2, XCircle } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, CheckCircle2, CircleSlash, Loader2, XCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAttemptReview } from "@/hooks/attempt";
-import { useAuth } from "@/hooks/auth";
+import { listLessonTitles } from "@/services/lesson";
 import { cn } from "@/lib/utils";
 import type { AnswerLabel } from "@/types/exam";
+import { SimpleAudio } from "./simple-audio";
 
 /**
  * Review Ujian — SELALU membaca Snapshot beku milik attempt.
@@ -18,8 +20,16 @@ import type { AnswerLabel } from "@/types/exam";
  */
 export function ExamReview({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
-  const { hasRole } = useAuth();
   const { data, isLoading, isError, error } = useAttemptReview(attemptId);
+  const lessonIds = (data?.snapshot.questions ?? [])
+    .map((q) => q.lesson_id)
+    .filter((id): id is string => Boolean(id));
+  const { data: lessonTitles } = useQuery({
+    queryKey: ["lesson-titles", lessonIds.slice().sort().join(",")],
+    queryFn: () => listLessonTitles(lessonIds),
+    enabled: lessonIds.length > 0,
+    staleTime: 300_000,
+  });
 
   if (isLoading) {
     return (
@@ -46,7 +56,6 @@ export function ExamReview({ attemptId }: { attemptId: string }) {
   const selectedByQuestion = new Map<string, AnswerLabel | null>(
     answers.map((row) => [row.question_id, row.selected_label]),
   );
-  const isOwner = hasRole("owner");
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-4 pb-8">
@@ -116,14 +125,14 @@ export function ExamReview({ attemptId }: { attemptId: string }) {
                   src={question.image_url}
                   alt={`Gambar soal nomor ${index + 1}`}
                   loading="lazy"
-                  className="w-full rounded-xl border border-border object-contain"
+                  className="mx-auto max-h-52 w-auto max-w-full rounded-xl border border-border object-contain sm:max-h-64"
                 />
               ) : null}
 
               {question.audio_url ? (
                 <div className="space-y-1">
-                  {/* Review: audio bebas diputar, tanpa batas. */}
-                  <audio src={question.audio_url} controls preload="none" className="w-full" />
+                  {/* Review: audio bebas diputar, hanya tombol Play/Pause. */}
+                  <SimpleAudio src={question.audio_url} label="Putar audio soal" />
                   <p className="text-xs text-muted-foreground">
                     Audio dapat diputar ulang tanpa batas pada review.
                   </p>
@@ -131,7 +140,7 @@ export function ExamReview({ attemptId }: { attemptId: string }) {
               ) : null}
 
               <div className="space-y-2">
-                {question.answers.map((answer) => {
+                {question.answers.map((answer, answerIndex) => {
                   const isCorrect = answer.label === correct;
                   const isChosen = answer.label === selected;
                   return (
@@ -147,7 +156,7 @@ export function ExamReview({ attemptId }: { attemptId: string }) {
                       )}
                     >
                       <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-border text-sm font-semibold">
-                        {answer.label}
+                        {answerIndex + 1}
                       </span>
                       <div className="min-w-0 flex-1 space-y-1">
                         {answer.text ? (
@@ -158,17 +167,15 @@ export function ExamReview({ attemptId }: { attemptId: string }) {
                         {answer.image_url ? (
                           <img
                             src={answer.image_url}
-                            alt={`Pilihan ${answer.label}`}
+                            alt={`Pilihan ${answerIndex + 1}`}
                             loading="lazy"
-                            className="max-h-40 rounded-lg border border-border object-contain"
+                            className="max-h-28 w-auto max-w-full rounded-lg border border-border object-contain sm:max-h-36"
                           />
                         ) : null}
                         {answer.audio_url ? (
-                          <audio
+                          <SimpleAudio
                             src={answer.audio_url}
-                            controls
-                            preload="none"
-                            className="w-full"
+                            label={`Audio pilihan ${answerIndex + 1}`}
                           />
                         ) : null}
                         <div className="flex flex-wrap gap-2 text-xs">
@@ -215,22 +222,9 @@ export function ExamReview({ attemptId }: { attemptId: string }) {
                     Materi Terkait
                   </p>
                   {question.lesson_id ? (
-                    isOwner ? (
-                      <Button asChild size="sm" variant="outline" className="mt-1">
-                        <Link
-                          to="/owner/lesson-studio/$lessonId/preview"
-                          params={{ lessonId: question.lesson_id }}
-                        >
-                          <BookOpen className="mr-1.5 size-4" /> Buka materi
-                        </Link>
-                      </Button>
-                    ) : (
-                      <Button asChild size="sm" variant="outline" className="mt-1">
-                        <Link to="/materi" search={{ lesson: question.lesson_id }}>
-                          <BookOpen className="mr-1.5 size-4" /> Buka materi
-                        </Link>
-                      </Button>
-                    )
+                    <p className="text-foreground">
+                      {lessonTitles?.[question.lesson_id] ?? "Memuat judul materi…"}
+                    </p>
                   ) : (
                     <p className="text-muted-foreground">Belum dihubungkan.</p>
                   )}

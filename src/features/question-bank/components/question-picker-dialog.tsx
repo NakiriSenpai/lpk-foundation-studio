@@ -31,12 +31,27 @@ import { SOURCE_LABELS, type QuestionBankFilters } from "@/types/question-bank";
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  examId: string;
+  /** Exam tujuan. Kosong bila dipakai dari Lesson Studio. */
+  examId?: string;
   sectionId: string;
+  /** Kata benda tujuan pada pesan sukses ("exam" / "lesson"). */
+  targetLabel?: string;
+  /** Override penambahan referensi (Lesson Studio). Mengembalikan jumlah soal baru. */
+  onAttach?: (questionIds: string[]) => Promise<number | unknown>;
+  /** Status pending dari mutation eksternal. */
+  attaching?: boolean;
 };
 
 /** Dialog memilih soal dari Question Bank. Soal TIDAK diduplikasi, hanya direferensikan. */
-export function QuestionPickerDialog({ open, onOpenChange, examId, sectionId }: Props) {
+export function QuestionPickerDialog({
+  open,
+  onOpenChange,
+  examId,
+  sectionId,
+  targetLabel = "exam",
+  onAttach,
+  attaching = false,
+}: Props) {
   const [filters, setFilters] = useState<QuestionBankFilters>({
     search: "",
     source: "semua",
@@ -64,11 +79,16 @@ export function QuestionPickerDialog({ open, onOpenChange, examId, sectionId }: 
   const handleAdd = async () => {
     if (selected.length === 0) return;
     try {
-      const added = await attach.mutateAsync({ examId, sectionId, questionIds: selected });
+      const added = onAttach
+        ? await onAttach(selected)
+        : examId
+          ? await attach.mutateAsync({ examId, sectionId, questionIds: selected })
+          : null;
+      if (added === null) throw new Error("Target penambahan soal tidak tersedia.");
       toast.success(
         typeof added === "number" && added === 0
-          ? "Soal sudah ada di exam ini."
-          : "Soal ditambahkan ke exam.",
+          ? `Soal sudah ada di ${targetLabel} ini.`
+          : `Soal ditambahkan ke ${targetLabel}.`,
       );
       onOpenChange(false);
     } catch (err) {
@@ -76,13 +96,14 @@ export function QuestionPickerDialog({ open, onOpenChange, examId, sectionId }: 
     }
   };
 
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Ambil dari Question Bank</DialogTitle>
           <DialogDescription>
-            Soal yang dipilih hanya direferensikan oleh exam, tidak diduplikasi.
+            Soal yang dipilih hanya direferensikan oleh {targetLabel}, tidak diduplikasi.
           </DialogDescription>
         </DialogHeader>
 
@@ -204,9 +225,14 @@ export function QuestionPickerDialog({ open, onOpenChange, examId, sectionId }: 
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Batal
           </Button>
-          <Button onClick={() => void handleAdd()} disabled={selected.length === 0 || attach.isPending}>
-            {attach.isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-            Tambah ke Exam ({selected.length})
+          <Button
+            onClick={() => void handleAdd()}
+            disabled={selected.length === 0 || attach.isPending || attaching}
+          >
+            {attach.isPending || attaching ? (
+              <Loader2 className="mr-2 size-4 animate-spin" />
+            ) : null}
+            Tambah ke {targetLabel === "lesson" ? "Lesson" : "Exam"} ({selected.length})
           </Button>
         </DialogFooter>
       </DialogContent>

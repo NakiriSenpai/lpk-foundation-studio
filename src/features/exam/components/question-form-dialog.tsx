@@ -41,14 +41,28 @@ import {
   type QuestionType,
   type QuestionVisibility,
 } from "@/types/question-bank";
-import type { AnswerLabel, ExamQuestionWithAnswers, MediaSlot } from "./question-types";
+import type { QuestionBankInput, QuestionSourceType } from "@/types/question-bank";
+import type { AnswerLabel, MediaSlot, QuestionFormValue } from "./question-types";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  examId: string;
+  /** Exam pemilik soal (Exam Studio). Kosong bila dipakai dari Lesson Studio. */
+  examId?: string;
   sectionId: string;
-  question?: ExamQuestionWithAnswers | null;
+  question?: QuestionFormValue | null;
+  /** Asal soal saat dibuat (default: exam). */
+  sourceType?: QuestionSourceType;
+  /** ID entitas asal yang disimpan pada created_from. */
+  createdFrom?: string | null;
+  /** Lesson yang otomatis terhubung saat soal dibuat dari Lesson Studio. */
+  defaultLessonId?: string | null;
+  /** Override penyimpanan (dipakai Lesson Studio agar service form tetap satu). */
+  onSubmitQuestion?: (input: QuestionBankInput, questionId: string | null) => Promise<void>;
+  /** Teks bantuan pada header dialog. */
+  description?: string;
+  /** Status pending dari mutation eksternal. */
+  submitting?: boolean;
 };
 
 type AnswerState = {
@@ -69,7 +83,14 @@ export function QuestionFormDialog({
   examId,
   sectionId,
   question = null,
+  sourceType = "exam",
+  createdFrom,
+  defaultLessonId = null,
+  onSubmitQuestion,
+  description = "Soal baru otomatis tersimpan ke Question Bank sehingga dapat dipakai ulang.",
+  submitting = false,
 }: Props) {
+
   const [text, setText] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -94,7 +115,7 @@ export function QuestionFormDialog({
   const lessonQuery = useLessons();
   const createQuestion = useCreateQuestion();
   const updateQuestion = useUpdateQuestion();
-  const pending = createQuestion.isPending || updateQuestion.isPending;
+  const pending = createQuestion.isPending || updateQuestion.isPending || submitting;
 
   useEffect(() => {
     if (!open) return;
@@ -139,12 +160,12 @@ export function QuestionFormDialog({
       setIsArchived(false);
       setCategory("umum");
       setDifficulty("sedang");
-      setLessonId(NO_LESSON);
+      setLessonId(defaultLessonId ?? NO_LESSON);
       setExplanation("");
       setAnswers(emptyAnswers());
       setCorrect("A");
     }
-  }, [open, question]);
+  }, [open, question, defaultLessonId]);
 
   const setAnswer = (label: AnswerLabel, patch: Partial<AnswerState>) =>
     setAnswers((prev) => prev.map((a) => (a.label === label ? { ...a, ...patch } : a)));
@@ -175,7 +196,7 @@ export function QuestionFormDialog({
     const correctFilled = filled.some((a) => a.label === correct);
     if (!correctFilled) return setError("Jawaban benar harus termasuk pilihan yang diisi.");
 
-    const payload = {
+    const payload: QuestionBankInput = {
       text: text.trim(),
       image_url: imageUrl,
       audio_url: audioUrl,
@@ -185,8 +206,8 @@ export function QuestionFormDialog({
       lesson_id: lessonId === NO_LESSON ? null : lessonId,
       question_type: questionType,
       visibility,
-      source_type: "exam" as const,
-      created_from: examId,
+      source_type: sourceType,
+      created_from: createdFrom ?? examId ?? null,
       grammar_tag_ids: tagIds,
       tag_ids: generalTagIds,
       new_tags: newTags,
@@ -200,16 +221,25 @@ export function QuestionFormDialog({
     };
 
     try {
-      if (question) {
+      if (onSubmitQuestion) {
+        await onSubmitQuestion(payload, question?.question_id ?? null);
+        if (question && isArchived !== (question.is_archived ?? false)) {
+          await archiveQuestion.mutateAsync({ id: question.question_id, isArchived });
+        }
+        toast.success(question ? "Soal diperbarui." : "Soal ditambahkan ke Question Bank.");
+      } else if (question) {
         await updateQuestion.mutateAsync({ id: question.question_id, input: payload });
         if (isArchived !== (question.is_archived ?? false)) {
           await archiveQuestion.mutateAsync({ id: question.question_id, isArchived });
         }
         toast.success("Soal diperbarui.");
-      } else {
+      } else if (examId) {
         await createQuestion.mutateAsync({ examId, sectionId, input: payload });
         toast.success("Soal ditambahkan dan tersimpan ke Question Bank.");
+      } else {
+        throw new Error("Target penyimpanan soal tidak tersedia.");
       }
+
       onOpenChange(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
@@ -250,7 +280,7 @@ export function QuestionFormDialog({
         <DialogHeader>
           <DialogTitle>{question ? "Ubah Soal" : "Tambah Soal"}</DialogTitle>
           <DialogDescription>
-            Soal baru otomatis tersimpan ke Question Bank sehingga dapat dipakai ulang.
+            {description}
           </DialogDescription>
         </DialogHeader>
 

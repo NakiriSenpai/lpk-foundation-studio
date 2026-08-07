@@ -255,7 +255,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
   const navLocked = audioPlaying;
   /** Banner selalu tampil saat keluar fullscreen (Sprint 10E BUG 1). */
   /** Banner hanya untuk peramban tanpa Fullscreen API atau saat guard sudah aktif. */
-  const showFullscreenBanner = !isFullscreen && !submitting && (isArmed || isUnsupported);
+  const showFullscreenBanner = !isFullscreen && !submitting && !isUnsupported;
 
   return (
     <div className={cn("space-y-4 pb-8 select-none")} style={{ WebkitUserSelect: "none" }}>
@@ -412,19 +412,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
         </Card>
 
         <div className="space-y-4">
-          {isLandscape ? (
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={navLocked}
-                onClick={() => setPaletteOpen(true)}
-              >
-                <LayoutGrid className="mr-1.5 size-4" /> Daftar Soal
-              </Button>
-            </div>
-          ) : null}
+
 
           <Card>
             <CardContent className="space-y-2 p-4">
@@ -506,19 +494,9 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
         </div>
       </div>
 
-      {/* Palette mengalir mengikuti konten (portrait) — tidak menutupi soal. */}
-      {!isLandscape ? (
-        <Card>
-          <CardContent className="p-4">
-            <QuestionPalette
-              groups={paletteGroups}
-              activeIndex={activeIndex}
-              disabled={navLocked}
-              onJump={setActiveIndex}
-            />
-          </CardContent>
-        </Card>
-      ) : null}
+      {/* BUG 6: palette hanya melalui popup "Daftar Soal" (portrait & landscape). */}
+
+
 
       <Dialog open={paletteOpen} onOpenChange={(open) => setPaletteOpen(open && !navLocked)}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">

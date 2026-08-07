@@ -103,7 +103,7 @@ export function QuestionPickerDialog({
         <DialogHeader>
           <DialogTitle>Ambil dari Question Bank</DialogTitle>
           <DialogDescription>
-            Soal yang dipilih hanya direferensikan oleh exam, tidak diduplikasi.
+            Soal yang dipilih hanya direferensikan oleh {targetLabel}, tidak diduplikasi.
           </DialogDescription>
         </DialogHeader>
 
@@ -225,9 +225,14 @@ export function QuestionPickerDialog({
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Batal
           </Button>
-          <Button onClick={() => void handleAdd()} disabled={selected.length === 0 || attach.isPending}>
-            {attach.isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-            Tambah ke Exam ({selected.length})
+          <Button
+            onClick={() => void handleAdd()}
+            disabled={selected.length === 0 || attach.isPending || attaching}
+          >
+            {attach.isPending || attaching ? (
+              <Loader2 className="mr-2 size-4 animate-spin" />
+            ) : null}
+            Tambah ke {targetLabel === "lesson" ? "Lesson" : "Exam"} ({selected.length})
           </Button>
         </DialogFooter>
       </DialogContent>

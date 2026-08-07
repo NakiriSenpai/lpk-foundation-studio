@@ -41,14 +41,28 @@ import {
   type QuestionType,
   type QuestionVisibility,
 } from "@/types/question-bank";
-import type { AnswerLabel, ExamQuestionWithAnswers, MediaSlot } from "./question-types";
+import type { QuestionBankInput, QuestionSourceType } from "@/types/question-bank";
+import type { AnswerLabel, MediaSlot, QuestionFormValue } from "./question-types";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  examId: string;
+  /** Exam pemilik soal (Exam Studio). Kosong bila dipakai dari Lesson Studio. */
+  examId?: string;
   sectionId: string;
-  question?: ExamQuestionWithAnswers | null;
+  question?: QuestionFormValue | null;
+  /** Asal soal saat dibuat (default: exam). */
+  sourceType?: QuestionSourceType;
+  /** ID entitas asal yang disimpan pada created_from. */
+  createdFrom?: string | null;
+  /** Lesson yang otomatis terhubung saat soal dibuat dari Lesson Studio. */
+  defaultLessonId?: string | null;
+  /** Override penyimpanan (dipakai Lesson Studio agar service form tetap satu). */
+  onSubmitQuestion?: (input: QuestionBankInput, questionId: string | null) => Promise<void>;
+  /** Teks bantuan pada header dialog. */
+  description?: string;
+  /** Status pending dari mutation eksternal. */
+  submitting?: boolean;
 };
 
 type AnswerState = {
@@ -69,7 +83,14 @@ export function QuestionFormDialog({
   examId,
   sectionId,
   question = null,
+  sourceType = "exam",
+  createdFrom,
+  defaultLessonId = null,
+  onSubmitQuestion,
+  description = "Soal baru otomatis tersimpan ke Question Bank sehingga dapat dipakai ulang.",
+  submitting = false,
 }: Props) {
+
   const [text, setText] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);

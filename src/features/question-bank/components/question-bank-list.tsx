@@ -21,7 +21,7 @@ import {
 } from "@/features/exam/exam.constants";
 import { useBankQuestions, useDeleteBankQuestion, useGrammarTags } from "@/hooks/question-bank";
 import { SOURCE_LABELS, type QuestionBankFilters } from "@/types/question-bank";
-import { formatDate } from "@/utils/format";
+import { formatTanggal } from "@/utils/format";
 
 const PAGE_SIZE = 10;
 
@@ -74,7 +74,7 @@ export function QuestionBankList() {
             <Label>Source</Label>
             <Select
               value={filters.source ?? "semua"}
-              onValueChange={(v) => patch({ source: v as QuestionBankFilters["source"] })}
+              onValueChange={(v) => patch({ source: v as NonNullable<QuestionBankFilters["source"]> })}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -134,7 +134,7 @@ export function QuestionBankList() {
             <Label>Difficulty</Label>
             <Select
               value={filters.difficulty ?? "semua"}
-              onValueChange={(v) => patch({ difficulty: v as QuestionBankFilters["difficulty"] })}
+              onValueChange={(v) => patch({ difficulty: v as NonNullable<QuestionBankFilters["difficulty"]> })}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -154,7 +154,7 @@ export function QuestionBankList() {
             <Label>Media</Label>
             <Select
               value={filters.media ?? "semua"}
-              onValueChange={(v) => patch({ media: v as QuestionBankFilters["media"] })}
+              onValueChange={(v) => patch({ media: v as NonNullable<QuestionBankFilters["media"]> })}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -215,10 +215,10 @@ export function QuestionBankList() {
               <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
                 <p>Jenis: {question.audio_url ? "Listening" : "Reading"}</p>
                 <p>Lesson: {question.lesson?.title ?? "-"}</p>
-                <p>Dibuat: {formatDate(question.created_at)}</p>
+                <p>Dibuat: {formatTanggal(question.created_at)}</p>
                 <p>
                   Terakhir dipakai:{" "}
-                  {question.last_used_at ? formatDate(question.last_used_at) : "Belum pernah"}
+                  {question.last_used_at ? formatTanggal(question.last_used_at) : "Belum pernah"}
                 </p>
                 <p>Jumlah dipakai: {question.used_count}</p>
               </div>

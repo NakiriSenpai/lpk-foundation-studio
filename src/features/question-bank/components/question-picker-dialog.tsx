@@ -100,7 +100,7 @@ export function QuestionPickerDialog({ open, onOpenChange, examId, sectionId }: 
             <Select
               value={filters.source ?? "semua"}
               onValueChange={(v) =>
-                setFilters((p) => ({ ...p, source: v as QuestionBankFilters["source"], page: 1 }))
+                setFilters((p) => ({ ...p, source: v as NonNullable<QuestionBankFilters["source"]>, page: 1 }))
               }
             >
               <SelectTrigger>

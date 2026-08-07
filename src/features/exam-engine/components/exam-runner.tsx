@@ -80,12 +80,16 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
     [attemptId, navigate, submit],
   );
 
-  const { label: timerLabel, remaining } = useExamTimer(attempt?.expires_at, Boolean(isRunning));
+  const {
+    label: timerLabel,
+    remaining,
+    isReady: timerReady,
+  } = useExamTimer(attempt?.expires_at, Boolean(isRunning), attempt?.started_at);
 
-  // AUTO SUBMIT: waktu habis.
+  // AUTO SUBMIT: hanya jika timer valid, sudah siap, dan benar-benar habis.
   useEffect(() => {
-    if (isRunning && remaining <= 0 && attempt?.expires_at) void finish("time_up");
-  }, [isRunning, remaining, attempt?.expires_at, finish]);
+    if (isRunning && timerReady && remaining <= 0) void finish("time_up");
+  }, [isRunning, timerReady, remaining, finish]);
 
   const handleViolation = useCallback(() => {
     if (!isRunning) return;

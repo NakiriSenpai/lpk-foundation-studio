@@ -37,6 +37,9 @@ function OwnerPage() {
             <Button asChild variant="outline" className="min-h-11">
               <Link to="/owner/exam-studio">Exam Studio</Link>
             </Button>
+            <Button asChild variant="outline" className="min-h-11">
+              <Link to="/owner/question-bank">Question Bank</Link>
+            </Button>
           </div>
         </section>
       </RequireOwner>

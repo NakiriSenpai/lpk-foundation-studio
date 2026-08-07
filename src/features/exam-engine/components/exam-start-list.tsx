@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Clock, FileText, Loader2, PlayCircle } from "lucide-react";
+import { Clock, FileText, History, Loader2, PlayCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import { useAvailableExams, useMyAttempts, useStartAttempt } from "@/hooks/attempt";
+import type { ExamRow } from "@/types/exam";
+import { ContinueExamDialog, StartExamDialog } from "./exam-dialogs";
 
 /** Daftar ujian published + tombol Mulai Ujian (anti duplicate attempt). */
 export function ExamStartList() {
@@ -15,21 +18,23 @@ export function ExamStartList() {
   const { data: attempts } = useMyAttempts();
   const start = useStartAttempt();
 
+  const [startTarget, setStartTarget] = useState<ExamRow | null>(null);
+  const [continueTarget, setContinueTarget] = useState<string | null>(null);
+
   const activeByExam = new Map(
     (attempts ?? []).filter((a) => a.status === "in_progress").map((a) => [a.exam_id, a]),
   );
 
-  // Attempt terakhir yang sudah dinilai, untuk pintasan "Lihat Hasil".
-  const lastFinishedByExam = new Map<string, string>();
-  for (const attempt of attempts ?? []) {
-    if (attempt.status === "in_progress" || attempt.status === "cancelled") continue;
-    if (!lastFinishedByExam.has(attempt.exam_id))
-      lastFinishedByExam.set(attempt.exam_id, attempt.id);
-  }
+  const finishedExamIds = new Set(
+    (attempts ?? [])
+      .filter((a) => a.status !== "in_progress" && a.status !== "cancelled")
+      .map((a) => a.exam_id),
+  );
 
   const handleStart = (examId: string) => {
     start.mutate(examId, {
       onSuccess: (attempt) => {
+        setStartTarget(null);
         void navigate({ to: "/ujian/$attemptId", params: { attemptId: attempt.id } });
       },
       onError: (err) => toast.error(err instanceof Error ? err.message : "Gagal memulai ujian."),
@@ -89,29 +94,24 @@ export function ExamStartList() {
                     className="h-11 w-full"
                     disabled={start.isPending}
                     onClick={() =>
-                      active
-                        ? void navigate({
-                            to: "/ujian/$attemptId",
-                            params: { attemptId: active.id },
-                          })
-                        : handleStart(exam.id)
+                      active ? setContinueTarget(active.id) : setStartTarget(exam)
                     }
                   >
                     <PlayCircle className="mr-2 size-4" />
                     {active ? "Lanjutkan Ujian" : "Mulai Ujian"}
                   </Button>
-                  {!active && lastFinishedByExam.get(exam.id) ? (
+                  {finishedExamIds.has(exam.id) ? (
                     <Button
                       variant="outline"
                       className="h-11 w-full"
                       onClick={() =>
                         void navigate({
-                          to: "/ujian/hasil/$attemptId",
-                          params: { attemptId: lastFinishedByExam.get(exam.id)! },
+                          to: "/ujian/riwayat/$examId",
+                          params: { examId: exam.id },
                         })
                       }
                     >
-                      Lihat Hasil Terakhir
+                      <History className="mr-2 size-4" /> Riwayat Ujian
                     </Button>
                   ) : null}
                 </CardContent>
@@ -120,6 +120,23 @@ export function ExamStartList() {
           })}
         </div>
       )}
+
+      <StartExamDialog
+        exam={startTarget}
+        open={Boolean(startTarget)}
+        pending={start.isPending}
+        onOpenChange={(open) => !open && setStartTarget(null)}
+        onConfirm={() => startTarget && handleStart(startTarget.id)}
+      />
+
+      <ContinueExamDialog
+        open={Boolean(continueTarget)}
+        onOpenChange={(open) => !open && setContinueTarget(null)}
+        onConfirm={() => {
+          if (!continueTarget) return;
+          void navigate({ to: "/ujian/$attemptId", params: { attemptId: continueTarget } });
+        }}
+      />
     </div>
   );
 }

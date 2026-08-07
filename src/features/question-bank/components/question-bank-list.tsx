@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Image as ImageIcon, Music, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, Image as ImageIcon, Music } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -19,8 +19,14 @@ import {
   EXAM_CATEGORIES,
   EXAM_DIFFICULTY_LABELS,
 } from "@/features/exam/exam.constants";
-import { useBankQuestions, useDeleteBankQuestion, useGrammarTags } from "@/hooks/question-bank";
-import { SOURCE_LABELS, type QuestionBankFilters } from "@/types/question-bank";
+import { useArchiveBankQuestion, useBankQuestions, useGrammarTags, useTags } from "@/hooks/question-bank";
+import {
+  ORIGIN_LABELS,
+  QUESTION_TYPE_LABELS,
+  SOURCE_LABELS,
+  VISIBILITY_LABELS,
+  type QuestionBankFilters,
+} from "@/types/question-bank";
 import { formatTanggal } from "@/utils/format";
 
 const PAGE_SIZE = 10;
@@ -33,13 +39,18 @@ export function QuestionBankList() {
     category: "semua",
     difficulty: "semua",
     media: "semua",
+    questionType: "semua",
+    visibility: "semua",
+    tag: "semua",
+    archived: "aktif",
     page: 1,
     pageSize: PAGE_SIZE,
   });
 
   const grammarQuery = useGrammarTags();
+  const tagQuery = useTags();
   const bankQuery = useBankQuestions(filters);
-  const removeQuestion = useDeleteBankQuestion();
+  const archiveQuestion = useArchiveBankQuestion();
 
   const patch = (value: Partial<QuestionBankFilters>) =>
     setFilters((prev) => ({ ...prev, page: 1, ...value }));
@@ -65,7 +76,7 @@ export function QuestionBankList() {
             id="qb-search"
             value={filters.search ?? ""}
             onChange={(e) => patch({ search: e.target.value })}
-            placeholder="Cari teks soal atau pembahasan"
+            placeholder="Cari soal, grammar, tag, kategori, atau lesson"
           />
         </div>
 
@@ -167,6 +178,86 @@ export function QuestionBankList() {
               </SelectContent>
             </Select>
           </div>
+
+          <div className="space-y-1">
+            <Label>Jenis Soal</Label>
+            <Select
+              value={filters.questionType ?? "semua"}
+              onValueChange={(v) =>
+                patch({ questionType: v as NonNullable<QuestionBankFilters["questionType"]> })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="semua">Semua jenis</SelectItem>
+                {Object.entries(QUESTION_TYPE_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1">
+            <Label>Visibility</Label>
+            <Select
+              value={filters.visibility ?? "semua"}
+              onValueChange={(v) =>
+                patch({ visibility: v as NonNullable<QuestionBankFilters["visibility"]> })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="semua">Semua visibility</SelectItem>
+                {Object.entries(VISIBILITY_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1">
+            <Label>Tag</Label>
+            <Select value={filters.tag ?? "semua"} onValueChange={(v) => patch({ tag: v })}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="semua">Semua tag</SelectItem>
+                {(tagQuery.data ?? []).map((tag) => (
+                  <SelectItem key={tag.id} value={tag.slug}>
+                    {tag.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1">
+            <Label>Status</Label>
+            <Select
+              value={filters.archived ?? "aktif"}
+              onValueChange={(v) =>
+                patch({ archived: v as NonNullable<QuestionBankFilters["archived"]> })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="aktif">Aktif</SelectItem>
+                <SelectItem value="arsip">Arsip</SelectItem>
+                <SelectItem value="semua">Semua</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
@@ -191,6 +282,11 @@ export function QuestionBankList() {
 
               <div className="flex flex-wrap gap-1.5">
                 <Badge variant="secondary">{SOURCE_LABELS[question.source_type]}</Badge>
+                <Badge variant="secondary">v{question.version}</Badge>
+                <Badge variant="outline">Origin: {ORIGIN_LABELS[question.origin]}</Badge>
+                <Badge variant="outline">{QUESTION_TYPE_LABELS[question.question_type]}</Badge>
+                <Badge variant="outline">{VISIBILITY_LABELS[question.visibility]}</Badge>
+                {question.is_archived ? <Badge variant="destructive">Arsip</Badge> : null}
                 <Badge variant="outline">
                   {CATEGORY_LABELS[question.category] ?? question.category}
                 </Badge>
@@ -198,6 +294,11 @@ export function QuestionBankList() {
                 {question.grammar_tags.map((tag) => (
                   <Badge key={tag.id} variant="outline">
                     {tag.name}
+                  </Badge>
+                ))}
+                {(question.tags ?? []).map((tag) => (
+                  <Badge key={tag.id} variant="secondary">
+                    #{tag.name}
                   </Badge>
                 ))}
                 {question.image_url ? (
@@ -213,7 +314,7 @@ export function QuestionBankList() {
               </div>
 
               <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
-                <p>Jenis: {question.audio_url ? "Listening" : "Reading"}</p>
+                <p>Jenis: {QUESTION_TYPE_LABELS[question.question_type]}</p>
                 <p>Lesson: {question.lesson?.title ?? "-"}</p>
                 <p>Dibuat: {formatTanggal(question.created_at)}</p>
                 <p>
@@ -227,16 +328,28 @@ export function QuestionBankList() {
                 size="sm"
                 variant="outline"
                 onClick={async () => {
-                  if (!window.confirm("Hapus soal ini dari Question Bank?")) return;
                   try {
-                    await removeQuestion.mutateAsync(question.id);
-                    toast.success("Soal dihapus dari Question Bank.");
+                    await archiveQuestion.mutateAsync({
+                      id: question.id,
+                      isArchived: !question.is_archived,
+                    });
+                    toast.success(
+                      question.is_archived ? "Soal diaktifkan kembali." : "Soal diarsipkan.",
+                    );
                   } catch (err) {
-                    toast.error(err instanceof Error ? err.message : "Gagal menghapus soal.");
+                    toast.error(err instanceof Error ? err.message : "Gagal memperbarui soal.");
                   }
                 }}
               >
-                <Trash2 className="mr-1 size-4" /> Hapus
+                {question.is_archived ? (
+                  <>
+                    <ArchiveRestore className="mr-1 size-4" /> Aktifkan
+                  </>
+                ) : (
+                  <>
+                    <Archive className="mr-1 size-4" /> Arsipkan
+                  </>
+                )}
               </Button>
             </li>
           ))}

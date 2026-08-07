@@ -265,7 +265,9 @@ export function ExamEditor({ examId }: Props) {
                                 {number}. {question.text}
                               </p>
                               <p className="mt-1 text-xs text-muted-foreground">
-                                {question.grammar_tag ? `Tag: ${question.grammar_tag} · ` : ""}
+                                {question.grammar_tags.length > 0
+                                  ? `Tag: ${question.grammar_tags.map((t) => t.name).join(", ")} · `
+                                  : ""}
                                 {formatPoints(perQuestion)} poin
                               </p>
                               {question.explanation ? (

@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle2, CircleSlash, Loader2, XCircle } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle2, CircleSlash, Loader2, XCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -222,12 +222,24 @@ export function ExamReview({ attemptId }: { attemptId: string }) {
                     Materi Terkait
                   </p>
                   {question.lesson_id ? (
-                    <p className="text-foreground">
-                      {lessonTitles?.[question.lesson_id] ?? "Memuat judul materi…"}
-                    </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-1"
+                      onClick={() =>
+                        void navigate({
+                          to: "/materi",
+                          search: { lesson: question.lesson_id as string },
+                        })
+                      }
+                    >
+                      <BookOpen className="mr-1.5 size-4" />
+                      {lessonTitles?.[question.lesson_id] ?? "Buka materi"}
+                    </Button>
                   ) : (
                     <p className="text-muted-foreground">Belum dihubungkan.</p>
                   )}
+
                 </div>
               </div>
             </CardContent>

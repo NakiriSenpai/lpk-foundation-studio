@@ -315,11 +315,9 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
       </div>
 
       {showFullscreenBanner ? (
-        <button
-          type="button"
-          onClick={() => void requestFullscreen()}
+        <div
           className={cn(
-            "flex w-full items-center gap-3 rounded-xl border p-3 text-left",
+            "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl border p-3 sm:flex sm:justify-between",
             isArmed
               ? "border-destructive/40 bg-destructive/10"
               : "border-amber-500/40 bg-amber-500/10",
@@ -331,24 +329,31 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
               isArmed ? "text-destructive" : "text-amber-700 dark:text-amber-300",
             )}
           />
-          <span
+          <div
             className={cn(
-              "flex-1 text-sm",
+              "min-w-0 text-sm sm:flex-1",
               isArmed ? "text-destructive" : "text-amber-700 dark:text-amber-300",
             )}
           >
-            {isArmed
-              ? `Mode layar penuh nonaktif. Pelanggaran ${violations}/${limit} dan terus bertambah setiap 3 detik. Ketuk untuk kembali.`
-              : "Peramban Anda tidak mendukung mode layar penuh."}
-          </span>
-          <Maximize
-            className={cn(
-              "size-5 shrink-0",
-              isArmed ? "text-destructive" : "text-amber-700 dark:text-amber-300",
-            )}
-          />
-        </button>
+            <p className="font-medium">Anda keluar dari mode layar penuh.</p>
+            <p className="text-xs">
+              Kembali ke mode layar penuh untuk melanjutkan ujian.
+              {isArmed
+                ? ` Pelanggaran ${violations}/${limit} dan bertambah setiap 3 detik.`
+                : null}
+            </p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            className="col-span-2 w-full sm:w-auto"
+            onClick={() => void requestFullscreen()}
+          >
+            <Maximize className="mr-1.5 size-4" /> Masuk Fullscreen
+          </Button>
+        </div>
       ) : null}
+
 
       {navLocked ? (
         <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-2 text-center text-xs font-medium text-amber-700 dark:text-amber-300">

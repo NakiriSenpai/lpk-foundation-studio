@@ -74,7 +74,7 @@ export function ExamResult({ attemptId }: { attemptId: string }) {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-4">
+    <div className={cn("mx-auto w-full space-y-4", isLandscape ? "max-w-4xl" : "max-w-2xl")}>
       <Card>
         <CardContent className="space-y-4 p-5 text-center">
           <div className="space-y-1">
@@ -149,9 +149,10 @@ export function ExamResult({ attemptId }: { attemptId: string }) {
           )}
           Coba Lagi
         </Button>
-        <Button variant="outline" onClick={() => void navigate({ to: "/ujian" })}>
+        <Button variant="outline" onClick={exitExam}>
           <ArrowLeft className="mr-1.5 size-4" /> Keluar
         </Button>
+
       </div>
     </div>
   );

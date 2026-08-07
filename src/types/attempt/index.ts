@@ -21,8 +21,38 @@ export type AttemptRow = {
   auto_submitted: boolean;
   submit_reason: string | null;
   score: number;
+  correct_count: number;
+  wrong_count: number;
+  skipped_count: number;
+  passed: boolean;
+  duration_seconds: number;
+  submitted_at: string | null;
+  scored_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+/** Hasil ujian permanen (Sprint 10B). Dihitung sekali saat submit. */
+export type AttemptResultRow = {
+  id: string;
+  attempt_id: string;
+  exam_id: string;
+  user_id: string;
+  tenant_id: string | null;
+  exam_title: string;
+  total_questions: number;
+  correct_count: number;
+  wrong_count: number;
+  skipped_count: number;
+  score: number;
+  passing_score: number;
+  passed: boolean;
+  duration_seconds: number;
+  started_at: string;
+  submitted_at: string;
+  auto_submitted: boolean;
+  submit_reason: string | null;
+  created_at: string;
 };
 
 /** Jawaban pada snapshot versi siswa (tanpa kunci jawaban). */
@@ -118,3 +148,32 @@ export const ATTEMPT_STATUS_LABELS: Record<AttemptStatus, string> = {
 
 /** Batas default pelanggaran fullscreen sebelum auto submit. */
 export const FULLSCREEN_VIOLATION_LIMIT = 4;
+
+/** Soal pada review: snapshot lengkap (dengan kunci jawaban & pembahasan). */
+export type ReviewQuestion = SnapshotQuestion & {
+  correct_label: AnswerLabel | null;
+  explanation: string | null;
+};
+
+/** Snapshot review (payload internal, hanya dapat dibaca setelah submit). */
+export type ReviewSnapshot = Omit<ExamSnapshot, "questions"> & {
+  questions: ReviewQuestion[];
+};
+
+/** Data lengkap halaman Review: snapshot beku + jawaban siswa. */
+export type AttemptReview = {
+  attempt: AttemptRow;
+  snapshot: ReviewSnapshot;
+  answers: AttemptAnswerRow[];
+};
+
+export const RESULT_TABLE = "exam_attempt_results";
+
+/** Format durasi detik menjadi teks Indonesia (mis. "12 menit 30 detik"). */
+export function formatDurasi(totalSeconds: number): string {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const menit = Math.floor(s / 60);
+  const detik = s % 60;
+  if (menit === 0) return `${detik} detik`;
+  return `${menit} menit ${detik} detik`;
+}

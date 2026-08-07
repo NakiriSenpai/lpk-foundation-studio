@@ -4,7 +4,12 @@ import { PagePlaceholder } from "@/components/common/page-placeholder";
 import { AppLayout } from "@/layouts/app-layout";
 import { RequireAuth } from "@/middleware";
 
+type MateriSearch = { lesson?: string | undefined };
+
 export const Route = createFileRoute("/materi")({
+  validateSearch: (search: Record<string, unknown>): MateriSearch => ({
+    lesson: typeof search["lesson"] === "string" ? (search["lesson"] as string) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Materi — LPK Learning" },

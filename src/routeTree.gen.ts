@@ -32,6 +32,8 @@ import { Route as UjianAttemptIdRouteImport } from './routes/ujian.$attemptId'
 import { Route as OwnerExamStudioIndexRouteImport } from './routes/owner_.exam-studio.index'
 import { Route as OwnerExamStudioExamIdRouteImport } from './routes/owner_.exam-studio.$examId'
 import { Route as OwnerLessonStudioIndexRouteImport } from './routes/owner_.lesson-studio.index'
+import { Route as UjianHasilAttemptIdRouteImport } from './routes/ujian.hasil.$attemptId'
+import { Route as UjianReviewAttemptIdRouteImport } from './routes/ujian.review.$attemptId'
 import { Route as OwnerLessonStudioLessonIdIndexRouteImport } from './routes/owner_.lesson-studio.$lessonId.index'
 import { Route as OwnerLessonStudioLessonIdPreviewRouteImport } from './routes/owner_.lesson-studio.$lessonId.preview'
 
@@ -150,6 +152,16 @@ const OwnerLessonStudioIndexRoute = OwnerLessonStudioIndexRouteImport.update({
   path: '/owner/lesson-studio/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UjianHasilAttemptIdRoute = UjianHasilAttemptIdRouteImport.update({
+  id: '/hasil/$attemptId',
+  path: '/hasil/$attemptId',
+  getParentRoute: () => UjianRoute,
+} as any)
+const UjianReviewAttemptIdRoute = UjianReviewAttemptIdRouteImport.update({
+  id: '/review/$attemptId',
+  path: '/review/$attemptId',
+  getParentRoute: () => UjianRoute,
+} as any)
 const OwnerLessonStudioLessonIdIndexRoute =
   OwnerLessonStudioLessonIdIndexRouteImport.update({
     id: '/owner_/lesson-studio/$lessonId/',
@@ -185,6 +197,8 @@ export interface FileRoutesByFullPath {
   '/ujian/$attemptId': typeof UjianAttemptIdRoute
   '/ujian/': typeof UjianIndexRoute
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
+  '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
+  '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
   '/owner/exam-studio/': typeof OwnerExamStudioIndexRoute
   '/owner/lesson-studio/': typeof OwnerLessonStudioIndexRoute
   '/owner/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
@@ -211,6 +225,8 @@ export interface FileRoutesByTo {
   '/ujian/$attemptId': typeof UjianAttemptIdRoute
   '/ujian': typeof UjianIndexRoute
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
+  '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
+  '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
   '/owner/exam-studio': typeof OwnerExamStudioIndexRoute
   '/owner/lesson-studio': typeof OwnerLessonStudioIndexRoute
   '/owner/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
@@ -239,6 +255,8 @@ export interface FileRoutesById {
   '/ujian/$attemptId': typeof UjianAttemptIdRoute
   '/ujian/': typeof UjianIndexRoute
   '/owner_/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
+  '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
+  '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
   '/owner_/exam-studio/': typeof OwnerExamStudioIndexRoute
   '/owner_/lesson-studio/': typeof OwnerLessonStudioIndexRoute
   '/owner_/lesson-studio/$lessonId/preview': typeof OwnerLessonStudioLessonIdPreviewRoute
@@ -268,6 +286,8 @@ export interface FileRouteTypes {
     | '/ujian/$attemptId'
     | '/ujian/'
     | '/owner/exam-studio/$examId'
+    | '/ujian/hasil/$attemptId'
+    | '/ujian/review/$attemptId'
     | '/owner/exam-studio/'
     | '/owner/lesson-studio/'
     | '/owner/lesson-studio/$lessonId/preview'
@@ -294,6 +314,8 @@ export interface FileRouteTypes {
     | '/ujian/$attemptId'
     | '/ujian'
     | '/owner/exam-studio/$examId'
+    | '/ujian/hasil/$attemptId'
+    | '/ujian/review/$attemptId'
     | '/owner/exam-studio'
     | '/owner/lesson-studio'
     | '/owner/lesson-studio/$lessonId/preview'
@@ -321,6 +343,8 @@ export interface FileRouteTypes {
     | '/ujian/$attemptId'
     | '/ujian/'
     | '/owner_/exam-studio/$examId'
+    | '/ujian/hasil/$attemptId'
+    | '/ujian/review/$attemptId'
     | '/owner_/exam-studio/'
     | '/owner_/lesson-studio/'
     | '/owner_/lesson-studio/$lessonId/preview'
@@ -516,6 +540,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerLessonStudioIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ujian/hasil/$attemptId': {
+      id: '/ujian/hasil/$attemptId'
+      path: '/hasil/$attemptId'
+      fullPath: '/ujian/hasil/$attemptId'
+      preLoaderRoute: typeof UjianHasilAttemptIdRouteImport
+      parentRoute: typeof UjianRoute
+    }
+    '/ujian/review/$attemptId': {
+      id: '/ujian/review/$attemptId'
+      path: '/review/$attemptId'
+      fullPath: '/ujian/review/$attemptId'
+      preLoaderRoute: typeof UjianReviewAttemptIdRouteImport
+      parentRoute: typeof UjianRoute
+    }
     '/owner_/lesson-studio/$lessonId/': {
       id: '/owner_/lesson-studio/$lessonId/'
       path: '/owner/lesson-studio/$lessonId'
@@ -536,11 +574,15 @@ declare module '@tanstack/react-router' {
 interface UjianRouteChildren {
   UjianAttemptIdRoute: typeof UjianAttemptIdRoute
   UjianIndexRoute: typeof UjianIndexRoute
+  UjianHasilAttemptIdRoute: typeof UjianHasilAttemptIdRoute
+  UjianReviewAttemptIdRoute: typeof UjianReviewAttemptIdRoute
 }
 
 const UjianRouteChildren: UjianRouteChildren = {
   UjianAttemptIdRoute: UjianAttemptIdRoute,
   UjianIndexRoute: UjianIndexRoute,
+  UjianHasilAttemptIdRoute: UjianHasilAttemptIdRoute,
+  UjianReviewAttemptIdRoute: UjianReviewAttemptIdRoute,
 }
 
 const UjianRouteWithChildren = UjianRoute._addFileChildren(UjianRouteChildren)

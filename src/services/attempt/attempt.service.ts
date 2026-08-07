@@ -4,10 +4,14 @@ import { getExam, listQuestions, listSections } from "@/services/exam";
 import {
   ATTEMPT_TABLES,
   FULLSCREEN_VIOLATION_LIMIT,
+  RESULT_TABLE,
   type AttemptAnswerRow,
+  type AttemptResultRow,
+  type AttemptReview,
   type AttemptRow,
   type AttemptSession,
   type ExamSnapshot,
+  type ReviewSnapshot,
   type SnapshotQuestion,
   type SnapshotSection,
 } from "@/types/attempt";
@@ -265,29 +269,59 @@ export async function recordFullscreenViolation(attemptId: string): Promise<numb
 
 export type SubmitReason = "manual" | "time_up" | "fullscreen_violation";
 
-/** Tutup attempt. Skor masih placeholder (0) — perhitungan ada di Sprint 10B. */
+/**
+ * SUBMIT + SCORING SATU KALI.
+ * Perhitungan dilakukan di database (function SECURITY DEFINER) karena kunci
+ * jawaban berada pada kolom `payload` yang tidak dapat dibaca siswa.
+ * Jika attempt sudah dinilai, hasil tersimpan dikembalikan apa adanya.
+ */
 export async function submitAttempt(
   attemptId: string,
   reason: SubmitReason = "manual",
-): Promise<AttemptRow> {
+): Promise<AttemptResultRow> {
+  const { data, error } = await supabase.rpc("submit_exam_attempt", {
+    p_attempt_id: attemptId,
+    p_reason: reason,
+  });
+  if (error || !data) throw new Error(error?.message ?? "Gagal mengumpulkan ujian.");
+  return data as AttemptResultRow;
+}
+
+/** RESULT PAGE: hanya membaca hasil yang sudah tersimpan. */
+export async function getAttemptResult(attemptId: string): Promise<AttemptResultRow> {
   const { data, error } = await supabase
-    .from(ATTEMPT_TABLES.attempts)
-    .update({
-      status: reason === "time_up" ? "expired" : "submitted",
-      finished_at: new Date().toISOString(),
-      auto_submitted: reason !== "manual",
-      submit_reason: reason,
-    })
-    .eq("id", attemptId)
-    .eq("status", "in_progress")
+    .from(RESULT_TABLE)
     .select("*")
+    .eq("attempt_id", attemptId)
     .maybeSingle();
-  if (error) throw new Error("Gagal mengumpulkan ujian.");
-  if (!data) {
-    const session = await getAttemptSession(attemptId);
-    return session.attempt;
-  }
-  return data as AttemptRow;
+  if (error) throw new Error("Gagal memuat hasil ujian.");
+  if (!data) throw new Error("Hasil ujian belum tersedia.");
+  return data as AttemptResultRow;
+}
+
+/** REVIEW: membaca snapshot beku (bukan Exam Studio / Question Bank / Lesson). */
+export async function getAttemptReview(attemptId: string): Promise<AttemptReview> {
+  const [{ data: attempt, error: attemptError }, { data: payload, error: payloadError }] =
+    await Promise.all([
+      supabase.from(ATTEMPT_TABLES.attempts).select("*").eq("id", attemptId).maybeSingle(),
+      supabase.rpc("get_exam_attempt_review", { p_attempt_id: attemptId }),
+    ]);
+
+  if (attemptError || !attempt) throw new Error("Attempt tidak ditemukan.");
+  if (payloadError || !payload)
+    throw new Error(payloadError?.message ?? "Review ujian tidak tersedia.");
+
+  const { data: answers } = await supabase
+    .from(ATTEMPT_TABLES.answers)
+    .select("*")
+    .eq("attempt_id", attemptId)
+    .order("question_index", { ascending: true });
+
+  return {
+    attempt: attempt as AttemptRow,
+    snapshot: payload as ReviewSnapshot,
+    answers: ((answers as AttemptAnswerRow[] | null) ?? []).map((row) => ({ ...row })),
+  };
 }
 
 /** Daftar ujian published yang dapat dikerjakan siswa. */

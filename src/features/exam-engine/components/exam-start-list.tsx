@@ -19,6 +19,14 @@ export function ExamStartList() {
     (attempts ?? []).filter((a) => a.status === "in_progress").map((a) => [a.exam_id, a]),
   );
 
+  // Attempt terakhir yang sudah dinilai, untuk pintasan "Lihat Hasil".
+  const lastFinishedByExam = new Map<string, string>();
+  for (const attempt of attempts ?? []) {
+    if (attempt.status === "in_progress" || attempt.status === "cancelled") continue;
+    if (!lastFinishedByExam.has(attempt.exam_id))
+      lastFinishedByExam.set(attempt.exam_id, attempt.id);
+  }
+
   const handleStart = (examId: string) => {
     start.mutate(examId, {
       onSuccess: (attempt) => {
@@ -62,7 +70,9 @@ export function ExamStartList() {
                   <div className="space-y-1">
                     <h2 className="text-base font-semibold text-foreground">{exam.title}</h2>
                     {exam.description ? (
-                      <p className="line-clamp-2 text-sm text-muted-foreground">{exam.description}</p>
+                      <p className="line-clamp-2 text-sm text-muted-foreground">
+                        {exam.description}
+                      </p>
                     ) : null}
                   </div>
                   <div className="flex flex-wrap gap-2 text-xs">
@@ -90,6 +100,20 @@ export function ExamStartList() {
                     <PlayCircle className="mr-2 size-4" />
                     {active ? "Lanjutkan Ujian" : "Mulai Ujian"}
                   </Button>
+                  {!active && lastFinishedByExam.get(exam.id) ? (
+                    <Button
+                      variant="outline"
+                      className="h-11 w-full"
+                      onClick={() =>
+                        void navigate({
+                          to: "/ujian/hasil/$attemptId",
+                          params: { attemptId: lastFinishedByExam.get(exam.id)! },
+                        })
+                      }
+                    >
+                      Lihat Hasil Terakhir
+                    </Button>
+                  ) : null}
                 </CardContent>
               </Card>
             );

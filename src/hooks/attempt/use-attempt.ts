@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   getActiveAttempt,
+  getAttemptResult,
+  getAttemptReview,
   getAttemptSession,
   listAvailableExams,
   listMyAttempts,
@@ -14,7 +16,11 @@ import {
 } from "@/services/attempt";
 
 export function useAvailableExams() {
-  return useQuery({ queryKey: ["available-exams"], queryFn: listAvailableExams, staleTime: 30_000 });
+  return useQuery({
+    queryKey: ["available-exams"],
+    queryFn: listAvailableExams,
+    staleTime: 30_000,
+  });
 }
 
 export function useMyAttempts() {
@@ -70,6 +76,31 @@ export function useSubmitAttempt() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["my-attempts"] });
       void queryClient.invalidateQueries({ queryKey: ["attempt-session"] });
+      void queryClient.invalidateQueries({ queryKey: ["attempt-result"] });
     },
+  });
+}
+
+/** Result page: baca hasil tersimpan, tidak pernah menghitung ulang. */
+export function useAttemptResult(attemptId: string) {
+  return useQuery({
+    queryKey: ["attempt-result", attemptId],
+    queryFn: () => getAttemptResult(attemptId),
+    enabled: Boolean(attemptId),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+}
+
+/** Review page: baca snapshot beku milik attempt. */
+export function useAttemptReview(attemptId: string) {
+  return useQuery({
+    queryKey: ["attempt-review", attemptId],
+    queryFn: () => getAttemptReview(attemptId),
+    enabled: Boolean(attemptId),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    retry: 1,
   });
 }

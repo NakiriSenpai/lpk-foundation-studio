@@ -6,6 +6,8 @@ import {
   listBankQuestions,
   listGrammarTags,
   listLessons,
+  listTags,
+  setQuestionArchived,
   markQuestionsUsed,
   updateBankQuestion,
 } from "@/services/question-bank";
@@ -35,6 +37,14 @@ export function useLessons() {
   });
 }
 
+export function useTags() {
+  return useQuery({
+    queryKey: ["question-tags"],
+    queryFn: listTags,
+    staleTime: 5 * 60_000,
+  });
+}
+
 function useBankMutation<TVars>(fn: (vars: TVars) => Promise<unknown>) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -42,6 +52,7 @@ function useBankMutation<TVars>(fn: (vars: TVars) => Promise<unknown>) {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["question-bank"] });
       void queryClient.invalidateQueries({ queryKey: ["exam-questions"] });
+      void queryClient.invalidateQueries({ queryKey: ["question-tags"] });
     },
   });
 }
@@ -53,3 +64,7 @@ export const useUpdateBankQuestion = () =>
   );
 export const useDeleteBankQuestion = () => useBankMutation<string>(deleteBankQuestion);
 export const useMarkQuestionsUsed = () => useBankMutation<string[]>(markQuestionsUsed);
+export const useArchiveBankQuestion = () =>
+  useBankMutation<{ id: string; isArchived: boolean }>(({ id, isArchived }) =>
+    setQuestionArchived(id, isArchived),
+  );

@@ -201,7 +201,9 @@ export function ExamReview({ attemptId }: { attemptId: string }) {
             size="icon"
             variant="outline"
             className="size-9"
-            aria-label={isLandscape ? "Ubah ke tata letak portrait" : "Ubah ke tata letak landscape"}
+            aria-label={
+              isLandscape ? "Ubah ke tata letak portrait" : "Ubah ke tata letak landscape"
+            }
             onClick={() => setLayout(isLandscape ? "portrait" : "landscape")}
           >
             {isLandscape ? (
@@ -363,7 +365,6 @@ export function ExamReview({ attemptId }: { attemptId: string }) {
       >
         Keluar
       </Button>
-
 
       <Dialog open={paletteOpen} onOpenChange={setPaletteOpen}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">

@@ -30,7 +30,6 @@ export function ExamResult({ attemptId }: { attemptId: string }) {
     void navigate({ to: "/ujian" });
   };
 
-
   if (isLoading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center gap-2 text-muted-foreground">
@@ -152,7 +151,6 @@ export function ExamResult({ attemptId }: { attemptId: string }) {
         <Button variant="outline" onClick={exitExam}>
           <ArrowLeft className="mr-1.5 size-4" /> Keluar
         </Button>
-
       </div>
     </div>
   );

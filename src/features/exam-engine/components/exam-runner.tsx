@@ -43,9 +43,7 @@ import { useExamTimer } from "../hooks/use-exam-timer";
 import { useExamLayout } from "../hooks/use-exam-layout";
 import { useFullscreenGuard } from "../hooks/use-fullscreen-guard";
 
-
 type LocalAnswer = { label: AnswerLabel | null; flagged: boolean };
-
 
 export function ExamRunner({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
@@ -202,9 +200,6 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
     });
   };
 
-
-
-
   if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center gap-2 text-muted-foreground">
@@ -276,7 +271,9 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
             variant="outline"
             className="size-9"
             disabled={navLocked}
-            aria-label={isLandscape ? "Ubah ke tata letak portrait" : "Ubah ke tata letak landscape"}
+            aria-label={
+              isLandscape ? "Ubah ke tata letak portrait" : "Ubah ke tata letak landscape"
+            }
             title={isLandscape ? "Portrait" : "Landscape"}
             onClick={() => setLayout(isLandscape ? "portrait" : "landscape")}
           >
@@ -310,7 +307,6 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
           >
             <LayoutGrid className="mr-1.5 size-4" /> Daftar Soal
           </Button>
-
         </div>
       </div>
 
@@ -338,9 +334,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
             <p className="font-medium">Anda keluar dari mode layar penuh.</p>
             <p className="text-xs">
               Kembali ke mode layar penuh untuk melanjutkan ujian.
-              {isArmed
-                ? ` Pelanggaran ${violations}/${limit} dan bertambah setiap 3 detik.`
-                : null}
+              {isArmed ? ` Pelanggaran ${violations}/${limit} dan bertambah setiap 3 detik.` : null}
             </p>
           </div>
           <Button
@@ -353,7 +347,6 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
           </Button>
         </div>
       ) : null}
-
 
       {navLocked ? (
         <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-2 text-center text-xs font-medium text-amber-700 dark:text-amber-300">
@@ -412,8 +405,6 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
         </Card>
 
         <div className="space-y-4">
-
-
           <Card>
             <CardContent className="space-y-2 p-4">
               {current.answers.map((answer, answerIndex) => {
@@ -495,8 +486,6 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
       </div>
 
       {/* BUG 6: palette hanya melalui popup "Daftar Soal" (portrait & landscape). */}
-
-
 
       <Dialog open={paletteOpen} onOpenChange={(open) => setPaletteOpen(open && !navLocked)}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">

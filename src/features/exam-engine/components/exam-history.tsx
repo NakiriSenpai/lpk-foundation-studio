@@ -61,10 +61,7 @@ export function ExamHistory({ examId }: { examId: string }) {
                     <span className="text-lg font-semibold tabular-nums text-foreground">
                       {Number(attempt.score ?? 0).toFixed(0)}
                     </span>
-                    <Badge
-                      variant={attempt.passed ? "default" : "destructive"}
-                      className="gap-1.5"
-                    >
+                    <Badge variant={attempt.passed ? "default" : "destructive"} className="gap-1.5">
                       {attempt.passed ? (
                         <CheckCircle2 className="size-3.5" />
                       ) : (

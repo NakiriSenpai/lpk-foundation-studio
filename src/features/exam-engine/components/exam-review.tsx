@@ -353,9 +353,17 @@ export function ExamReview({ attemptId }: { attemptId: string }) {
       {/* Pembahasan selalu di bagian bawah (portrait & landscape). */}
       {explanation}
 
-      <Button variant="outline" className="w-full" onClick={() => void navigate({ to: "/ujian" })}>
+      <Button
+        variant="outline"
+        className="w-full"
+        onClick={() => {
+          if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
+          void navigate({ to: "/ujian" });
+        }}
+      >
         Keluar
       </Button>
+
 
       <Dialog open={paletteOpen} onOpenChange={setPaletteOpen}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">

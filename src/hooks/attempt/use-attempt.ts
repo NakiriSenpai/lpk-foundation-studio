@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   getActiveAttempt,
+  getAttemptResult,
+  getAttemptReview,
   getAttemptSession,
   listAvailableExams,
   listMyAttempts,

@@ -4,10 +4,14 @@ import { getExam, listQuestions, listSections } from "@/services/exam";
 import {
   ATTEMPT_TABLES,
   FULLSCREEN_VIOLATION_LIMIT,
+  RESULT_TABLE,
   type AttemptAnswerRow,
+  type AttemptResultRow,
+  type AttemptReview,
   type AttemptRow,
   type AttemptSession,
   type ExamSnapshot,
+  type ReviewSnapshot,
   type SnapshotQuestion,
   type SnapshotSection,
 } from "@/types/attempt";

@@ -148,3 +148,32 @@ export const ATTEMPT_STATUS_LABELS: Record<AttemptStatus, string> = {
 
 /** Batas default pelanggaran fullscreen sebelum auto submit. */
 export const FULLSCREEN_VIOLATION_LIMIT = 4;
+
+/** Soal pada review: snapshot lengkap (dengan kunci jawaban & pembahasan). */
+export type ReviewQuestion = SnapshotQuestion & {
+  correct_label: AnswerLabel | null;
+  explanation: string | null;
+};
+
+/** Snapshot review (payload internal, hanya dapat dibaca setelah submit). */
+export type ReviewSnapshot = Omit<ExamSnapshot, "questions"> & {
+  questions: ReviewQuestion[];
+};
+
+/** Data lengkap halaman Review: snapshot beku + jawaban siswa. */
+export type AttemptReview = {
+  attempt: AttemptRow;
+  snapshot: ReviewSnapshot;
+  answers: AttemptAnswerRow[];
+};
+
+export const RESULT_TABLE = "exam_attempt_results";
+
+/** Format durasi detik menjadi teks Indonesia (mis. "12 menit 30 detik"). */
+export function formatDurasi(totalSeconds: number): string {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const menit = Math.floor(s / 60);
+  const detik = s % 60;
+  if (menit === 0) return `${detik} detik`;
+  return `${menit} menit ${detik} detik`;
+}

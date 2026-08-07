@@ -1,27 +1,32 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type Options = {
-  /** Guard hanya diaktifkan saat attempt benar-benar berjalan. */
+  /** Guard hanya diaktifkan saat attempt benar-benar berjalan (dan belum submit). */
   enabled: boolean;
   onViolation: (count: number) => void;
+  /** Jeda percobaan masuk fullscreen ulang setelah siswa keluar (ms). */
+  retryMs?: number;
 };
 
 /**
  * Fullscreen Guard.
- * URUTAN WAJIB: minta fullscreen → fullscreen SUKSES → guard baru aktif.
- * Selama proses meminta fullscreen (atau bila browser menolak/tidak mendukung),
- * TIDAK ada violation yang dihitung.
+ * URUTAN WAJIB: minta fullscreen → fullscreen SUKSES → guard baru aktif (armed).
+ * Setelah armed dan siswa keluar fullscreen:
+ *  - pelanggaran dicatat,
+ *  - setiap `retryMs` aplikasi mencoba masuk fullscreen lagi,
+ *  - bila percobaan gagal, pelanggaran bertambah lagi.
+ * Guard berhenti total saat `enabled` = false (mis. proses submit dimulai).
  */
-export function useFullscreenGuard({ enabled, onViolation }: Options) {
+export function useFullscreenGuard({ enabled, onViolation, retryMs = 4000 }: Options) {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  /** Guard aktif hanya setelah pernah benar-benar masuk fullscreen. */
   const [isArmed, setIsArmed] = useState(false);
-  /** Browser tidak mendukung / menolak fullscreen → tampilkan dialog, bukan violation. */
   const [isUnsupported, setIsUnsupported] = useState(false);
   const localCount = useRef(0);
   const armedRef = useRef(false);
   const enabledRef = useRef(enabled);
   enabledRef.current = enabled;
+  const violationRef = useRef(onViolation);
+  violationRef.current = onViolation;
 
   const requestFullscreen = useCallback(async () => {
     const element = document.documentElement;
@@ -51,7 +56,6 @@ export function useFullscreenGuard({ enabled, onViolation }: Options) {
       const active = Boolean(document.fullscreenElement);
       setIsFullscreen(active);
       if (active) {
-        // Fullscreen sukses → baru sekarang guard boleh menghitung.
         setIsUnsupported(false);
         if (!armedRef.current) {
           armedRef.current = true;
@@ -61,12 +65,26 @@ export function useFullscreenGuard({ enabled, onViolation }: Options) {
       }
       if (armedRef.current && enabledRef.current) {
         localCount.current += 1;
-        onViolation(localCount.current);
+        violationRef.current(localCount.current);
       }
     };
     document.addEventListener("fullscreenchange", handler);
     return () => document.removeEventListener("fullscreenchange", handler);
-  }, [onViolation]);
+  }, []);
+
+  // AUTO RECOVERY: coba kembali ke fullscreen; gagal = pelanggaran baru.
+  useEffect(() => {
+    if (!enabled || !isArmed || isFullscreen) return;
+    const id = window.setInterval(() => {
+      if (!enabledRef.current) return;
+      void requestFullscreen().then((ok) => {
+        if (ok || !enabledRef.current) return;
+        localCount.current += 1;
+        violationRef.current(localCount.current);
+      });
+    }, retryMs);
+    return () => window.clearInterval(id);
+  }, [enabled, isArmed, isFullscreen, retryMs, requestFullscreen]);
 
   const exitFullscreen = useCallback(() => {
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);

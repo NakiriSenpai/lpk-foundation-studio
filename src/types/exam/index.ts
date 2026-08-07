@@ -4,6 +4,10 @@ import type {
   GrammarTagRow,
   QuestionAnswerRow,
   QuestionSourceType,
+  QuestionOrigin,
+  QuestionType,
+  QuestionVisibility,
+  TagRow,
 } from "@/types/question-bank";
 
 export type { GrammarTagRow, QuestionAnswerRow, QuestionSourceType };
@@ -66,9 +70,15 @@ export type ExamQuestionWithAnswers = ExamQuestionRef & {
   difficulty: ExamDifficulty;
   lesson_id: string | null;
   source_type: QuestionSourceType;
+  origin: QuestionOrigin;
+  question_type: QuestionType;
+  visibility: QuestionVisibility;
+  version: number;
+  is_archived: boolean;
   used_count: number;
   last_used_at: string | null;
   grammar_tags: GrammarTagRow[];
+  tags: TagRow[];
   answers: QuestionAnswerRow[];
 };
 

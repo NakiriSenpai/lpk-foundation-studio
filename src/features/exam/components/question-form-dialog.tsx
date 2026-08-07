@@ -24,8 +24,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { MediaPicker } from "@/features/media/components/media-picker";
+import { Switch } from "@/components/ui/switch";
 import { useCreateQuestion, useUpdateQuestion } from "@/hooks/exam";
-import { useGrammarTags, useLessons } from "@/hooks/question-bank";
+import { useArchiveBankQuestion, useGrammarTags, useLessons, useTags } from "@/hooks/question-bank";
 import {
   ANSWER_LABELS,
   CATEGORY_LABELS,
@@ -33,6 +34,13 @@ import {
   EXAM_DIFFICULTY_LABELS,
 } from "@/features/exam/exam.constants";
 import type { ExamDifficulty } from "@/types/exam";
+import {
+  ORIGIN_LABELS,
+  QUESTION_TYPE_LABELS,
+  VISIBILITY_LABELS,
+  type QuestionType,
+  type QuestionVisibility,
+} from "@/types/question-bank";
 import type { AnswerLabel, ExamQuestionWithAnswers, MediaSlot } from "./question-types";
 
 type Props = {
@@ -66,6 +74,12 @@ export function QuestionFormDialog({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [tagIds, setTagIds] = useState<string[]>([]);
+  const [generalTagIds, setGeneralTagIds] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState("");
+  const [newTags, setNewTags] = useState<string[]>([]);
+  const [questionType, setQuestionType] = useState<QuestionType>("reading");
+  const [visibility, setVisibility] = useState<QuestionVisibility>("private");
+  const [isArchived, setIsArchived] = useState(false);
   const [category, setCategory] = useState<string>("umum");
   const [difficulty, setDifficulty] = useState<ExamDifficulty>("sedang");
   const [lessonId, setLessonId] = useState<string>(NO_LESSON);
@@ -75,6 +89,8 @@ export function QuestionFormDialog({
   const [error, setError] = useState<string | null>(null);
 
   const grammarQuery = useGrammarTags();
+  const tagQuery = useTags();
+  const archiveQuestion = useArchiveBankQuestion();
   const lessonQuery = useLessons();
   const createQuestion = useCreateQuestion();
   const updateQuestion = useUpdateQuestion();
@@ -88,6 +104,12 @@ export function QuestionFormDialog({
       setImageUrl(question.image_url);
       setAudioUrl(question.audio_url);
       setTagIds(question.grammar_tags.map((t) => t.id));
+      setGeneralTagIds((question.tags ?? []).map((t) => t.id));
+      setQuestionType(question.question_type ?? "reading");
+      setVisibility(question.visibility ?? "private");
+      setIsArchived(question.is_archived ?? false);
+      setNewTags([]);
+      setNewTag("");
       setCategory(question.category ?? "umum");
       setDifficulty(question.difficulty ?? "sedang");
       setLessonId(question.lesson_id ?? NO_LESSON);
@@ -109,6 +131,12 @@ export function QuestionFormDialog({
       setImageUrl(null);
       setAudioUrl(null);
       setTagIds([]);
+      setGeneralTagIds([]);
+      setNewTags([]);
+      setNewTag("");
+      setQuestionType("reading");
+      setVisibility("private");
+      setIsArchived(false);
       setCategory("umum");
       setDifficulty("sedang");
       setLessonId(NO_LESSON);
@@ -123,6 +151,16 @@ export function QuestionFormDialog({
 
   const toggleTag = (id: string) =>
     setTagIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
+
+  const toggleGeneralTag = (id: string) =>
+    setGeneralTagIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
+
+  const addNewTag = () => {
+    const value = newTag.trim();
+    if (!value) return;
+    setNewTags((prev) => (prev.includes(value) ? prev : [...prev, value]));
+    setNewTag("");
+  };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -145,9 +183,13 @@ export function QuestionFormDialog({
       category,
       difficulty,
       lesson_id: lessonId === NO_LESSON ? null : lessonId,
+      question_type: questionType,
+      visibility,
       source_type: "exam" as const,
       created_from: examId,
       grammar_tag_ids: tagIds,
+      tag_ids: generalTagIds,
+      new_tags: newTags,
       answers: answers.map((a) => ({
         label: a.label,
         text: a.text.trim(),
@@ -160,6 +202,9 @@ export function QuestionFormDialog({
     try {
       if (question) {
         await updateQuestion.mutateAsync({ id: question.question_id, input: payload });
+        if (isArchived !== (question.is_archived ?? false)) {
+          await archiveQuestion.mutateAsync({ id: question.question_id, isArchived });
+        }
         toast.success("Soal diperbarui.");
       } else {
         await createQuestion.mutateAsync({ examId, sectionId, input: payload });
@@ -277,6 +322,108 @@ export function QuestionFormDialog({
               })}
             </div>
           </div>
+
+          <div className="space-y-2">
+            <Label>Tag (bebas)</Label>
+            <div className="flex flex-wrap gap-2">
+              {(tagQuery.data ?? []).map((tag) => {
+                const active = generalTagIds.includes(tag.id);
+                return (
+                  <Badge
+                    key={tag.id}
+                    role="button"
+                    tabIndex={0}
+                    variant={active ? "default" : "outline"}
+                    className="cursor-pointer px-3 py-1.5 text-xs"
+                    onClick={() => toggleGeneralTag(tag.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") toggleGeneralTag(tag.id);
+                    }}
+                  >
+                    {tag.name}
+                  </Badge>
+                );
+              })}
+              {newTags.map((name) => (
+                <Badge key={name} variant="default" className="px-3 py-1.5 text-xs">
+                  {name}
+                </Badge>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                placeholder="Tag baru, mis. eps-topik"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addNewTag();
+                  }
+                }}
+              />
+              <Button type="button" variant="outline" onClick={addNewTag}>
+                Tambah
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Jenis Soal</Label>
+              <Select
+                value={questionType}
+                onValueChange={(v) => setQuestionType(v as QuestionType)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(QUESTION_TYPE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Visibility</Label>
+              <Select
+                value={visibility}
+                onValueChange={(v) => setVisibility(v as QuestionVisibility)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(VISIBILITY_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {question ? (
+            <div className="space-y-3 rounded-lg border p-3">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Version: v{question.version ?? 1}</span>
+                <span>Origin: {ORIGIN_LABELS[question.origin ?? "manual"]}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <Label htmlFor="q-archive">Arsipkan soal</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Soal tidak dihapus, hanya disembunyikan dari daftar aktif.
+                  </p>
+                </div>
+                <Switch id="q-archive" checked={isArchived} onCheckedChange={setIsArchived} />
+              </div>
+            </div>
+          ) : null}
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-2">

@@ -1,7 +1,17 @@
 /** Tipe domain Lesson Studio (Sprint 9). */
 
 import type { ExamDifficulty } from "@/types/exam";
-import type { GrammarTagRow, QuestionAnswerRow, QuestionBankRow } from "@/types/question-bank";
+import type {
+  GrammarTagRow,
+  QuestionAnswerRow,
+  QuestionBankRow,
+  QuestionOrigin,
+  QuestionSourceType,
+  QuestionType,
+  QuestionVisibility,
+  TagRow,
+} from "@/types/question-bank";
+
 
 export type LessonStatus = "draft" | "published" | "archived";
 

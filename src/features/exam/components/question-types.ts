@@ -1,12 +1,14 @@
-import type { ExamDifficulty, QuestionSourceType } from "@/types/exam";
+import type { ExamDifficulty } from "@/types/exam";
 import type {
   GrammarTagRow,
   QuestionAnswerRow,
   QuestionOrigin,
+  QuestionSourceType,
   QuestionType,
   QuestionVisibility,
   TagRow,
 } from "@/types/question-bank";
+
 
 export type MediaSlot = "image" | "audio";
 export type { AnswerLabel, ExamQuestionWithAnswers } from "@/types/exam";

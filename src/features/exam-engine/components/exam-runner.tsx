@@ -103,7 +103,7 @@ export function ExamRunner({ attemptId }: { attemptId: string }) {
     });
   }, [attemptId, finish, isRunning, limit, recordViolation]);
 
-  const { isFullscreen, requestFullscreen } = useFullscreenGuard({
+  const { isFullscreen, isArmed, isUnsupported, requestFullscreen } = useFullscreenGuard({
     enabled: Boolean(isRunning),
     onViolation: handleViolation,
   });

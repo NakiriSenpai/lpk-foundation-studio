@@ -50,6 +50,7 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
   const [listOpen, setListOpen] = useState(false);
   const [asideOpen, setAsideOpen] = useState(false);
   const [gatePending, setGatePending] = useState(false);
+  const [gateDismissed, setGateDismissed] = useState(false);
   const [lessonDialog, setLessonDialog] = useState<{ id: string; title: string } | null>(null);
 
   const questions = useMemo(() => data?.snapshot.questions ?? [], [data]);
@@ -152,14 +153,19 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
           />
         }
         gate={
-          orientation.needsRotate ? (
+          orientation.needsRotate && !gateDismissed ? (
             <WorkspaceGate
               needsRotate
               lockSupported={orientation.lockSupported}
               pending={gatePending}
               onEnter={() => {
                 setGatePending(true);
-                void orientation.lock().finally(() => setGatePending(false));
+                void orientation
+                  .lock()
+                  .then((ok) => {
+                    if (!ok) setGateDismissed(true);
+                  })
+                  .finally(() => setGatePending(false));
               }}
             />
           ) : null

@@ -51,7 +51,8 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     error,
   } = useAttemptSession(attemptId, !authLoading && isAuthenticated);
   // Exam Runner tidak pernah dirender sebelum attempt + snapshot tersedia.
-  const isLoading = authLoading || (isAuthenticated && (sessionLoading || !data));
+  const isLoading =
+    authLoading || (isAuthenticated && !isError && (sessionLoading || !data));
   const saveAnswer = useSaveAnswer();
   const setFlagMutation = useSetFlag();
   const submit = useSubmitAttempt();
@@ -208,6 +209,17 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
       <div className="flex min-h-[60vh] items-center justify-center gap-2 text-muted-foreground">
         <Loader2 className="size-5 animate-spin" /> Memulihkan ujian…
       </div>
+    );
+  }
+
+  if (!authLoading && !isAuthenticated) {
+    return (
+      <Card>
+        <CardContent className="space-y-3 p-6 text-center">
+          <p className="font-medium text-foreground">Sesi Anda berakhir. Silakan masuk kembali.</p>
+          <Button onClick={() => void navigate({ to: "/login" })}>Masuk</Button>
+        </CardContent>
+      </Card>
     );
   }
 

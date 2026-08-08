@@ -36,7 +36,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
     );
   }
 
-
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">

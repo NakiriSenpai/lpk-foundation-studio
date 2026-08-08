@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/hooks/auth";
 import { useAttemptSession, useSaveAnswer, useSetFlag, useSubmitAttempt } from "@/hooks/attempt";
 import type { AnswerLabel } from "@/types/exam";
 import type { AttemptAnswerRow } from "@/types/attempt";
@@ -22,7 +23,7 @@ import {
   type PaletteGroup,
   type PaletteItem,
 } from "./question-list-dialog";
-import { AnswerPanelHeader, AnswerShell, QuestionStem } from "./question-stem";
+import { AnswerShell, QuestionStem } from "./question-stem";
 import { useExamTimer } from "../hooks/use-exam-timer";
 import { useExamFullscreen } from "./use-exam-fullscreen";
 import { useAntiCopy } from "./use-anti-copy";
@@ -42,7 +43,15 @@ export function ExamWorkspace({ attemptId }: { attemptId: string }) {
 
 function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
-  const { data, isLoading, isError, error } = useAttemptSession(attemptId);
+  const { isLoading: authLoading, isAuthenticated } = useAuth();
+  const {
+    data,
+    isLoading: sessionLoading,
+    isError,
+    error,
+  } = useAttemptSession(attemptId, !authLoading && isAuthenticated);
+  // Exam Runner tidak pernah dirender sebelum attempt + snapshot tersedia.
+  const isLoading = authLoading || (isAuthenticated && !isError && (sessionLoading || !data));
   const saveAnswer = useSaveAnswer();
   const setFlagMutation = useSetFlag();
   const submit = useSubmitAttempt();
@@ -202,6 +211,17 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     );
   }
 
+  if (!authLoading && !isAuthenticated) {
+    return (
+      <Card>
+        <CardContent className="space-y-3 p-6 text-center">
+          <p className="font-medium text-foreground">Sesi Anda berakhir. Silakan masuk kembali.</p>
+          <Button onClick={() => void navigate({ to: "/login" })}>Masuk</Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (isError || !attempt || !snapshot || !current) {
     return (
       <Card>
@@ -352,7 +372,6 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
           }
           answers={
             <div>
-              <AnswerPanelHeader title="Pilih jawaban yang tepat" />
               <div className="space-y-2">
                 {current.answers.map((answer, answerIndex) => (
                   <AnswerShell
@@ -371,7 +390,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
                         alt={`Pilihan ${answerIndex + 1}`}
                         loading="lazy"
                         draggable={false}
-                        className="max-h-[180px] w-auto max-w-full rounded-lg border border-border object-contain"
+                        className="max-h-20 w-auto max-w-[min(100%,10rem)] rounded-lg border border-border object-contain sm:max-h-24"
                       />
                     ) : null}
                     {answer.audio_url ? (

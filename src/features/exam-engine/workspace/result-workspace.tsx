@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { CheckCircle2, CircleSlash, Loader2, RotateCcw, Trophy, XCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -19,6 +20,21 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
   const { data, isLoading, isError, error } = useAttemptResult(attemptId);
   const startAttempt = useStartAttempt();
   const orientation = useOrientation();
+  const [gatePending, setGatePending] = useState(false);
+  const [gateDismissed, setGateDismissed] = useState(false);
+
+  const lockLandscapeNow = async () => {
+    setGatePending(true);
+    try {
+      const ok = await orientation.lock();
+      if (!ok) {
+        setGateDismissed(true);
+        toast.info("Perangkat ini tidak dapat mengunci orientasi. Putar perangkat secara manual.");
+      }
+    } finally {
+      setGatePending(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -69,12 +85,12 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
   return (
     <WorkspaceShell
       gate={
-        orientation.needsRotate ? (
+        orientation.needsRotate && !gateDismissed ? (
           <WorkspaceGate
             needsRotate
             lockSupported={orientation.lockSupported}
-            pending={false}
-            onEnter={() => void orientation.lock()}
+            pending={gatePending}
+            onEnter={() => void lockLandscapeNow()}
           />
         ) : null
       }

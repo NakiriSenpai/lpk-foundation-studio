@@ -306,13 +306,12 @@ export function MateriHome() {
                 />
               );
             })}
-            {isStudent ? (
-              <CategoryRow
-                meta={BOOKMARK_META}
-                caption={BOOKMARK_META.listDescription}
-                onClick={() => openCategory(BOOKMARK_META.slug)}
-              />
-            ) : null}
+            <CategoryRow
+              meta={BOOKMARK_META}
+              caption={BOOKMARK_META.listDescription}
+              onClick={() => openCategory(BOOKMARK_META.slug)}
+            />
+
           </div>
         )}
       </section>

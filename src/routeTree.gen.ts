@@ -25,6 +25,7 @@ import { Route as TenantRouteImport } from './routes/tenant'
 import { Route as UjianRouteImport } from './routes/ujian'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin_.analytics'
 import { Route as AdminUsersRouteImport } from './routes/admin_.users'
+import { Route as MateriIndexRouteImport } from './routes/materi.index'
 import { Route as OwnerQuestionBankRouteImport } from './routes/owner_.question-bank'
 import { Route as OwnerSettingsRouteImport } from './routes/owner_.settings'
 import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
@@ -121,6 +122,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MateriIndexRoute = MateriIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MateriRoute,
+} as any)
 const OwnerQuestionBankRoute = OwnerQuestionBankRouteImport.update({
   id: '/owner_/question-bank',
   path: '/owner/question-bank',
@@ -207,7 +213,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof LeaderboardRoute
   '/lesson-studio': typeof LessonStudioRoute
   '/login': typeof LoginRoute
-  '/materi': typeof MateriRoute
+  '/materi': typeof MateriRouteWithChildren
   '/media': typeof MediaRoute
   '/owner': typeof OwnerRoute
   '/profile': typeof ProfileRoute
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/owner/users': typeof OwnerUsersRoute
   '/teacher/analytics': typeof TeacherAnalyticsRoute
   '/ujian/$attemptId': typeof UjianAttemptIdRoute
+  '/materi/': typeof MateriIndexRoute
   '/ujian/': typeof UjianIndexRoute
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
@@ -240,7 +247,6 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof LeaderboardRoute
   '/lesson-studio': typeof LessonStudioRoute
   '/login': typeof LoginRoute
-  '/materi': typeof MateriRoute
   '/media': typeof MediaRoute
   '/owner': typeof OwnerRoute
   '/profile': typeof ProfileRoute
@@ -254,6 +260,7 @@ export interface FileRoutesByTo {
   '/owner/users': typeof OwnerUsersRoute
   '/teacher/analytics': typeof TeacherAnalyticsRoute
   '/ujian/$attemptId': typeof UjianAttemptIdRoute
+  '/materi': typeof MateriIndexRoute
   '/ujian': typeof UjianIndexRoute
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
@@ -273,7 +280,7 @@ export interface FileRoutesById {
   '/leaderboard': typeof LeaderboardRoute
   '/lesson-studio': typeof LessonStudioRoute
   '/login': typeof LoginRoute
-  '/materi': typeof MateriRoute
+  '/materi': typeof MateriRouteWithChildren
   '/media': typeof MediaRoute
   '/owner': typeof OwnerRoute
   '/profile': typeof ProfileRoute
@@ -288,6 +295,7 @@ export interface FileRoutesById {
   '/owner_/users': typeof OwnerUsersRoute
   '/teacher_/analytics': typeof TeacherAnalyticsRoute
   '/ujian/$attemptId': typeof UjianAttemptIdRoute
+  '/materi/': typeof MateriIndexRoute
   '/ujian/': typeof UjianIndexRoute
   '/owner_/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
@@ -323,6 +331,7 @@ export interface FileRouteTypes {
     | '/owner/users'
     | '/teacher/analytics'
     | '/ujian/$attemptId'
+    | '/materi/'
     | '/ujian/'
     | '/owner/exam-studio/$examId'
     | '/ujian/hasil/$attemptId'
@@ -341,7 +350,6 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/lesson-studio'
     | '/login'
-    | '/materi'
     | '/media'
     | '/owner'
     | '/profile'
@@ -355,6 +363,7 @@ export interface FileRouteTypes {
     | '/owner/users'
     | '/teacher/analytics'
     | '/ujian/$attemptId'
+    | '/materi'
     | '/ujian'
     | '/owner/exam-studio/$examId'
     | '/ujian/hasil/$attemptId'
@@ -388,6 +397,7 @@ export interface FileRouteTypes {
     | '/owner_/users'
     | '/teacher_/analytics'
     | '/ujian/$attemptId'
+    | '/materi/'
     | '/ujian/'
     | '/owner_/exam-studio/$examId'
     | '/ujian/hasil/$attemptId'
@@ -407,7 +417,7 @@ export interface RootRouteChildren {
   LeaderboardRoute: typeof LeaderboardRoute
   LessonStudioRoute: typeof LessonStudioRoute
   LoginRoute: typeof LoginRoute
-  MateriRoute: typeof MateriRoute
+  MateriRoute: typeof MateriRouteWithChildren
   MediaRoute: typeof MediaRoute
   OwnerRoute: typeof OwnerRoute
   ProfileRoute: typeof ProfileRoute
@@ -542,6 +552,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/materi/': {
+      id: '/materi/'
+      path: '/'
+      fullPath: '/materi/'
+      preLoaderRoute: typeof MateriIndexRouteImport
+      parentRoute: typeof MateriRoute
+    }
     '/owner_/question-bank': {
       id: '/owner_/question-bank'
       path: '/owner/question-bank'
@@ -650,6 +667,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface MateriRouteChildren {
+  MateriIndexRoute: typeof MateriIndexRoute
+}
+
+const MateriRouteChildren: MateriRouteChildren = {
+  MateriIndexRoute: MateriIndexRoute,
+}
+
+const MateriRouteWithChildren =
+  MateriRoute._addFileChildren(MateriRouteChildren)
+
 interface UjianRouteChildren {
   UjianAttemptIdRoute: typeof UjianAttemptIdRoute
   UjianIndexRoute: typeof UjianIndexRoute
@@ -676,7 +704,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardRoute: LeaderboardRoute,
   LessonStudioRoute: LessonStudioRoute,
   LoginRoute: LoginRoute,
-  MateriRoute: MateriRoute,
+  MateriRoute: MateriRouteWithChildren,
   MediaRoute: MediaRoute,
   OwnerRoute: OwnerRoute,
   ProfileRoute: ProfileRoute,

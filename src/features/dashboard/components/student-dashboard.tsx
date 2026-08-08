@@ -6,7 +6,9 @@ import {
   ShortcutGrid,
   type ShortcutItem,
 } from "@/features/dashboard/components/dashboard-primitives";
+import { StudentLessonProgressPanel } from "@/features/dashboard/components/student-lesson-progress";
 import { useAuth } from "@/hooks/auth";
+
 
 const LEARNING: ShortcutItem[] = [
   {
@@ -47,6 +49,8 @@ export function StudentDashboard() {
         <SectionTitle>Belajar</SectionTitle>
         <ShortcutGrid items={LEARNING} />
       </div>
+      <StudentLessonProgressPanel />
     </section>
   );
 }
+

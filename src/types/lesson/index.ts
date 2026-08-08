@@ -142,9 +142,77 @@ export type LessonListResult = {
 
 export type LessonQuestionSource = QuestionBankRow;
 
+// ---------- SPRINT 16: STUDENT LESSON PROGRESS ----------
+
+export type LessonProgressStatus = "not_started" | "in_progress" | "completed";
+
+/** Baris tabel public.lesson_progress (ditulis hanya via RPC SECURITY DEFINER). */
+export type LessonProgressRow = {
+  id: string;
+  user_id: string;
+  tenant_id: string | null;
+  lesson_id: string;
+  status: LessonProgressStatus;
+  progress_percent: number;
+  completed_units: string[];
+  total_units: number;
+  current_block_id: string | null;
+  started_at: string;
+  last_activity_at: string;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** Materi + status progres siswa (dipakai /materi & dashboard). */
+export type LessonWithProgress = LessonDetailRow & {
+  progress: LessonProgressRow | null;
+};
+
+export type LessonAnalyticsOverview = {
+  total_lessons: number;
+  started: number;
+  in_progress: number;
+  completed: number;
+  active_learners: number;
+  completion_rate: number;
+  average_progress: number;
+};
+
+export type LessonAnalyticsRow = {
+  lesson_id: string;
+  lesson_title: string;
+  category: string;
+  started: number;
+  in_progress: number;
+  completed: number;
+  completion_rate: number;
+  average_progress: number;
+  last_activity_at: string | null;
+};
+
+export type StudentLessonProgressRow = {
+  lesson_id: string;
+  lesson_title: string;
+  category: string;
+  status: LessonProgressStatus;
+  progress_percent: number;
+  last_activity_at: string | null;
+  completed_at: string | null;
+};
+
+export type StudentCategoryProgressRow = {
+  category: string;
+  lessons_started: number;
+  lessons_completed: number;
+  average_progress: number;
+};
+
 export const LESSON_TABLES = {
   lessons: "lessons",
   sections: "lesson_sections",
   blocks: "lesson_blocks",
   questions: "lesson_questions",
+  progress: "lesson_progress",
 } as const;
+

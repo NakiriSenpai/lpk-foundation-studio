@@ -19,7 +19,9 @@ import type { AnalyticsRange } from "@/types/analytics";
 import { MetricBar, StatCard } from "./analytics-primitives";
 import { formatDurasiDetik, formatTanggal } from "../utils";
 import { ExamDetailDialog } from "./exam-detail-dialog";
+import { LessonAnalyticsSection } from "./lesson-analytics-section";
 import { StudentDetailDialog } from "./student-detail-dialog";
+
 
 const RANGE_OPTIONS: { value: AnalyticsRange; label: string }[] = [
   { value: "7", label: "7 hari" },
@@ -201,6 +203,10 @@ export function TeacherAnalyticsDashboard() {
           </ul>
         )}
       </section>
+
+      <LessonAnalyticsSection range={range} />
+
+
 
       <section className="space-y-2">
         <div className="flex items-center justify-between gap-2">

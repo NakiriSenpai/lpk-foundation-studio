@@ -193,16 +193,28 @@ export async function startAttempt(examId: string): Promise<AttemptRow> {
   return row;
 }
 
-/** RECOVERY: muat attempt + snapshot + jawaban tersimpan. */
+/**
+ * RECOVERY: muat attempt + snapshot immutable + jawaban tersimpan.
+ *
+ * Dipakai juga untuk "Melanjutkan Ujian" setelah browser force close:
+ * TIDAK pernah membuat attempt/snapshot baru dan tidak pernah membaca ulang
+ * soal dari Exam Studio / Question Bank.
+ */
 export async function getAttemptSession(attemptId: string): Promise<AttemptSession> {
+  // Session Supabase harus benar-benar pulih dulu; tanpa ini RLS mengembalikan
+  // 0 baris dan resume gagal dengan "Attempt/Snapshot tidak ditemukan".
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error("Sesi tidak ditemukan. Silakan masuk kembali.");
+
   const { data: attempt, error } = await supabase
     .from(ATTEMPT_TABLES.attempts)
     .select("*")
     .eq("id", attemptId)
     .maybeSingle();
-  if (error || !attempt) throw new Error("Attempt tidak ditemukan.");
+  if (error) throw new Error("Gagal memuat ujian. Periksa koneksi Anda.");
+  if (!attempt) throw new Error("Attempt tidak ditemukan.");
 
-  const [{ data: snapshot }, { data: answers }] = await Promise.all([
+  const [{ data: snapshot, error: snapshotError }, { data: answers }] = await Promise.all([
     supabase
       .from(ATTEMPT_TABLES.snapshots)
       .select(SNAPSHOT_SELECT)
@@ -215,6 +227,7 @@ export async function getAttemptSession(attemptId: string): Promise<AttemptSessi
       .order("question_index", { ascending: true }),
   ]);
 
+  if (snapshotError) throw new Error("Gagal memuat soal ujian. Periksa koneksi Anda.");
   if (!snapshot) throw new Error("Snapshot ujian tidak ditemukan.");
 
   return {

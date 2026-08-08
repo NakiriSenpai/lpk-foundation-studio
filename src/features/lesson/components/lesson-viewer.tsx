@@ -252,7 +252,32 @@ export function LessonViewer({
                 <span>{percent}% selesai</span>
               </div>
               <ToneBar value={percent} bar={meta.tone.bar} />
+              {canLearn && saver.status !== "idle" ? (
+                <p
+                  aria-live="polite"
+                  className={cn(
+                    "text-xs",
+                    saver.status === "error" ? "text-destructive" : "text-muted-foreground",
+                  )}
+                >
+                  {saver.status === "saving" ? "Menyimpan progres..." : null}
+                  {saver.status === "saved" ? "Progres tersimpan" : null}
+                  {saver.status === "error" ? (
+                    <>
+                      Progres gagal disimpan.{" "}
+                      <button
+                        type="button"
+                        onClick={saver.retry}
+                        className="underline underline-offset-2"
+                      >
+                        Coba lagi
+                      </button>
+                    </>
+                  ) : null}
+                </p>
+              ) : null}
             </div>
+
 
             <div className="grid grid-cols-2 gap-2">
               <Button

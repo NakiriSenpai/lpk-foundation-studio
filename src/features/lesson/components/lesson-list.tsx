@@ -23,6 +23,9 @@ import { LESSON_STATUS_LABELS } from "@/features/lesson/lesson.constants";
 import { useDeleteLesson, useLessons } from "@/hooks/lesson";
 import type { ExamDifficulty } from "@/types/exam";
 import type { LessonDetailRow, LessonStatus } from "@/types/lesson";
+import { ImportBundleDialog } from "@/features/content-io/components/import-bundle-dialog";
+import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
+import { buildLessonBundle, downloadBundle } from "@/services/content/bundle/bundle-export.service";
 import { LessonFormDialog } from "./lesson-form-dialog";
 
 const PAGE_SIZE = 10;

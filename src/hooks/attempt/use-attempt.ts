@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+  ExamAttemptExpiredError,
+  ExamSnapshotMissingError,
   getActiveAttempt,
   getAttemptResult,
   getAttemptReview,

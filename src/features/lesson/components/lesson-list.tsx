@@ -279,6 +279,16 @@ export function LessonList() {
                   size="sm"
                   variant="outline"
                   className="min-h-11"
+                  disabled={exportingId === lesson.id}
+                  onClick={() => void handleExport(lesson)}
+                >
+                  <Download className="mr-1 size-4" />
+                  {exportingId === lesson.id ? "Menyiapkan…" : "Export"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="min-h-11"
                   onClick={() => void handleDelete(lesson)}
                 >
                   <Trash2 className="mr-1 size-4" /> Hapus

@@ -76,7 +76,9 @@ export function SectionFormDialog({ open, onOpenChange, examId, section = null }
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{section ? "Ubah Section" : "Tambah Section"}</DialogTitle>
-          <DialogDescription>Section membagi ujian menjadi Reading dan Listening.</DialogDescription>
+          <DialogDescription>
+            Section membagi ujian menjadi Reading dan Listening.
+          </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit}>

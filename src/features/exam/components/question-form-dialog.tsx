@@ -90,7 +90,6 @@ export function QuestionFormDialog({
   description = "Soal baru otomatis tersimpan ke Question Bank sehingga dapat dipakai ulang.",
   submitting = false,
 }: Props) {
-
   const [text, setText] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -279,9 +278,7 @@ export function QuestionFormDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{question ? "Ubah Soal" : "Tambah Soal"}</DialogTitle>
-          <DialogDescription>
-            {description}
-          </DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -473,10 +470,7 @@ export function QuestionFormDialog({
             </div>
             <div className="space-y-2">
               <Label>Kesulitan</Label>
-              <Select
-                value={difficulty}
-                onValueChange={(v) => setDifficulty(v as ExamDifficulty)}
-              >
+              <Select value={difficulty} onValueChange={(v) => setDifficulty(v as ExamDifficulty)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

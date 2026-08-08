@@ -215,7 +215,12 @@ export function LessonFormDialog({ open, onOpenChange, lesson = null }: Props) {
                   loading="lazy"
                 />
                 <span className="min-w-0 flex-1 truncate">{thumbnail}</span>
-                <Button type="button" size="sm" variant="outline" onClick={() => setThumbnail(null)}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setThumbnail(null)}
+                >
                   Hapus
                 </Button>
               </div>

@@ -16,10 +16,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  CATEGORY_LABELS,
-  EXAM_DIFFICULTY_LABELS,
-} from "@/features/exam/exam.constants";
+import { CATEGORY_LABELS, EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import {
   LESSON_BLOCK_LABELS,
   LESSON_STATUS_LABELS,
@@ -41,11 +38,7 @@ import {
   useReorderLessonSections,
   useUpdateLessonQuestion,
 } from "@/hooks/lesson";
-import type {
-  LessonBlockRow,
-  LessonQuestionWithAnswers,
-  LessonSectionRow,
-} from "@/types/lesson";
+import type { LessonBlockRow, LessonQuestionWithAnswers, LessonSectionRow } from "@/types/lesson";
 import { LessonBlockFormDialog } from "./lesson-block-form-dialog";
 import { LessonSectionFormDialog } from "./lesson-section-form-dialog";
 

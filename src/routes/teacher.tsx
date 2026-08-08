@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { BarChart3 } from "lucide-react";
 
-import { PagePlaceholder } from "@/components/common/page-placeholder";
+import { Card, CardContent } from "@/components/ui/card";
 import { AppLayout } from "@/layouts/app-layout";
 import { RequireAuth } from "@/middleware";
 
@@ -22,7 +23,26 @@ function TeacherPage() {
   return (
     <AppLayout>
       <RequireAuth>
-        <PagePlaceholder title="Pengajar" description="Area kerja pengajar." />
+        <div className="space-y-4">
+          <header className="space-y-1">
+            <h1 className="text-xl font-semibold text-foreground">Pengajar</h1>
+            <p className="text-sm text-muted-foreground">Area kerja pengajar.</p>
+          </header>
+
+          <Link to="/teacher/analytics" className="block">
+            <Card className="transition-colors hover:border-primary/60">
+              <CardContent className="flex items-center gap-3 p-4">
+                <BarChart3 className="size-5 text-primary" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Analitik Pengajar</p>
+                  <p className="text-xs text-muted-foreground">
+                    Performa siswa, ujian, soal, dan grammar.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
       </RequireAuth>
     </AppLayout>
   );

@@ -25,9 +25,19 @@ export function ExamStartList() {
   const [startTarget, setStartTarget] = useState<ExamRow | null>(null);
   const [continueTarget, setContinueTarget] = useState<string | null>(null);
 
+  // Attempt aktif = in_progress DAN belum lewat expires_at.
+  // (Finalisasi sebenarnya dilakukan di data layer memakai waktu server.)
   const activeByExam = new Map(
-    (attempts ?? []).filter((a) => a.status === "in_progress").map((a) => [a.exam_id, a]),
+    (attempts ?? [])
+      .filter(
+        (a) =>
+          a.status === "in_progress" &&
+          Boolean(a.expires_at) &&
+          new Date(a.expires_at).getTime() > Date.now(),
+      )
+      .map((a) => [a.exam_id, a]),
   );
+
 
   const finishedExamIds = new Set(
     (attempts ?? [])

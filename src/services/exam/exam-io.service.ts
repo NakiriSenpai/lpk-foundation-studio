@@ -1,16 +1,11 @@
-import type { ExamRow } from "@/types/exam";
-
-/**
- * Placeholder Import/Export Exam.
- * Sprint 6 hanya menyiapkan struktur service dan menu; implementasi menyusul.
- */
-
-export type ExamExportFormat = "json" | "xlsx";
-
-export async function exportExam(_exam: ExamRow, _format: ExamExportFormat = "json") {
-  throw new Error("Fitur export belum tersedia.");
-}
-
-export async function importExam(_file: File) {
-  throw new Error("Fitur import belum tersedia.");
-}
+/** Sprint 13 — Import/Export Exam kini ditangani bundle service. */
+export {
+  buildExamBundle,
+  downloadBundle,
+} from "@/services/content/bundle/bundle-export.service";
+export {
+  analyzeExamBundle,
+  importExam,
+  readBundleFile,
+  validateBundle,
+} from "@/services/content/bundle/bundle-import.service";

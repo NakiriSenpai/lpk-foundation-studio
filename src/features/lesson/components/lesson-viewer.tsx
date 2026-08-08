@@ -4,7 +4,6 @@ import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import { lessonCategoryLabel } from "@/features/lesson/lesson.constants";
@@ -19,6 +18,10 @@ import {
   useStartLesson,
   useUpdateLessonProgress,
 } from "@/hooks/lesson";
+
+import { CategoryTile, ToneBar } from "@/features/materi/components/materi-primitives";
+import { categoryMeta } from "@/features/materi/materi.constants";
+import { cn } from "@/lib/utils";
 
 import { LessonBlockRenderer } from "./lesson-block-renderer";
 import { LessonPractice } from "./lesson-practice";
@@ -158,6 +161,8 @@ export function LessonViewer({
       ? Math.round(((step + 1) / sections.length) * 100)
       : 0;
 
+  const meta = categoryMeta(lesson.category);
+
   return (
     <article ref={topRef} className="space-y-5 pb-4">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
@@ -171,7 +176,13 @@ export function LessonViewer({
         ) : null}
       </div>
 
-      <header className="space-y-2.5">
+      <header
+        className={cn(
+          "space-y-3 rounded-3xl border border-border p-4 ring-1 ring-inset",
+          meta.tone.soft,
+          meta.tone.ring,
+        )}
+      >
         {lesson.thumbnail_url ? (
           <img
             src={lesson.thumbnail_url}
@@ -180,10 +191,15 @@ export function LessonViewer({
             className="max-h-56 w-full rounded-2xl object-cover"
           />
         ) : null}
-        <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-          {lessonCategoryLabel(lesson.category)}
-        </p>
-        <h1 className="text-2xl font-semibold leading-tight text-foreground">{lesson.title}</h1>
+        <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
+          <CategoryTile meta={meta} />
+          <div className="min-w-0">
+            <p className={cn("truncate text-xs font-semibold uppercase tracking-wide", meta.tone.text)}>
+              {lessonCategoryLabel(lesson.category)}
+            </p>
+            <h1 className="text-xl font-semibold leading-tight text-foreground">{lesson.title}</h1>
+          </div>
+        </div>
         {lesson.description ? (
           <p className="text-sm leading-relaxed text-muted-foreground">{lesson.description}</p>
         ) : null}
@@ -228,7 +244,7 @@ export function LessonViewer({
                 <span>Progres materi</span>
                 <span>{percent}% selesai</span>
               </div>
-              <Progress value={percent} className="h-1.5" />
+              <ToneBar value={percent} bar={meta.tone.bar} />
             </div>
 
             <div className="grid grid-cols-2 gap-2">

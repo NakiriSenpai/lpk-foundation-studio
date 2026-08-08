@@ -50,6 +50,27 @@ export function ExamList() {
   const [page, setPage] = useState(1);
   const [formOpen, setFormOpen] = useState(false);
   const [selected, setSelected] = useState<ExamRow | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [exportingId, setExportingId] = useState<string | null>(null);
+
+  const handleExport = async (exam: ExamRow) => {
+    setExportingId(exam.id);
+    try {
+      const bundle = await buildExamBundle(exam.id, true);
+      downloadBundle(bundle, `exam-${exam.slug}`);
+      toast.success("Bundle exam berhasil diunduh.");
+      void recordContentIoAudit({
+        action: "export_exam",
+        entity: exam.slug,
+        count: 1,
+        result: "success",
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengekspor exam.");
+    } finally {
+      setExportingId(null);
+    }
+  };
 
   const params = useMemo(
     () => ({ search, status, category, page, pageSize: PAGE_SIZE }),

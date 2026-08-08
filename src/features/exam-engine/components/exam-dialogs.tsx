@@ -146,3 +146,65 @@ export function SubmitExamDialog({
     </AlertDialog>
   );
 }
+
+/** Konfirmasi keluar fullscreen yang disengaja (Sprint 11A). */
+export function ExitFullscreenDialog({
+  open,
+  pending,
+  onStay,
+  onExit,
+}: {
+  open: boolean;
+  pending?: boolean;
+  onStay: () => void;
+  onExit: () => void;
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={(next) => !next && onStay()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Keluar dari mode ujian?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Jika Anda keluar dari mode layar penuh, ujian akan dikumpulkan secara otomatis. Apakah
+            Anda yakin ingin keluar?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onStay}>Tetap Mengerjakan</AlertDialogCancel>
+          <AlertDialogAction disabled={pending} onClick={onExit}>
+            Keluar &amp; Kumpulkan
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+/** Konfirmasi meninggalkan Workspace lewat navigasi peramban. Tidak pernah submit. */
+export function LeaveExamDialog({
+  open,
+  onStay,
+  onLeave,
+}: {
+  open: boolean;
+  onStay: () => void;
+  onLeave: () => void;
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={(next) => !next && onStay()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Ujian sedang berlangsung</AlertDialogTitle>
+          <AlertDialogDescription>
+            Jika Anda meninggalkan halaman ini, ujian tetap tersimpan dan dapat dilanjutkan kembali.
+            Apakah Anda ingin meninggalkan ujian?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onStay}>Tetap di Ujian</AlertDialogCancel>
+          <AlertDialogAction onClick={onLeave}>Tinggalkan Ujian</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}

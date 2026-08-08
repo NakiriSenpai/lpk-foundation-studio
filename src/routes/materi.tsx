@@ -5,7 +5,6 @@ import { MateriList } from "@/features/materi/components/materi-list";
 import { AppLayout } from "@/layouts/app-layout";
 import { RequireAuth } from "@/middleware";
 
-
 type MateriSearch = { lesson?: string | undefined };
 
 export const Route = createFileRoute("/materi")({
@@ -41,7 +40,6 @@ function MateriPage() {
             onBack={() => void navigate({ to: "/materi", search: {} })}
           />
         ) : (
-
           <MateriList
             onOpen={(lessonId) => void navigate({ to: "/materi", search: { lesson: lessonId } })}
           />

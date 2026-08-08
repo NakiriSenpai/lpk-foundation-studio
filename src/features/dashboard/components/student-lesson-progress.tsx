@@ -27,8 +27,7 @@ export function StudentLessonProgressPanel() {
   const completed = lessons.filter((l) => l.progress?.status === "completed");
   const categories = categoryQuery.data ?? [];
 
-  const open = (lessonId: string) =>
-    void navigate({ to: "/materi", search: { lesson: lessonId } });
+  const open = (lessonId: string) => void navigate({ to: "/materi", search: { lesson: lessonId } });
 
   if (lessons.length === 0) return null;
 

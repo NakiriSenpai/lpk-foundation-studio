@@ -12,7 +12,6 @@ import { RankAvatar } from "@/features/leaderboard/components/rank-avatar";
 import { MetricBar, StatCard } from "./analytics-primitives";
 import { formatDurasiDetik, formatTanggal } from "../utils";
 
-
 /** Detail analitik satu siswa. */
 export function StudentDetailDialog({
   studentId,
@@ -29,7 +28,6 @@ export function StudentDetailDialog({
   const profile = data?.profile;
   const summary = data?.summary;
   const lessonProgress = lessonQuery.data ?? [];
-
 
   return (
     <Dialog open={Boolean(studentId)} onOpenChange={onOpenChange}>
@@ -142,7 +140,6 @@ export function StudentDetailDialog({
                 </ul>
               )}
             </section>
-
           </div>
         )}
       </DialogContent>

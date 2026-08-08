@@ -27,6 +27,7 @@ import { Route as AdminUsersRouteImport } from './routes/admin_.users'
 import { Route as OwnerQuestionBankRouteImport } from './routes/owner_.question-bank'
 import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
 import { Route as OwnerUsersRouteImport } from './routes/owner_.users'
+import { Route as TeacherAnalyticsRouteImport } from './routes/teacher_.analytics'
 import { Route as UjianIndexRouteImport } from './routes/ujian.index'
 import { Route as UjianAttemptIdRouteImport } from './routes/ujian.$attemptId'
 import { Route as OwnerExamStudioIndexRouteImport } from './routes/owner_.exam-studio.index'
@@ -128,6 +129,11 @@ const OwnerUsersRoute = OwnerUsersRouteImport.update({
   path: '/owner/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeacherAnalyticsRoute = TeacherAnalyticsRouteImport.update({
+  id: '/teacher_/analytics',
+  path: '/teacher/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UjianIndexRoute = UjianIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -200,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/owner/question-bank': typeof OwnerQuestionBankRoute
   '/owner/tenants': typeof OwnerTenantsRoute
   '/owner/users': typeof OwnerUsersRoute
+  '/teacher/analytics': typeof TeacherAnalyticsRoute
   '/ujian/$attemptId': typeof UjianAttemptIdRoute
   '/ujian/': typeof UjianIndexRoute
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/owner/question-bank': typeof OwnerQuestionBankRoute
   '/owner/tenants': typeof OwnerTenantsRoute
   '/owner/users': typeof OwnerUsersRoute
+  '/teacher/analytics': typeof TeacherAnalyticsRoute
   '/ujian/$attemptId': typeof UjianAttemptIdRoute
   '/ujian': typeof UjianIndexRoute
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
@@ -260,6 +268,7 @@ export interface FileRoutesById {
   '/owner_/question-bank': typeof OwnerQuestionBankRoute
   '/owner_/tenants': typeof OwnerTenantsRoute
   '/owner_/users': typeof OwnerUsersRoute
+  '/teacher_/analytics': typeof TeacherAnalyticsRoute
   '/ujian/$attemptId': typeof UjianAttemptIdRoute
   '/ujian/': typeof UjianIndexRoute
   '/owner_/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
@@ -292,6 +301,7 @@ export interface FileRouteTypes {
     | '/owner/question-bank'
     | '/owner/tenants'
     | '/owner/users'
+    | '/teacher/analytics'
     | '/ujian/$attemptId'
     | '/ujian/'
     | '/owner/exam-studio/$examId'
@@ -321,6 +331,7 @@ export interface FileRouteTypes {
     | '/owner/question-bank'
     | '/owner/tenants'
     | '/owner/users'
+    | '/teacher/analytics'
     | '/ujian/$attemptId'
     | '/ujian'
     | '/owner/exam-studio/$examId'
@@ -351,6 +362,7 @@ export interface FileRouteTypes {
     | '/owner_/question-bank'
     | '/owner_/tenants'
     | '/owner_/users'
+    | '/teacher_/analytics'
     | '/ujian/$attemptId'
     | '/ujian/'
     | '/owner_/exam-studio/$examId'
@@ -382,6 +394,7 @@ export interface RootRouteChildren {
   OwnerQuestionBankRoute: typeof OwnerQuestionBankRoute
   OwnerTenantsRoute: typeof OwnerTenantsRoute
   OwnerUsersRoute: typeof OwnerUsersRoute
+  TeacherAnalyticsRoute: typeof TeacherAnalyticsRoute
   OwnerExamStudioExamIdRoute: typeof OwnerExamStudioExamIdRoute
   OwnerExamStudioIndexRoute: typeof OwnerExamStudioIndexRoute
   OwnerLessonStudioIndexRoute: typeof OwnerLessonStudioIndexRoute
@@ -517,6 +530,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/teacher_/analytics': {
+      id: '/teacher_/analytics'
+      path: '/teacher/analytics'
+      fullPath: '/teacher/analytics'
+      preLoaderRoute: typeof TeacherAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ujian/': {
       id: '/ujian/'
       path: '/'
@@ -627,6 +647,7 @@ const rootRouteChildren: RootRouteChildren = {
   OwnerQuestionBankRoute: OwnerQuestionBankRoute,
   OwnerTenantsRoute: OwnerTenantsRoute,
   OwnerUsersRoute: OwnerUsersRoute,
+  TeacherAnalyticsRoute: TeacherAnalyticsRoute,
   OwnerExamStudioExamIdRoute: OwnerExamStudioExamIdRoute,
   OwnerExamStudioIndexRoute: OwnerExamStudioIndexRoute,
   OwnerLessonStudioIndexRoute: OwnerLessonStudioIndexRoute,

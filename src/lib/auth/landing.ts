@@ -53,4 +53,3 @@ export function resolvePostLoginTarget(role: AppRole | null, redirect?: string):
   if (match && !match[1].includes(role)) return landing;
   return redirect;
 }
-

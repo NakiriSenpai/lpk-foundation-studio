@@ -71,7 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setTimeout(() => void loadProfile(nextSession), 0);
     });
 
-
     void getCurrentSession().then(async (restored) => {
       if (!activeRef.current) return;
       setSession(restored);
@@ -105,7 +104,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
     setIsProfileLoading(false);
   }, []);
-
 
   const refreshProfile = useCallback(async () => {
     await loadProfile(session);

@@ -8,7 +8,6 @@ import { useAuth } from "@/hooks/auth";
 import { landingPathFor } from "@/lib/auth/landing";
 import { RequireAuth } from "@/middleware";
 
-
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
@@ -48,4 +47,3 @@ function DashboardByRole() {
   if (role && role !== "siswa") return <LoadingScreen label="Mengalihkan…" />;
   return <StudentDashboard />;
 }
-

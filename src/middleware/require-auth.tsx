@@ -35,7 +35,6 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-
   if (isLoading) return <LoadingScreen label="Memeriksa sesi…" />;
   if (!isAuthenticated) return <LoadingScreen label="Mengalihkan ke halaman masuk…" />;
 

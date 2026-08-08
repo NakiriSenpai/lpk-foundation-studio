@@ -22,7 +22,7 @@ import {
   type PaletteGroup,
   type PaletteItem,
 } from "./question-list-dialog";
-import { AnswerPanelHeader, AnswerShell, QuestionStem } from "./question-stem";
+import { AnswerShell, QuestionStem } from "./question-stem";
 import { useExamTimer } from "../hooks/use-exam-timer";
 import { useExamFullscreen } from "./use-exam-fullscreen";
 import { useAntiCopy } from "./use-anti-copy";
@@ -352,7 +352,6 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
           }
           answers={
             <div>
-              <AnswerPanelHeader title="Pilih jawaban yang tepat" />
               <div className="space-y-2">
                 {current.answers.map((answer, answerIndex) => (
                   <AnswerShell
@@ -371,7 +370,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
                         alt={`Pilihan ${answerIndex + 1}`}
                         loading="lazy"
                         draggable={false}
-                        className="max-h-[180px] w-auto max-w-full rounded-lg border border-border object-contain"
+                        className="max-h-20 w-auto max-w-[min(100%,10rem)] rounded-lg border border-border object-contain sm:max-h-24"
                       />
                     ) : null}
                     {answer.audio_url ? (

@@ -288,7 +288,7 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
                           alt={`Pilihan ${answerIndex + 1}`}
                           loading="lazy"
                           draggable={false}
-                          className="max-h-[180px] w-auto max-w-full rounded-lg border border-border object-contain"
+                          className="max-h-20 w-auto max-w-[min(100%,10rem)] rounded-lg border border-border object-contain sm:max-h-24"
                         />
                       ) : null}
                       {answer.audio_url ? (

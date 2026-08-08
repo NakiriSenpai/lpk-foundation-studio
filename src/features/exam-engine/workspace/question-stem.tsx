@@ -49,7 +49,7 @@ export const QuestionStem = memo(function QuestionStem({
           alt={`Gambar soal nomor ${number}`}
           loading="lazy"
           draggable={false}
-          className="w-auto max-w-full rounded-xl border border-border object-contain"
+          className="max-h-40 w-auto max-w-[min(100%,20rem)] rounded-xl border border-border object-contain sm:max-h-48"
         />
       ) : null}
 

@@ -47,9 +47,10 @@ function LoginPage() {
         <div className="space-y-1 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">Masuk</h1>
           <p className="text-sm text-muted-foreground">
-            Gunakan email dan kata sandi yang diberikan lembaga Anda.
+            {config.loginBranding ?? "Gunakan email dan kata sandi yang diberikan lembaga Anda."}
           </p>
         </div>
+
 
         {isLoading ? (
           <LoadingScreen label="Memeriksa sesi…" />

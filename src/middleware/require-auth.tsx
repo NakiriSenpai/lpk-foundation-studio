@@ -4,6 +4,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { LoadingScreen } from "@/components/common/loading-screen";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/auth";
+import { landingPathFor } from "@/lib/auth/landing";
 import type { AppRole } from "@/types/auth";
 import { ROLE_LABELS } from "@/types/auth";
 
@@ -30,13 +31,6 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-/** Beranda sesuai role, dipakai sebagai tujuan tombol pada layar Akses ditolak. */
-function homeFor(role: AppRole | null): "/owner" | "/admin" | "/teacher" | "/dashboard" {
-  if (role === "owner") return "/owner";
-  if (role === "admin") return "/admin";
-  if (role === "guru") return "/teacher";
-  return "/dashboard";
-}
 
 /** Layar penolakan akses standar (dipakai semua guard role). */
 export function AccessDenied({ message }: { message: string }) {
@@ -46,7 +40,7 @@ export function AccessDenied({ message }: { message: string }) {
       <h1 className="text-lg font-semibold">Akses ditolak</h1>
       <p className="text-sm text-muted-foreground">{message}</p>
       <Button asChild variant="outline" className="min-h-11">
-        <Link to={homeFor(role)}>Kembali ke halaman utama</Link>
+        <Link to={landingPathFor(role)}>Kembali ke halaman utama</Link>
       </Button>
     </div>
   );

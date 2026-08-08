@@ -128,7 +128,8 @@ export function MateriHome() {
         </div>
       </header>
 
-      {isStudent ? (
+      {lessons.length > 0 ? (
+
         <section
           aria-label="Progress belajar"
           className="relative overflow-hidden rounded-3xl border border-primary/25 bg-gradient-to-br from-primary/25 via-card to-card p-5"

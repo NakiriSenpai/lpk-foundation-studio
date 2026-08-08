@@ -1,10 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
-import { Button } from "@/components/ui/button";
-import { LessonPreview } from "@/features/lesson/components/lesson-preview";
+import { LessonViewer } from "@/features/lesson/components/lesson-viewer";
 import { MateriList } from "@/features/materi/components/materi-list";
 import { AppLayout } from "@/layouts/app-layout";
 import { RequireAuth } from "@/middleware";
+
 
 type MateriSearch = { lesson?: string | undefined };
 

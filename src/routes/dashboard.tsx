@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { PagePlaceholder } from "@/components/common/page-placeholder";
+import { StudentDashboard } from "@/features/dashboard/components/student-dashboard";
 import { AppLayout } from "@/layouts/app-layout";
 import { RequireAuth } from "@/middleware";
 
@@ -22,7 +22,7 @@ function DashboardPage() {
   return (
     <AppLayout>
       <RequireAuth>
-        <PagePlaceholder title="Dasbor" description="Ringkasan aktivitas belajar." />
+        <StudentDashboard />
       </RequireAuth>
     </AppLayout>
   );

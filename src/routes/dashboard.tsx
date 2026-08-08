@@ -1,8 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import { StudentDashboard } from "@/features/dashboard/components/student-dashboard";
 import { AppLayout } from "@/layouts/app-layout";
+import { LoadingScreen } from "@/components/common/loading-screen";
+import { useAuth } from "@/hooks/auth";
+import { landingPathFor } from "@/lib/auth/landing";
 import { RequireAuth } from "@/middleware";
+
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({

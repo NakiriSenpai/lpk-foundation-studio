@@ -41,7 +41,7 @@ function useInvalidateProgress() {
 }
 
 export function useLessonProgress(lessonId: string) {
-  const isStudent = useIsStudent();
+  const isStudent = useLearnerEnabled();
   return useQuery({
     queryKey: ["lesson-progress", lessonId],
     queryFn: () => getLessonProgress(lessonId),
@@ -94,7 +94,7 @@ export function useLessonsWithProgress() {
 }
 
 export function useStudentLessonProgress() {
-  const isStudent = useIsStudent();
+  const isStudent = useLearnerEnabled();
   return useQuery({
     queryKey: ["student-lesson-progress"],
     queryFn: getStudentLessonProgress,
@@ -104,7 +104,7 @@ export function useStudentLessonProgress() {
 }
 
 export function useStudentCategoryProgress() {
-  const isStudent = useIsStudent();
+  const isStudent = useLearnerEnabled();
   return useQuery({
     queryKey: ["student-category-progress"],
     queryFn: getStudentCategoryProgress,

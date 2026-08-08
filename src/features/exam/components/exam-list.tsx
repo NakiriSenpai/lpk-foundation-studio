@@ -107,11 +107,8 @@ export function ExamList() {
         >
           <Plus className="mr-1 size-4" /> Tambah Exam
         </Button>
-        <Button variant="outline" disabled title="Belum tersedia">
+        <Button variant="outline" onClick={() => setImportOpen(true)}>
           <Upload className="mr-1 size-4" /> Import
-        </Button>
-        <Button variant="outline" disabled title="Belum tersedia">
-          <Download className="mr-1 size-4" /> Export
         </Button>
       </div>
 

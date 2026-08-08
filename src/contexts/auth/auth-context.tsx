@@ -23,20 +23,26 @@ export const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isSessionLoading, setIsSessionLoading] = useState(true);
+  // Role belum boleh dipakai sebelum profil selesai dimuat (cegah salah redirect).
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
   const activeRef = useRef(true);
 
   // Profil selalu diambil dari tabel `profiles` (source of truth).
   const loadProfile = useCallback(async (nextSession: Session | null) => {
     if (!nextSession?.user) {
       setProfile(null);
+      setIsProfileLoading(false);
       return;
     }
+    setIsProfileLoading(true);
     try {
       const row = await getProfileById(nextSession.user.id);
       if (activeRef.current) setProfile(row);
     } catch {
       if (activeRef.current) setProfile(null);
+    } finally {
+      if (activeRef.current) setIsProfileLoading(false);
     }
   }, []);
 
@@ -47,7 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!activeRef.current) return;
       setSession(nextSession);
-      setIsLoading(false);
+      setIsSessionLoading(false);
+      if (!nextSession) setIsProfileLoading(false);
       // Panggilan Supabase lain tidak boleh dilakukan langsung di dalam callback.
       setTimeout(() => void loadProfile(nextSession), 0);
     });
@@ -56,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!activeRef.current) return;
       setSession(restored);
       await loadProfile(restored);
-      if (activeRef.current) setIsLoading(false);
+      if (activeRef.current) setIsSessionLoading(false);
     });
 
     return () => {
@@ -94,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role,
       tenantId: profile?.tenant_id ?? null,
       isAuthenticated: Boolean(session),
-      isLoading,
+      isLoading: isSessionLoading || (Boolean(session) && isProfileLoading),
       login,
       logout,
       refreshProfile,
@@ -102,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hasAnyRole: (roles) => (role ? roles.includes(role) : false),
       hasMinimumRole: (target) => (role ? ROLE_RANK[role] >= ROLE_RANK[target] : false),
     };
-  }, [session, profile, isLoading, login, logout, refreshProfile]);
+  }, [session, profile, isSessionLoading, isProfileLoading, login, logout, refreshProfile]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

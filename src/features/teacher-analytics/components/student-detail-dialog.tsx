@@ -24,9 +24,12 @@ export function StudentDetailDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const { data, isLoading, isError, refetch, isFetching } = useStudentDetail(studentId, { range });
+  const lessonQuery = useStudentLessonAnalytics(studentId, { range });
 
   const profile = data?.profile;
   const summary = data?.summary;
+  const lessonProgress = lessonQuery.data ?? [];
+
 
   return (
     <Dialog open={Boolean(studentId)} onOpenChange={onOpenChange}>

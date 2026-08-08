@@ -54,12 +54,13 @@ export function useLessonProgressSaver(
       attempts.current = 0;
       if (mounted.current) setStatus("saved");
       savedCb.current?.();
-    } catch {
+    } catch (error) {
       attempts.current += 1;
       if (mounted.current) setStatus("error");
       if (attempts.current < MAX_ATTEMPTS) {
         timer.current = setTimeout(() => void flush(), RETRY_DELAY_MS);
       }
+      if (import.meta.env.DEV) console.error(error);
     } finally {
       inFlight.current = false;
     }

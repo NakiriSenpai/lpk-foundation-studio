@@ -32,12 +32,13 @@ function useStaffEnabled() {
 
 function useInvalidateProgress() {
   const queryClient = useQueryClient();
-  return () => {
-    void queryClient.invalidateQueries({ queryKey: ["lesson-progress"] });
-    void queryClient.invalidateQueries({ queryKey: ["lessons-with-progress"] });
-    void queryClient.invalidateQueries({ queryKey: ["student-lesson-progress"] });
-    void queryClient.invalidateQueries({ queryKey: ["student-category-progress"] });
-  };
+  return () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["lesson-progress"] }),
+      queryClient.invalidateQueries({ queryKey: ["lessons-with-progress"] }),
+      queryClient.invalidateQueries({ queryKey: ["student-lesson-progress"] }),
+      queryClient.invalidateQueries({ queryKey: ["student-category-progress"] }),
+    ]);
 }
 
 export function useLessonProgress(lessonId: string) {
@@ -82,7 +83,7 @@ export function useCompleteLesson() {
   });
 }
 
-/** Daftar materi terbit + progres siswa (kosong untuk staf). */
+/** Daftar materi terbit + progres personal role yang sedang login. */
 export function useLessonsWithProgress() {
   const { isAuthenticated } = useAuth();
   return useQuery({

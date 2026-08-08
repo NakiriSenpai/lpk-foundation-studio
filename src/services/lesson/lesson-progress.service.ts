@@ -12,12 +12,66 @@ import { LESSON_TABLES } from "@/types/lesson";
 import { listPublishedLessons } from "./lesson.service";
 
 /**
- * Sprint 16 — Student Lesson Progress.
+ * Personal Lesson Progress untuk semua role.
  *
  * Penulisan progress SELALU melalui RPC SECURITY DEFINER:
  * client tidak pernah mengirim progress_percent / status / completed_at.
- * RPC mengembalikan null untuk owner/admin/guru (staf tidak menghasilkan progress).
+ * Identitas dan tenant writer selalu diturunkan oleh RPC dari sesi terautentikasi.
  */
+
+type ProgressOperation = "SELECT" | "START" | "UPDATE" | "COMPLETE";
+
+function progressError(
+  operation: ProgressOperation,
+  lessonId: string | null,
+  error: { code?: string; message?: string; details?: string; hint?: string },
+) {
+  const code = error.code ?? "UNKNOWN";
+  if (import.meta.env.DEV) {
+    console.error("Lesson progress database error", {
+      operation,
+      table: LESSON_TABLES.progress,
+      code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      lessonId,
+    });
+  }
+  return new Error(
+    import.meta.env.DEV
+      ? `${operation} progress gagal [${code}]: ${error.message ?? "Unknown database error"}`
+      : `Progress materi gagal diproses (${code}).`,
+  );
+}
+
+async function getProgressScope() {
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData.user) {
+    throw progressError("SELECT", null, authError ?? { code: "NO_SESSION", message: "Sesi tidak tersedia." });
+  }
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("tenant_id")
+    .eq("id", authData.user.id)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (profileError || !profile) {
+    throw progressError(
+      "SELECT",
+      null,
+      profileError ?? { code: "NO_PROFILE", message: "Profil aktif tidak tersedia." },
+    );
+  }
+  return { userId: authData.user.id, tenantId: (profile.tenant_id as string | null) ?? null };
+}
+
+function withTenant<T extends { eq: (column: string, value: string) => T; is: (column: string, value: null) => T }>(
+  query: T,
+  tenantId: string | null,
+) {
+  return tenantId ? query.eq("tenant_id", tenantId) : query.is("tenant_id", null);
+}
 
 function unitKey(blockId: string) {
   return `block:${blockId}`;
@@ -35,19 +89,21 @@ function asProgress(data: unknown): LessonProgressRow | null {
 
 /** Progres siswa untuk satu lesson (null bila belum pernah dibuka / staf). */
 export async function getLessonProgress(lessonId: string): Promise<LessonProgressRow | null> {
-  const { data, error } = await supabase
+  const scope = await getProgressScope();
+  const query = supabase
     .from(LESSON_TABLES.progress)
     .select("*")
+    .eq("user_id", scope.userId)
     .eq("lesson_id", lessonId)
-    .maybeSingle();
-  if (error) return null;
+  const { data, error } = await withTenant(query, scope.tenantId).maybeSingle();
+  if (error) throw progressError("SELECT", lessonId, error);
   return asProgress(data);
 }
 
 /** Membuat/menyegarkan progress saat siswa membuka materi. Idempotent. */
 export async function startLesson(lessonId: string): Promise<LessonProgressRow | null> {
   const { data, error } = await supabase.rpc("lesson_progress_start", { p_lesson_id: lessonId });
-  if (error) throw new Error("Gagal memulai materi.");
+  if (error) throw progressError("START", lessonId, error);
   return asProgress(data);
 }
 
@@ -62,7 +118,7 @@ export async function updateLessonProgress(
     p_units: blockUnitKeys(blockIds),
     p_current_block_id: currentBlockId,
   });
-  if (error) throw new Error("Gagal menyimpan progres materi.");
+  if (error) throw progressError("UPDATE", lessonId, error);
   return asProgress(data);
 }
 
@@ -71,17 +127,20 @@ export async function completeLesson(lessonId: string): Promise<LessonProgressRo
   const { data, error } = await supabase.rpc("lesson_progress_complete", {
     p_lesson_id: lessonId,
   });
-  if (error) throw new Error("Gagal menyelesaikan materi.");
+  if (error) throw progressError("COMPLETE", lessonId, error);
   return asProgress(data);
 }
 
 /** Seluruh progres milik siswa yang sedang login. */
 export async function getStudentLessonProgress(): Promise<LessonProgressRow[]> {
-  const { data, error } = await supabase
+  const scope = await getProgressScope();
+  const query = supabase
     .from(LESSON_TABLES.progress)
     .select("*")
+    .eq("user_id", scope.userId)
     .order("last_activity_at", { ascending: false });
-  if (error) return [];
+  const { data, error } = await withTenant(query, scope.tenantId);
+  if (error) throw progressError("SELECT", null, error);
   return ((data as LessonProgressRow[] | null) ?? []).map((row) => ({
     ...row,
     completed_units: row.completed_units ?? [],

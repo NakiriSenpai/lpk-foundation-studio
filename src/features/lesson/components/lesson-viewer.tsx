@@ -55,7 +55,7 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
   const topRef = useRef<HTMLDivElement>(null);
 
   const saver = useLessonProgressSaver(lessonId, {
-    enabled: canLearn,
+    enabled: canLearn && startLesson.isSuccess,
     onSaved: () => {
       void queryClient.invalidateQueries({ queryKey: ["lesson-progress", lessonId] });
       void queryClient.invalidateQueries({ queryKey: ["lessons-with-progress"] });
@@ -100,7 +100,7 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
     if (!canLearn || !lesson || startedRef.current === lessonId) return;
     startedRef.current = lessonId;
     startLesson.mutate(lessonId);
-  }, [canLearn, lesson, lessonId, startLesson]);
+  }, [canLearn, lesson, lessonId, startLesson.mutate]);
 
   // Berpindah bagian = mengantrikan block bagian tersebut (tanpa memblokir UI).
   useEffect(() => {
@@ -127,8 +127,10 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
         toast.success("Materi selesai dipelajari.", { id: "lesson-complete" });
         onBack();
       },
-      onError: () =>
-        toast.error("Gagal menyelesaikan materi. Coba lagi.", { id: "lesson-complete" }),
+      onError: (error) =>
+        toast.error(error instanceof Error ? error.message : "Gagal menyelesaikan materi.", {
+          id: "lesson-complete",
+        }),
     });
   };
 
@@ -248,17 +250,32 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
                 <span>{percent}% selesai</span>
               </div>
               <ToneBar value={percent} bar={meta.tone.bar} />
-              {canLearn && saver.status !== "idle" ? (
+              {canLearn && (startLesson.isPending || startLesson.isError || saver.status !== "idle") ? (
                 <p
                   aria-live="polite"
                   className={cn(
                     "text-xs",
-                    saver.status === "error" ? "text-destructive" : "text-muted-foreground",
+                    startLesson.isError || saver.status === "error"
+                      ? "text-destructive"
+                      : "text-muted-foreground",
                   )}
                 >
-                  {saver.status === "saving" ? "Menyimpan progres..." : null}
-                  {saver.status === "saved" ? "Progres tersimpan" : null}
-                  {saver.status === "error" ? (
+                  {startLesson.isPending || saver.status === "saving" ? "Menyimpan progres..." : null}
+                  {!startLesson.isPending && !startLesson.isError && saver.status === "saved"
+                    ? "Progres tersimpan"
+                    : null}
+                  {startLesson.isError ? (
+                    <>
+                      Progress gagal dibuat.{" "}
+                      <button
+                        type="button"
+                        onClick={() => startLesson.mutate(lessonId)}
+                        className="underline underline-offset-2"
+                      >
+                        Coba lagi
+                      </button>
+                    </>
+                  ) : saver.status === "error" ? (
                     <>
                       Progres gagal disimpan.{" "}
                       <button

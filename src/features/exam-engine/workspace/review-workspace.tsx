@@ -137,12 +137,16 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
           <>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-foreground">
-                Review — {snapshot.exam.title}
+                {snapshot.exam.title}
+                {section ? <span className="text-muted-foreground"> · {section.title}</span> : null}
               </p>
               <p className="text-[11px] text-muted-foreground">
-                {questions.length} soal · dari snapshot ujian
+                Review Jawaban · {questions.length} soal
               </p>
             </div>
+            <Badge variant="secondary" className="shrink-0">
+              Review Jawaban
+            </Badge>
             <Button size="sm" variant="outline" onClick={() => exitWorkspace("hasil")}>
               Hasil
             </Button>
@@ -151,6 +155,7 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
             </Button>
           </>
         }
+
         footer={
           <>
             <div className="flex min-w-0 items-center">

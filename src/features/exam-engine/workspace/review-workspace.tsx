@@ -266,13 +266,6 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
           }
           answers={
             <div>
-              <AnswerPanelHeader
-                title={
-                  selected
-                    ? `Jawaban Anda: ${question.answers.findIndex((a) => a.label === selected) + 1} (${status === "benar" ? "Benar" : "Salah"})`
-                    : "Anda tidak menjawab soal ini"
-                }
-              />
               <div className="space-y-2">
                 {question.answers.map((answer, answerIndex) => {
                   const isCorrect = answer.label === correct;

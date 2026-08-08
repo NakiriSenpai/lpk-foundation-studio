@@ -58,15 +58,21 @@ export function MateriHome() {
     return map;
   }, [lessons]);
 
-  const resume: LessonWithProgress | undefined = useMemo(
-    () =>
-      lessons
-        .filter((l) => l.progress?.status === "in_progress")
-        .sort((a, b) =>
-          (b.progress?.last_activity_at ?? "").localeCompare(a.progress?.last_activity_at ?? ""),
-        )[0],
-    [lessons],
-  );
+  // Prioritas: lesson terakhir yang sedang dikerjakan (progress terbaru),
+  // lalu lesson pertama yang belum pernah diselesaikan.
+  const resume: LessonWithProgress | undefined = useMemo(() => {
+    const inProgress = lessons
+      .filter((l) => l.progress && l.progress.status !== "completed")
+      .sort((a, b) =>
+        (b.progress?.last_activity_at ?? "").localeCompare(a.progress?.last_activity_at ?? ""),
+      )[0];
+    if (inProgress) return inProgress;
+    return lessons.find((l) => !l.progress);
+  }, [lessons]);
+
+  const allCompleted =
+    lessons.length > 0 && lessons.every((l) => l.progress?.status === "completed");
+
 
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();

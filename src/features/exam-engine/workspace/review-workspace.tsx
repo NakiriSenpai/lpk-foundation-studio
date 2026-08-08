@@ -310,7 +310,6 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
             </div>
           </section>
         </div>
-
       </WorkspaceShell>
 
       <QuestionListDialog

@@ -17,7 +17,7 @@ import type { FeatureFlagRow } from "@/types/config";
 export function FeatureFlagList() {
   const { refresh } = useAppConfig();
   const flags = useQuery({ queryKey: ["feature-flags", "all"], queryFn: listFeatureFlags });
-  const tenants = useTenants();
+  const tenants = useTenants({ page: 1, pageSize: 100 });
 
   const mutation = useMutation({
     mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) => setFeatureFlag(id, enabled),
@@ -29,7 +29,7 @@ export function FeatureFlagList() {
   });
 
   const tenantName = (id: string | null) =>
-    tenants.data?.find((tenant) => tenant.id === id)?.name ?? "Tenant";
+    tenants.data?.rows.find((tenant) => tenant.id === id)?.name ?? "Tenant";
 
   const rows = flags.data ?? [];
   const global = rows.filter((row) => row.tenant_id === null);

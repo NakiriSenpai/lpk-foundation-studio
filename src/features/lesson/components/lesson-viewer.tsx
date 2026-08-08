@@ -47,6 +47,7 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
   const startLesson = useStartLesson();
   const completeLesson = useCompleteLesson();
   const startLessonMutate = startLesson.mutate;
+  const resetStartLesson = startLesson.reset;
   const queryClient = useQueryClient();
 
   const [step, setStep] = useState(0);
@@ -91,8 +92,8 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
     setResumed(false);
     startedRef.current = null;
     markedRef.current.clear();
-    startLesson.reset();
-  }, [lessonId]);
+    resetStartLesson();
+  }, [lessonId, resetStartLesson]);
 
   // Resume: posisi terakhir diambil dari database, bukan localStorage.
   useEffect(() => {

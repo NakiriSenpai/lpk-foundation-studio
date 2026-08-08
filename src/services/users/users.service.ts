@@ -100,3 +100,47 @@ export async function setUserActive(payload: SetUserStatusPayload) {
 export async function resetPassword(payload: ResetUserPasswordPayload) {
   return resetUserPasswordFn({ data: payload });
 }
+
+export type TenantUserStats = {
+  total: number;
+  guru: number;
+  siswa: number;
+  admin: number;
+  aktif: number;
+  nonaktif: number;
+};
+
+/**
+ * Ringkasan jumlah user pada satu tenant.
+ * Perhitungan dilakukan di database (count exact, head-only), bukan di browser.
+ * RLS tetap menjadi batas akhir: admin hanya melihat tenant miliknya.
+ */
+export async function getTenantUserStats(tenantId: string): Promise<TenantUserStats> {
+  const base = () =>
+    supabase
+      .from(TABLES.profiles)
+      .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId);
+
+  const [total, guru, siswa, admin, aktif] = await Promise.all([
+    base(),
+    base().eq("role", "guru"),
+    base().eq("role", "siswa"),
+    base().eq("role", "admin"),
+    base().eq("is_active", true),
+  ]);
+
+  const failed = [total, guru, siswa, admin, aktif].find((r) => r.error);
+  if (failed?.error) throw new Error("Gagal memuat ringkasan pengguna tenant.");
+
+  const totalCount = total.count ?? 0;
+  const aktifCount = aktif.count ?? 0;
+  return {
+    total: totalCount,
+    guru: guru.count ?? 0,
+    siswa: siswa.count ?? 0,
+    admin: admin.count ?? 0,
+    aktif: aktifCount,
+    nonaktif: Math.max(0, totalCount - aktifCount),
+  };
+}

@@ -23,6 +23,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as TeacherRouteImport } from './routes/teacher'
 import { Route as TenantRouteImport } from './routes/tenant'
 import { Route as UjianRouteImport } from './routes/ujian'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin_.analytics'
 import { Route as AdminUsersRouteImport } from './routes/admin_.users'
 import { Route as OwnerQuestionBankRouteImport } from './routes/owner_.question-bank'
 import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
@@ -107,6 +108,11 @@ const TenantRoute = TenantRouteImport.update({
 const UjianRoute = UjianRouteImport.update({
   id: '/ujian',
   path: '/ujian',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/admin_/analytics',
+  path: '/admin/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -202,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRouteWithChildren
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/users': typeof AdminUsersRoute
   '/owner/question-bank': typeof OwnerQuestionBankRoute
   '/owner/tenants': typeof OwnerTenantsRoute
@@ -232,6 +239,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/users': typeof AdminUsersRoute
   '/owner/question-bank': typeof OwnerQuestionBankRoute
   '/owner/tenants': typeof OwnerTenantsRoute
@@ -264,6 +272,7 @@ export interface FileRoutesById {
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
   '/ujian': typeof UjianRouteWithChildren
+  '/admin_/analytics': typeof AdminAnalyticsRoute
   '/admin_/users': typeof AdminUsersRoute
   '/owner_/question-bank': typeof OwnerQuestionBankRoute
   '/owner_/tenants': typeof OwnerTenantsRoute
@@ -297,6 +306,7 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/tenant'
     | '/ujian'
+    | '/admin/analytics'
     | '/admin/users'
     | '/owner/question-bank'
     | '/owner/tenants'
@@ -327,6 +337,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/teacher'
     | '/tenant'
+    | '/admin/analytics'
     | '/admin/users'
     | '/owner/question-bank'
     | '/owner/tenants'
@@ -358,6 +369,7 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/tenant'
     | '/ujian'
+    | '/admin_/analytics'
     | '/admin_/users'
     | '/owner_/question-bank'
     | '/owner_/tenants'
@@ -390,6 +402,7 @@ export interface RootRouteChildren {
   TeacherRoute: typeof TeacherRoute
   TenantRoute: typeof TenantRoute
   UjianRoute: typeof UjianRouteWithChildren
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   OwnerQuestionBankRoute: typeof OwnerQuestionBankRoute
   OwnerTenantsRoute: typeof OwnerTenantsRoute
@@ -500,6 +513,13 @@ declare module '@tanstack/react-router' {
       path: '/ujian'
       fullPath: '/ujian'
       preLoaderRoute: typeof UjianRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/analytics': {
+      id: '/admin_/analytics'
+      path: '/admin/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/users': {
@@ -643,6 +663,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherRoute: TeacherRoute,
   TenantRoute: TenantRoute,
   UjianRoute: UjianRouteWithChildren,
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminUsersRoute: AdminUsersRoute,
   OwnerQuestionBankRoute: OwnerQuestionBankRoute,
   OwnerTenantsRoute: OwnerTenantsRoute,
@@ -657,13 +678,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -2,16 +2,45 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { AuthButton } from "@/features/auth/components/auth-button";
+import { useAuth } from "@/hooks/auth";
 import { appConfig } from "@/lib/env";
 import { cn } from "@/lib/utils";
+import type { AppRole } from "@/types/auth";
 
-const navItems = [
+type NavItem = { to: string; label: string };
+
+const STUDENT_NAV: NavItem[] = [
   { to: "/dashboard", label: "Dasbor" },
   { to: "/materi", label: "Materi" },
   { to: "/ujian", label: "Ujian" },
   { to: "/leaderboard", label: "Peringkat" },
   { to: "/profile", label: "Profil" },
-] as const;
+];
+
+/** Navigasi mengikuti permission matrix Sprint 14. */
+const NAV_BY_ROLE: Record<AppRole, NavItem[]> = {
+  owner: [
+    { to: "/owner", label: "Dasbor" },
+    { to: "/owner/tenants", label: "Tenant" },
+    { to: "/owner/users", label: "User" },
+    { to: "/teacher/analytics", label: "Analitik" },
+    { to: "/profile", label: "Profil" },
+  ],
+  admin: [
+    { to: "/admin", label: "Dasbor" },
+    { to: "/admin/users", label: "User" },
+    { to: "/admin/analytics", label: "Analitik" },
+    { to: "/profile", label: "Profil" },
+  ],
+  guru: [
+    { to: "/teacher", label: "Dasbor" },
+    { to: "/teacher/analytics", label: "Analitik" },
+    { to: "/materi", label: "Materi" },
+    { to: "/leaderboard", label: "Peringkat" },
+    { to: "/profile", label: "Profil" },
+  ],
+  siswa: STUDENT_NAV,
+};
 
 /** Bottom navigation disembunyikan saat ujian berjalan di mode layar penuh. */
 function useIsFullscreen() {
@@ -27,7 +56,10 @@ function useIsFullscreen() {
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { role } = useAuth();
+  const navItems = role ? NAV_BY_ROLE[role] : STUDENT_NAV;
   const isFullscreen = useIsFullscreen();
+
   if (isFullscreen) {
     return (
       <div className="min-h-screen bg-background text-foreground">

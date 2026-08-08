@@ -3,7 +3,7 @@ import { BarChart3 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { AppLayout } from "@/layouts/app-layout";
-import { RequireAuth } from "@/middleware";
+import { RequireStaff } from "@/middleware";
 
 export const Route = createFileRoute("/teacher")({
   head: () => ({
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/teacher")({
 function TeacherPage() {
   return (
     <AppLayout>
-      <RequireAuth>
+      <RequireStaff>
         <div className="space-y-4">
           <header className="space-y-1">
             <h1 className="text-xl font-semibold text-foreground">Pengajar</h1>
@@ -43,7 +43,7 @@ function TeacherPage() {
             </Card>
           </Link>
         </div>
-      </RequireAuth>
+      </RequireStaff>
     </AppLayout>
   );
 }

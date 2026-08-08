@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   createUser,
+  getTenantUserStats,
   listUsers,
   resetPassword,
   setUserActive,
@@ -36,3 +37,13 @@ export const useCreateUser = () => useUserMutation<CreateUserPayload>(createUser
 export const useUpdateUser = () => useUserMutation<UpdateUserPayload>(updateUser);
 export const useSetUserActive = () => useUserMutation<SetUserStatusPayload>(setUserActive);
 export const useResetPassword = () => useUserMutation<ResetUserPasswordPayload>(resetPassword);
+
+/** Ringkasan jumlah user pada tenant tertentu (dashboard admin). */
+export function useTenantUserStats(tenantId: string | null) {
+  return useQuery({
+    queryKey: ["tenant-user-stats", tenantId],
+    queryFn: () => getTenantUserStats(tenantId as string),
+    enabled: Boolean(tenantId),
+    staleTime: 30_000,
+  });
+}

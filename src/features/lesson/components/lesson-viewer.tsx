@@ -159,11 +159,12 @@ export function LessonViewer({
     );
   }
 
-  const percent = isStudent
+  const percent = canLearn
     ? (progress?.progress_percent ?? 0)
     : sections.length > 0
       ? Math.round(((step + 1) / sections.length) * 100)
       : 0;
+
 
   const meta = categoryMeta(lesson.category);
 

@@ -26,7 +26,7 @@ import {
   type PaletteGroup,
   type PaletteItem,
 } from "./question-list-dialog";
-import { AnswerShell, QuestionStem } from "./question-stem";
+import { AnswerPanelHeader, AnswerShell, QuestionStem } from "./question-stem";
 import { useAntiCopy } from "./use-anti-copy";
 import { useOrientation } from "./use-orientation";
 import { WorkspaceGate } from "./workspace-gate";

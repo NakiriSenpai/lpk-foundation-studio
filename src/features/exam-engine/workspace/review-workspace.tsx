@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleSlash,
+  List,
   Loader2,
   XCircle,
 } from "lucide-react";
@@ -19,10 +20,10 @@ import { listLessonTitles } from "@/services/lesson";
 import type { AnswerLabel } from "@/types/exam";
 import { OpenLessonDialog } from "../components/open-lesson-dialog";
 import { AudioButton, AudioManagerProvider } from "./audio-manager";
+import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
 import { useLandscapeLock } from "./use-landscape";
 import { WorkspaceShell } from "./workspace-shell";
-import type { PaletteGroup, PaletteItem } from "./workspace-sidebar";
 
 /** Review memakai Workspace yang sama dengan Exam, ditambah pembahasan. */
 export function ReviewWorkspace({ attemptId }: { attemptId: string }) {

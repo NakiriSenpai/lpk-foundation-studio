@@ -6,6 +6,7 @@ import {
   GraduationCap,
   Image as ImageIcon,
   Library,
+  Settings,
   Users,
 } from "lucide-react";
 
@@ -69,6 +70,12 @@ const TOOLS: ShortcutItem[] = [
     label: "Platform Analytics",
     description: "Performa siswa, ujian, dan soal.",
     icon: BarChart3,
+  },
+  {
+    to: "/owner/settings",
+    label: "Pengaturan Platform",
+    description: "Branding, feature flag, dan mode pemeliharaan.",
+    icon: Settings,
   },
 ];
 

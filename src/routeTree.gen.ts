@@ -26,6 +26,7 @@ import { Route as UjianRouteImport } from './routes/ujian'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin_.analytics'
 import { Route as AdminUsersRouteImport } from './routes/admin_.users'
 import { Route as OwnerQuestionBankRouteImport } from './routes/owner_.question-bank'
+import { Route as OwnerSettingsRouteImport } from './routes/owner_.settings'
 import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
 import { Route as OwnerUsersRouteImport } from './routes/owner_.users'
 import { Route as TeacherAnalyticsRouteImport } from './routes/teacher_.analytics'
@@ -125,6 +126,11 @@ const OwnerQuestionBankRoute = OwnerQuestionBankRouteImport.update({
   path: '/owner/question-bank',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OwnerSettingsRoute = OwnerSettingsRouteImport.update({
+  id: '/owner_/settings',
+  path: '/owner/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OwnerTenantsRoute = OwnerTenantsRouteImport.update({
   id: '/owner_/tenants',
   path: '/owner/tenants',
@@ -211,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/users': typeof AdminUsersRoute
   '/owner/question-bank': typeof OwnerQuestionBankRoute
+  '/owner/settings': typeof OwnerSettingsRoute
   '/owner/tenants': typeof OwnerTenantsRoute
   '/owner/users': typeof OwnerUsersRoute
   '/teacher/analytics': typeof TeacherAnalyticsRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/users': typeof AdminUsersRoute
   '/owner/question-bank': typeof OwnerQuestionBankRoute
+  '/owner/settings': typeof OwnerSettingsRoute
   '/owner/tenants': typeof OwnerTenantsRoute
   '/owner/users': typeof OwnerUsersRoute
   '/teacher/analytics': typeof TeacherAnalyticsRoute
@@ -275,6 +283,7 @@ export interface FileRoutesById {
   '/admin_/analytics': typeof AdminAnalyticsRoute
   '/admin_/users': typeof AdminUsersRoute
   '/owner_/question-bank': typeof OwnerQuestionBankRoute
+  '/owner_/settings': typeof OwnerSettingsRoute
   '/owner_/tenants': typeof OwnerTenantsRoute
   '/owner_/users': typeof OwnerUsersRoute
   '/teacher_/analytics': typeof TeacherAnalyticsRoute
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/users'
     | '/owner/question-bank'
+    | '/owner/settings'
     | '/owner/tenants'
     | '/owner/users'
     | '/teacher/analytics'
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/users'
     | '/owner/question-bank'
+    | '/owner/settings'
     | '/owner/tenants'
     | '/owner/users'
     | '/teacher/analytics'
@@ -372,6 +383,7 @@ export interface FileRouteTypes {
     | '/admin_/analytics'
     | '/admin_/users'
     | '/owner_/question-bank'
+    | '/owner_/settings'
     | '/owner_/tenants'
     | '/owner_/users'
     | '/teacher_/analytics'
@@ -405,6 +417,7 @@ export interface RootRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   OwnerQuestionBankRoute: typeof OwnerQuestionBankRoute
+  OwnerSettingsRoute: typeof OwnerSettingsRoute
   OwnerTenantsRoute: typeof OwnerTenantsRoute
   OwnerUsersRoute: typeof OwnerUsersRoute
   TeacherAnalyticsRoute: typeof TeacherAnalyticsRoute
@@ -534,6 +547,13 @@ declare module '@tanstack/react-router' {
       path: '/owner/question-bank'
       fullPath: '/owner/question-bank'
       preLoaderRoute: typeof OwnerQuestionBankRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner_/settings': {
+      id: '/owner_/settings'
+      path: '/owner/settings'
+      fullPath: '/owner/settings'
+      preLoaderRoute: typeof OwnerSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/owner_/tenants': {
@@ -666,6 +686,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminUsersRoute: AdminUsersRoute,
   OwnerQuestionBankRoute: OwnerQuestionBankRoute,
+  OwnerSettingsRoute: OwnerSettingsRoute,
   OwnerTenantsRoute: OwnerTenantsRoute,
   OwnerUsersRoute: OwnerUsersRoute,
   TeacherAnalyticsRoute: TeacherAnalyticsRoute,

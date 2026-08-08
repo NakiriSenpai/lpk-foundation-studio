@@ -51,8 +51,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     error,
   } = useAttemptSession(attemptId, !authLoading && isAuthenticated);
   // Exam Runner tidak pernah dirender sebelum attempt + snapshot tersedia.
-  const isLoading =
-    authLoading || (isAuthenticated && !isError && (sessionLoading || !data));
+  const isLoading = authLoading || (isAuthenticated && !isError && (sessionLoading || !data));
   const saveAnswer = useSaveAnswer();
   const setFlagMutation = useSetFlag();
   const submit = useSubmitAttempt();

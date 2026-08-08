@@ -231,4 +231,3 @@ function AudioWave({ active }: { active: boolean }) {
     </span>
   );
 }
-

@@ -136,7 +136,10 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
                 <Separator />
                 <div className="mt-auto grid grid-cols-3 gap-2">
                   {stats.map((stat) => (
-                    <div key={stat.label} className="rounded-xl border border-border bg-surface p-2">
+                    <div
+                      key={stat.label}
+                      className="rounded-xl border border-border bg-surface p-2"
+                    >
                       <stat.icon className={`mx-auto size-5 ${stat.tone}`} />
                       <p className="mt-1 text-lg font-semibold tabular-nums text-foreground">
                         {stat.value}
@@ -187,7 +190,6 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
           </Card>
         </div>
       </div>
-
     </WorkspaceShell>
   );
 }

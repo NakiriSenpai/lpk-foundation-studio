@@ -71,7 +71,6 @@ export function AnswerPanelHeader({ title, right }: { title: string; right?: Rea
   );
 }
 
-
 /** Kerangka satu pilihan jawaban (nomor + konten). */
 export function AnswerShell({
   index,
@@ -118,7 +117,6 @@ export function AnswerShell({
       <span className="min-w-0 flex-1 space-y-1.5">{children}</span>
     </>
   );
-
 
   if (!onClick) return <div className={className}>{inner}</div>;
   return (

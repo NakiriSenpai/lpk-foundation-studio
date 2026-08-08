@@ -288,7 +288,7 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
                           alt={`Pilihan ${answerIndex + 1}`}
                           loading="lazy"
                           draggable={false}
-                          className="h-[88px] w-auto max-w-full rounded-lg border border-border object-contain"
+                          className="max-h-[180px] w-auto max-w-full rounded-lg border border-border object-contain"
                         />
                       ) : null}
                       {answer.audio_url ? (
@@ -310,11 +310,11 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
             </div>
           }
           explanation={
-            <section className="flex h-full min-h-0 flex-col rounded-xl border border-border bg-surface">
-              <p className="shrink-0 border-b border-border px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <section className="rounded-xl border border-border bg-surface">
+              <p className="border-b border-border px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 Pembahasan
               </p>
-              <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain p-3 text-sm">
+              <div className="space-y-3 p-3 text-sm">
                 <p className="whitespace-pre-wrap text-foreground">
                   {question.explanation?.trim() ? question.explanation : "Belum ada pembahasan."}
                 </p>

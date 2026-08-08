@@ -49,9 +49,10 @@ export const QuestionStem = memo(function QuestionStem({
           alt={`Gambar soal nomor ${number}`}
           loading="lazy"
           draggable={false}
-          className="mx-auto max-h-[38vh] w-auto max-w-full rounded-xl border border-border object-contain"
+          className="w-auto max-w-full rounded-xl border border-border object-contain"
         />
       ) : null}
+
       {audioUrl ? (
         <AudioButton audioKey={`${questionId}:soal`} src={audioUrl} label="Dengarkan audio" />
       ) : null}

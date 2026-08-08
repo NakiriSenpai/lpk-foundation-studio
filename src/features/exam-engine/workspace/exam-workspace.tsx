@@ -371,7 +371,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
                         alt={`Pilihan ${answerIndex + 1}`}
                         loading="lazy"
                         draggable={false}
-                        className="h-[88px] w-auto max-w-full rounded-lg border border-border object-contain"
+                        className="max-h-[180px] w-auto max-w-full rounded-lg border border-border object-contain"
                       />
                     ) : null}
                     {answer.audio_url ? (

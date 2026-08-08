@@ -3,10 +3,11 @@ import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Shell Exam Workspace (Sprint 11 FINAL).
+ * Shell Exam Workspace (Sprint 11.2 — UNIFIED LAYOUT).
  *
- * Struktur tetap: HEADER → [ASIDE | MAIN] → FOOTER, tinggi 100dvh.
- * Hanya area yang ditandai yang boleh scroll — halaman tidak pernah scroll penuh.
+ * SATU parent page flow: HEADER → CONTENT → NAVIGATION.
+ * Hanya container terluar yang menjadi page scroll; tidak ada panel
+ * dengan tinggi viewport sendiri, tidak ada overlay/fixed pada layout utama.
  */
 export function WorkspaceShell({
   header,
@@ -27,33 +28,37 @@ export function WorkspaceShell({
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex h-[100dvh] w-full select-none flex-col overflow-hidden bg-background text-foreground"
+      className="fixed inset-0 z-50 w-full select-none overflow-y-auto overscroll-contain bg-background text-foreground"
       style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" } as React.CSSProperties}
     >
-      <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background-elevated px-3">
-        {header}
-      </header>
-
-      <div className="flex min-h-0 min-w-0 flex-1">
+      <div
+        className={cn(
+          "grid min-h-full w-full transition-[grid-template-columns] duration-300 ease-out",
+          aside && asideOpen ? "grid-cols-[260px_minmax(0,1fr)]" : "grid-cols-[0px_minmax(0,1fr)]",
+        )}
+      >
         {aside ? (
-          <div
-            className={cn(
-              "min-h-0 shrink-0 overflow-hidden border-border bg-background-elevated transition-[width] duration-300 ease-out",
-              asideOpen ? "w-[260px] border-r" : "w-0",
-            )}
-          >
-            <div className="h-full w-[260px] overflow-y-auto overscroll-contain p-3">{aside}</div>
+          <div className="min-w-0 overflow-hidden border-border bg-background-elevated [&:not(:empty)]:border-r">
+            <div className="w-[260px] p-3">{asideOpen ? aside : null}</div>
           </div>
-        ) : null}
+        ) : (
+          <div />
+        )}
 
-        <main className="min-h-0 min-w-0 flex-1">{children}</main>
+        <div className="flex min-w-0 flex-col">
+          <header className="flex min-h-14 shrink-0 flex-wrap items-center gap-2 border-b border-border bg-background-elevated px-3 py-2">
+            {header}
+          </header>
+
+          <main className="min-w-0 flex-1 p-2 sm:p-3">{children}</main>
+
+          {footer ? (
+            <footer className="grid min-h-16 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 border-t border-border bg-background-elevated px-3 py-2">
+              {footer}
+            </footer>
+          ) : null}
+        </div>
       </div>
-
-      {footer ? (
-        <footer className="grid h-16 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 border-t border-border bg-background-elevated px-3">
-          {footer}
-        </footer>
-      ) : null}
 
       {gate}
     </div>
@@ -61,8 +66,9 @@ export function WorkspaceShell({
 }
 
 /**
- * Body dua panel: SOAL kiri tetap terlihat, JAWABAN kanan yang scroll.
- * `explanation` (Review) menempati area bawah dengan scroll internal sendiri.
+ * Body: SATU row Question + Answer (dua kolom sejajar, tinggi mengikuti konten
+ * terbesar). `explanation` (Review) berada SETELAH row tersebut, tetap di
+ * document flow yang sama.
  */
 export function WorkspaceBody({
   question,
@@ -74,20 +80,13 @@ export function WorkspaceBody({
   explanation?: ReactNode;
 }) {
   return (
-    <div className="flex h-full min-h-0 flex-col gap-2 p-2 sm:gap-3 sm:p-3">
-      {/* QuestionPanel & AnswerPanel = direct siblings.
-          Portrait sempit: 1 kolom (soal auto, jawaban scroll).
-          Landscape / >=768px: 2 kolom sejajar, tidak pernah wrap. */}
-      <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] gap-2 sm:gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:grid-rows-1 landscape:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] landscape:grid-rows-1">
-        <div className="min-h-0 min-w-0 max-h-[45vh] overflow-y-auto overscroll-contain md:max-h-none landscape:max-h-none">
-          {question}
-        </div>
-        <div className="min-h-0 min-w-0 overflow-y-auto overscroll-contain">{answers}</div>
+    <div className="flex w-full min-w-0 flex-col gap-2 sm:gap-3">
+      <div className="grid min-w-0 grid-cols-1 items-start gap-2 sm:gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] landscape:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="min-w-0">{question}</div>
+        <div className="min-w-0">{answers}</div>
       </div>
 
-      {explanation ? (
-        <div className="min-h-0 shrink-0 basis-[34%] overflow-hidden">{explanation}</div>
-      ) : null}
+      {explanation ? <div className="min-w-0">{explanation}</div> : null}
     </div>
   );
 }

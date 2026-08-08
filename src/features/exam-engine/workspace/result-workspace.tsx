@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, CircleSlash, Loader2, RotateCcw, XCircle } from "lucide-react";
+import { CheckCircle2, CircleSlash, Loader2, RotateCcw, Trophy, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";

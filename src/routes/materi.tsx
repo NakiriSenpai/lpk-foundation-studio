@@ -36,18 +36,12 @@ function MateriPage() {
     <AppLayout>
       <RequireAuth>
         {lesson ? (
-          <div className="space-y-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="-ml-2"
-              onClick={() => void navigate({ to: "/materi", search: {} })}
-            >
-              ← Kembali ke daftar materi
-            </Button>
-            <LessonPreview lessonId={lesson} variant="siswa" />
-          </div>
+          <LessonViewer
+            lessonId={lesson}
+            onBack={() => void navigate({ to: "/materi", search: {} })}
+          />
         ) : (
+
           <MateriList
             onOpen={(lessonId) => void navigate({ to: "/materi", search: { lesson: lessonId } })}
           />

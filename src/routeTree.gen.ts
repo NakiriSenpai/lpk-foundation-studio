@@ -26,6 +26,7 @@ import { Route as UjianRouteImport } from './routes/ujian'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin_.analytics'
 import { Route as AdminUsersRouteImport } from './routes/admin_.users'
 import { Route as MateriIndexRouteImport } from './routes/materi.index'
+import { Route as MateriCategoryRouteImport } from './routes/materi.$category'
 import { Route as OwnerQuestionBankRouteImport } from './routes/owner_.question-bank'
 import { Route as OwnerSettingsRouteImport } from './routes/owner_.settings'
 import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
@@ -127,6 +128,11 @@ const MateriIndexRoute = MateriIndexRouteImport.update({
   path: '/',
   getParentRoute: () => MateriRoute,
 } as any)
+const MateriCategoryRoute = MateriCategoryRouteImport.update({
+  id: '/$category',
+  path: '/$category',
+  getParentRoute: () => MateriRoute,
+} as any)
 const OwnerQuestionBankRoute = OwnerQuestionBankRouteImport.update({
   id: '/owner_/question-bank',
   path: '/owner/question-bank',
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/ujian': typeof UjianRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/materi/$category': typeof MateriCategoryRoute
   '/owner/question-bank': typeof OwnerQuestionBankRoute
   '/owner/settings': typeof OwnerSettingsRoute
   '/owner/tenants': typeof OwnerTenantsRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/tenant': typeof TenantRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/materi/$category': typeof MateriCategoryRoute
   '/owner/question-bank': typeof OwnerQuestionBankRoute
   '/owner/settings': typeof OwnerSettingsRoute
   '/owner/tenants': typeof OwnerTenantsRoute
@@ -289,6 +297,7 @@ export interface FileRoutesById {
   '/ujian': typeof UjianRouteWithChildren
   '/admin_/analytics': typeof AdminAnalyticsRoute
   '/admin_/users': typeof AdminUsersRoute
+  '/materi/$category': typeof MateriCategoryRoute
   '/owner_/question-bank': typeof OwnerQuestionBankRoute
   '/owner_/settings': typeof OwnerSettingsRoute
   '/owner_/tenants': typeof OwnerTenantsRoute
@@ -325,6 +334,7 @@ export interface FileRouteTypes {
     | '/ujian'
     | '/admin/analytics'
     | '/admin/users'
+    | '/materi/$category'
     | '/owner/question-bank'
     | '/owner/settings'
     | '/owner/tenants'
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/tenant'
     | '/admin/analytics'
     | '/admin/users'
+    | '/materi/$category'
     | '/owner/question-bank'
     | '/owner/settings'
     | '/owner/tenants'
@@ -391,6 +402,7 @@ export interface FileRouteTypes {
     | '/ujian'
     | '/admin_/analytics'
     | '/admin_/users'
+    | '/materi/$category'
     | '/owner_/question-bank'
     | '/owner_/settings'
     | '/owner_/tenants'
@@ -559,6 +571,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MateriIndexRouteImport
       parentRoute: typeof MateriRoute
     }
+    '/materi/$category': {
+      id: '/materi/$category'
+      path: '/$category'
+      fullPath: '/materi/$category'
+      preLoaderRoute: typeof MateriCategoryRouteImport
+      parentRoute: typeof MateriRoute
+    }
     '/owner_/question-bank': {
       id: '/owner_/question-bank'
       path: '/owner/question-bank'
@@ -668,10 +687,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface MateriRouteChildren {
+  MateriCategoryRoute: typeof MateriCategoryRoute
   MateriIndexRoute: typeof MateriIndexRoute
 }
 
 const MateriRouteChildren: MateriRouteChildren = {
+  MateriCategoryRoute: MateriCategoryRoute,
   MateriIndexRoute: MateriIndexRoute,
 }
 

@@ -89,22 +89,28 @@ export function AnswerShell({
   children: ReactNode;
 }) {
   const className = cn(
-    "flex w-full items-start gap-2.5 rounded-xl border p-2.5 text-left transition-colors",
+    "flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition-all duration-150",
     tone === "correct"
-      ? "border-emerald-500 bg-emerald-500/10"
+      ? "border-success bg-success/12"
       : tone === "wrong"
-        ? "border-destructive bg-destructive/10"
+        ? "border-destructive bg-destructive/12"
         : selected
-          ? "border-primary bg-primary/10"
+          ? "border-primary bg-primary-muted glow-primary"
           : "border-border bg-card",
-    onClick && "hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-60",
+    onClick && "hover:border-primary/60 disabled:cursor-not-allowed disabled:opacity-60",
   );
   const inner = (
     <>
       <span
         className={cn(
-          "flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold",
-          selected ? "border-primary bg-primary text-primary-foreground" : "border-border",
+          "flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-bold tabular-nums",
+          tone === "correct"
+            ? "border-success bg-success text-success-foreground"
+            : tone === "wrong"
+              ? "border-destructive bg-destructive text-destructive-foreground"
+              : selected
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border text-muted-foreground",
         )}
       >
         {index + 1}
@@ -112,6 +118,7 @@ export function AnswerShell({
       <span className="min-w-0 flex-1 space-y-1.5">{children}</span>
     </>
   );
+
 
   if (!onClick) return <div className={className}>{inner}</div>;
   return (

@@ -38,6 +38,17 @@ export function useLessonProgressSaver(
     };
   }, []);
 
+  // Jangan pernah membawa unit tertunda dari lesson lama ke lesson baru saat
+  // TanStack Router mempertahankan instance komponen pada perubahan parameter.
+  useEffect(() => {
+    pendingUnits.current.clear();
+    pendingBlock.current = null;
+    attempts.current = 0;
+    inFlight.current = false;
+    setStatus("idle");
+    if (timer.current) clearTimeout(timer.current);
+  }, [lessonId]);
+
   const flush = useCallback(async () => {
     if (!enabled || inFlight.current) return;
     if (pendingUnits.current.size === 0 && !pendingBlock.current) return;

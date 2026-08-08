@@ -60,6 +60,7 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
     onSaved: () => {
       void queryClient.invalidateQueries({ queryKey: ["lesson-progress", lessonId] });
       void queryClient.invalidateQueries({ queryKey: ["lessons-with-progress"] });
+      void queryClient.invalidateQueries({ queryKey: ["student-lesson-progress"] });
       void queryClient.invalidateQueries({ queryKey: ["student-category-progress"] });
     },
   });
@@ -82,6 +83,16 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
 
   const isLast = sections.length > 0 && step >= sections.length - 1;
   const completed = progress?.status === "completed";
+
+  // Route parameter dapat berubah tanpa unmount. Reset seluruh state lokal agar
+  // posisi, dedupe, dan start mutation lesson sebelumnya tidak bocor ke lesson baru.
+  useEffect(() => {
+    setStep(0);
+    setResumed(false);
+    startedRef.current = null;
+    markedRef.current.clear();
+    startLesson.reset();
+  }, [lessonId]);
 
   // Resume: posisi terakhir diambil dari database, bukan localStorage.
   useEffect(() => {

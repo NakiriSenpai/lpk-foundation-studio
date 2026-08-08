@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { PagePlaceholder } from "@/components/common/page-placeholder";
 import { AppLayout } from "@/layouts/app-layout";
-import { RequireAuth } from "@/middleware";
+import { RequireOwner } from "@/middleware";
 
 export const Route = createFileRoute("/exam-studio")({
   head: () => ({
@@ -21,9 +21,9 @@ export const Route = createFileRoute("/exam-studio")({
 function ExamStudioPage() {
   return (
     <AppLayout>
-      <RequireAuth>
+      <RequireOwner>
         <PagePlaceholder title="Exam Studio" description="Penyusun soal dan ujian." />
-      </RequireAuth>
+      </RequireOwner>
     </AppLayout>
   );
 }

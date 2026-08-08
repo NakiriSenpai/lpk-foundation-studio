@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { AppLayout } from "@/layouts/app-layout";
-import { RequireAuth } from "@/middleware";
+import { RequireOwner } from "@/middleware";
 import { MediaPicker } from "@/features/media";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/media")({
 function MediaPage() {
   return (
     <AppLayout>
-      <RequireAuth>
+      <RequireOwner>
         <div className="mx-auto w-full max-w-2xl space-y-4 px-4 py-6">
           <header>
             <h1 className="text-xl font-semibold text-foreground">Media</h1>
@@ -54,7 +54,7 @@ function MediaPage() {
             </CardContent>
           </Card>
         </div>
-      </RequireAuth>
+      </RequireOwner>
     </AppLayout>
   );
 }

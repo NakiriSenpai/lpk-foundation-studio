@@ -23,6 +23,9 @@ import { LESSON_STATUS_LABELS } from "@/features/lesson/lesson.constants";
 import { useDeleteLesson, useLessons } from "@/hooks/lesson";
 import type { ExamDifficulty } from "@/types/exam";
 import type { LessonDetailRow, LessonStatus } from "@/types/lesson";
+import { ImportBundleDialog } from "@/features/content-io/components/import-bundle-dialog";
+import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
+import { buildLessonBundle, downloadBundle } from "@/services/content/bundle/bundle-export.service";
 import { LessonFormDialog } from "./lesson-form-dialog";
 
 const PAGE_SIZE = 10;
@@ -49,6 +52,27 @@ export function LessonList() {
   const [page, setPage] = useState(1);
   const [formOpen, setFormOpen] = useState(false);
   const [selected, setSelected] = useState<LessonDetailRow | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [exportingId, setExportingId] = useState<string | null>(null);
+
+  const handleExport = async (lesson: LessonDetailRow) => {
+    setExportingId(lesson.id);
+    try {
+      const bundle = await buildLessonBundle(lesson.id, true);
+      downloadBundle(bundle, `lesson-${lesson.slug}`);
+      toast.success("Bundle lesson berhasil diunduh.");
+      void recordContentIoAudit({
+        action: "export_lesson",
+        entity: lesson.slug,
+        count: 1,
+        result: "success",
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengekspor lesson.");
+    } finally {
+      setExportingId(null);
+    }
+  };
 
   const params = useMemo(
     () => ({ search, status, category, difficulty, page, pageSize: PAGE_SIZE }),
@@ -86,11 +110,8 @@ export function LessonList() {
         >
           <Plus className="mr-1 size-4" /> Tambah Lesson
         </Button>
-        <Button variant="outline" className="min-h-11" disabled title="Belum tersedia">
+        <Button variant="outline" className="min-h-11" onClick={() => setImportOpen(true)}>
           <Upload className="mr-1 size-4" /> Import
-        </Button>
-        <Button variant="outline" className="min-h-11" disabled title="Belum tersedia">
-          <Download className="mr-1 size-4" /> Export
         </Button>
       </div>
 
@@ -258,6 +279,16 @@ export function LessonList() {
                   size="sm"
                   variant="outline"
                   className="min-h-11"
+                  disabled={exportingId === lesson.id}
+                  onClick={() => void handleExport(lesson)}
+                >
+                  <Download className="mr-1 size-4" />
+                  {exportingId === lesson.id ? "Menyiapkan…" : "Export"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="min-h-11"
                   onClick={() => void handleDelete(lesson)}
                 >
                   <Trash2 className="mr-1 size-4" /> Hapus
@@ -293,6 +324,7 @@ export function LessonList() {
       ) : null}
 
       <LessonFormDialog open={formOpen} onOpenChange={setFormOpen} lesson={selected} />
+      <ImportBundleDialog open={importOpen} onOpenChange={setImportOpen} bundleType="lesson" />
     </section>
   );
 }

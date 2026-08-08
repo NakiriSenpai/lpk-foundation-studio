@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
+import { PublishGateButton } from "@/features/content-io/components/publish-gate-button";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CATEGORY_LABELS, EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
@@ -144,9 +145,17 @@ export function LessonEditor({ lessonId }: Props) {
             <h1 className="truncate text-lg font-semibold">{lesson.title}</h1>
             <p className="truncate text-xs text-muted-foreground">/{lesson.slug}</p>
           </div>
-          <Badge variant={lesson.status === "published" ? "default" : "secondary"}>
-            {LESSON_STATUS_LABELS[lesson.status]}
-          </Badge>
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <Badge variant={lesson.status === "published" ? "default" : "secondary"}>
+              {LESSON_STATUS_LABELS[lesson.status]}
+            </Badge>
+            <PublishGateButton
+              kind="lesson"
+              entityId={lesson.id}
+              isPublished={lesson.status === "published"}
+              label="Lesson"
+            />
+          </div>
         </div>
         {lesson.description ? (
           <p className="text-sm text-muted-foreground">{lesson.description}</p>

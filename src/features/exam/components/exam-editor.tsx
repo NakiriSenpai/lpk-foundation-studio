@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
+import { PublishGateButton } from "@/features/content-io/components/publish-gate-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -133,9 +134,17 @@ export function ExamEditor({ examId }: Props) {
             <h1 className="truncate text-lg font-semibold">{exam.title}</h1>
             <p className="truncate text-xs text-muted-foreground">/{exam.slug}</p>
           </div>
-          <Badge variant={exam.status === "published" ? "default" : "secondary"}>
-            {EXAM_STATUS_LABELS[exam.status]}
-          </Badge>
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <Badge variant={exam.status === "published" ? "default" : "secondary"}>
+              {EXAM_STATUS_LABELS[exam.status]}
+            </Badge>
+            <PublishGateButton
+              kind="exam"
+              entityId={exam.id}
+              isPublished={exam.status === "published"}
+              label="Exam"
+            />
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
           <p>Kategori: {CATEGORY_LABELS[exam.category] ?? exam.category}</p>

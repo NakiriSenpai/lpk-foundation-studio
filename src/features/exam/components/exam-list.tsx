@@ -22,6 +22,9 @@ import {
   EXAM_STATUS_LABELS,
 } from "@/features/exam/exam.constants";
 import type { ExamRow, ExamStatus } from "@/types/exam";
+import { ImportBundleDialog } from "@/features/content-io/components/import-bundle-dialog";
+import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
+import { buildExamBundle, downloadBundle } from "@/services/content/bundle/bundle-export.service";
 import { ExamFormDialog } from "./exam-form-dialog";
 
 const PAGE_SIZE = 10;
@@ -47,6 +50,27 @@ export function ExamList() {
   const [page, setPage] = useState(1);
   const [formOpen, setFormOpen] = useState(false);
   const [selected, setSelected] = useState<ExamRow | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [exportingId, setExportingId] = useState<string | null>(null);
+
+  const handleExport = async (exam: ExamRow) => {
+    setExportingId(exam.id);
+    try {
+      const bundle = await buildExamBundle(exam.id, true);
+      downloadBundle(bundle, `exam-${exam.slug}`);
+      toast.success("Bundle exam berhasil diunduh.");
+      void recordContentIoAudit({
+        action: "export_exam",
+        entity: exam.slug,
+        count: 1,
+        result: "success",
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengekspor exam.");
+    } finally {
+      setExportingId(null);
+    }
+  };
 
   const params = useMemo(
     () => ({ search, status, category, page, pageSize: PAGE_SIZE }),
@@ -83,11 +107,8 @@ export function ExamList() {
         >
           <Plus className="mr-1 size-4" /> Tambah Exam
         </Button>
-        <Button variant="outline" disabled title="Belum tersedia">
+        <Button variant="outline" onClick={() => setImportOpen(true)}>
           <Upload className="mr-1 size-4" /> Import
-        </Button>
-        <Button variant="outline" disabled title="Belum tersedia">
-          <Download className="mr-1 size-4" /> Export
         </Button>
       </div>
 
@@ -215,6 +236,15 @@ export function ExamList() {
                 >
                   <Pencil className="mr-1 size-4" /> Ubah
                 </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={exportingId === exam.id}
+                  onClick={() => void handleExport(exam)}
+                >
+                  <Download className="mr-1 size-4" />
+                  {exportingId === exam.id ? "Menyiapkan…" : "Export"}
+                </Button>
                 <Button size="sm" variant="outline" onClick={() => void handleDelete(exam)}>
                   <Trash2 className="mr-1 size-4" /> Hapus
                 </Button>
@@ -249,6 +279,7 @@ export function ExamList() {
       ) : null}
 
       <ExamFormDialog open={formOpen} onOpenChange={setFormOpen} exam={selected} />
+      <ImportBundleDialog open={importOpen} onOpenChange={setImportOpen} bundleType="exam" />
     </section>
   );
 }

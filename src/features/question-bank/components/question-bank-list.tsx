@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Archive, ArchiveRestore, Image as ImageIcon, Music } from "lucide-react";
+import {
+  Archive,
+  ArchiveRestore,
+  Download,
+  Image as ImageIcon,
+  Music,
+  Upload,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +40,12 @@ import {
   type QuestionBankFilters,
 } from "@/types/question-bank";
 import { formatTanggal } from "@/utils/format";
+import { ImportBundleDialog } from "@/features/content-io/components/import-bundle-dialog";
+import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
+import {
+  buildQuestionBundle,
+  downloadBundle,
+} from "@/services/content/bundle/bundle-export.service";
 
 const PAGE_SIZE = 10;
 
@@ -56,6 +69,8 @@ export function QuestionBankList() {
   const tagQuery = useTags();
   const bankQuery = useBankQuestions(filters);
   const archiveQuestion = useArchiveBankQuestion();
+  const [importOpen, setImportOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const patch = (value: Partial<QuestionBankFilters>) =>
     setFilters((prev) => ({ ...prev, page: 1, ...value }));
@@ -63,6 +78,26 @@ export function QuestionBankList() {
   const rows = bankQuery.data?.rows ?? [];
   const page = bankQuery.data?.page ?? 1;
   const totalPages = bankQuery.data?.totalPages ?? 1;
+  const total = bankQuery.data?.total ?? 0;
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const bundle = await buildQuestionBundle({ mode: "filtered", filters });
+      downloadBundle(bundle, `question-bank-${new Date().toISOString().slice(0, 10)}`);
+      toast.success(`${bundle.data.length} soal berhasil diekspor.`);
+      void recordContentIoAudit({
+        action: "export_question_bundle",
+        entity: "question_bank",
+        count: bundle.data.length,
+        result: "success",
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengekspor soal.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <section className="space-y-5">
@@ -73,6 +108,22 @@ export function QuestionBankList() {
           hanya dapat dibuat dari Studio, bukan dari halaman ini.
         </p>
       </header>
+
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" className="min-h-11" onClick={() => setImportOpen(true)}>
+          <Upload className="mr-1 size-4" /> Import
+        </Button>
+        <Button
+          variant="outline"
+          className="min-h-11"
+          disabled={exporting || total === 0}
+          onClick={() => void handleExport()}
+        >
+          <Download className="mr-1 size-4" />
+          {exporting ? "Menyiapkan…" : "Export sesuai filter"}
+        </Button>
+      </div>
+
 
       <div className="space-y-3 rounded-xl border p-4">
         <div className="space-y-2">
@@ -387,6 +438,13 @@ export function QuestionBankList() {
           </Button>
         </div>
       </div>
+
+      <ImportBundleDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        bundleType="question_bank"
+        onImported={() => void bankQuery.refetch()}
+      />
     </section>
   );
 }

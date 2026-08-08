@@ -13,34 +13,34 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-function applyTheme(theme: Theme) {
+/**
+ * Sprint 11 FINAL: aplikasi memakai satu Global Dark Design System.
+ * Tema selalu dark agar seluruh halaman terlihat sebagai satu produk.
+ */
+function applyTheme(_theme: Theme) {
   const root = document.documentElement;
-  root.classList.toggle("dark", theme === "dark");
-  root.style.colorScheme = theme;
+  root.classList.add("dark");
+  root.style.colorScheme = "dark";
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<Theme>("dark");
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY) as Theme | null;
-    const initial: Theme =
-      stored ?? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    setThemeState(initial);
-    applyTheme(initial);
+    applyTheme("dark");
   }, []);
 
-  const setTheme = useCallback((next: Theme) => {
-    setThemeState(next);
-    window.localStorage.setItem(STORAGE_KEY, next);
-    applyTheme(next);
+  const setTheme = useCallback((_next: Theme) => {
+    setThemeState("dark");
+    window.localStorage.setItem(STORAGE_KEY, "dark");
+    applyTheme("dark");
   }, []);
 
   const value = useMemo<ThemeContextValue>(
     () => ({
       theme,
       setTheme,
-      toggleTheme: () => setTheme(theme === "dark" ? "light" : "dark"),
+      toggleTheme: () => setTheme("dark"),
     }),
     [theme, setTheme],
   );
@@ -55,4 +55,4 @@ export function useTheme(): ThemeContextValue {
 }
 
 /** Script inline untuk mencegah kedipan tema saat halaman dimuat. */
-export const themeInitScript = `(function(){try{var t=localStorage.getItem('${STORAGE_KEY}');if(!t){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}if(t==='dark'){document.documentElement.classList.add('dark');}document.documentElement.style.colorScheme=t;}catch(e){}})();`;
+export const themeInitScript = `(function(){try{document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark';localStorage.setItem('lms-theme','dark');}catch(e){}})();`;

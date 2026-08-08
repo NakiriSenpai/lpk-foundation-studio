@@ -5,6 +5,7 @@ import { AppLayout } from "@/layouts/app-layout";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { LoadingScreen } from "@/components/common/loading-screen";
 import { useAuth } from "@/hooks/auth";
+import { useAppConfig } from "@/hooks/config";
 import { resolvePostLoginTarget } from "@/lib/auth/landing";
 
 export const Route = createFileRoute("/login")({
@@ -32,6 +33,7 @@ function LoginPage() {
   const { redirect } = Route.useSearch();
   const { isAuthenticated, isLoading, role } = useAuth();
   const navigate = useNavigate();
+  const { config } = useAppConfig();
   // Role berasal dari tabel `profiles` (server), bukan penyimpanan klien.
   const target = resolvePostLoginTarget(role, redirect);
 

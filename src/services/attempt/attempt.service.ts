@@ -407,6 +407,11 @@ export async function listMyAttempts(): Promise<AttemptRow[]> {
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData.user?.id;
   if (!userId) return [];
+
+  // Cleanup lifecycle: attempt kadaluarsa difinalisasi sebelum daftar dibaca,
+  // sehingga tidak pernah muncul sebagai "Lanjutkan Ujian".
+  await finalizeMyStaleAttempts();
+
   const { data, error } = await supabase
     .from(ATTEMPT_TABLES.attempts)
     .select("*")

@@ -96,7 +96,6 @@ export function QuestionPickerDialog({
     }
   };
 
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
@@ -121,7 +120,11 @@ export function QuestionPickerDialog({
             <Select
               value={filters.source ?? "semua"}
               onValueChange={(v) =>
-                setFilters((p) => ({ ...p, source: v as NonNullable<QuestionBankFilters["source"]>, page: 1 }))
+                setFilters((p) => ({
+                  ...p,
+                  source: v as NonNullable<QuestionBankFilters["source"]>,
+                  page: 1,
+                }))
               }
             >
               <SelectTrigger>

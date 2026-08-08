@@ -6,7 +6,8 @@ import { useStudentDetail } from "@/hooks/analytics";
 import type { AnalyticsRange } from "@/types/analytics";
 
 import { RankAvatar } from "@/features/leaderboard/components/rank-avatar";
-import { MetricBar, StatCard, formatDurasiDetik, formatTanggal } from "./analytics-primitives";
+import { MetricBar, StatCard } from "./analytics-primitives";
+import { formatDurasiDetik, formatTanggal } from "../utils";
 
 /** Detail analitik satu siswa. */
 export function StudentDetailDialog({

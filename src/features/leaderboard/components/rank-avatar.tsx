@@ -2,10 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { LeaderboardRow } from "@/types/analytics";
 
-export function initials(name: string): string {
-  const parts = name.trim().split(/\s+/).slice(0, 2);
-  return parts.map((p) => p.charAt(0).toUpperCase()).join("") || "S";
-}
+import { initials } from "../utils";
 
 export function RankAvatar({
   row,
@@ -22,8 +19,4 @@ export function RankAvatar({
       </AvatarFallback>
     </Avatar>
   );
-}
-
-export function formatScore(value: number): string {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }

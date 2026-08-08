@@ -96,7 +96,6 @@ export function LessonPreview({
         </Button>
       ) : null}
 
-
       <header className="space-y-2">
         {lesson.thumbnail_url ? (
           <img
@@ -115,7 +114,6 @@ export function LessonPreview({
           {variant === "studio" ? (
             <Badge variant="outline">{LESSON_STATUS_LABELS[lesson.status]}</Badge>
           ) : null}
-
         </div>
       </header>
 
@@ -175,7 +173,6 @@ export function LessonPreview({
                             }
                           >
                             {answerIndex + 1}. {answer.text}
-
                           </li>
                         ))}
                       </ul>

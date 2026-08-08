@@ -9,7 +9,6 @@ import type {
   TagRow,
 } from "@/types/question-bank";
 
-
 export type MediaSlot = "image" | "audio";
 export type { AnswerLabel, ExamQuestionWithAnswers } from "@/types/exam";
 

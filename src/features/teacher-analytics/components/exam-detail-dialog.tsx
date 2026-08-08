@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useExamDetailAnalytics } from "@/hooks/analytics";
 import type { AnalyticsRange } from "@/types/analytics";
 
-import { MetricBar, StatCard, formatDurasiDetik } from "./analytics-primitives";
+import { MetricBar, StatCard } from "./analytics-primitives";
+import { formatDurasiDetik } from "../utils";
 
 /** Detail analitik satu ujian: ringkasan, performa soal, soal sulit, grammar. */
 export function ExamDetailDialog({

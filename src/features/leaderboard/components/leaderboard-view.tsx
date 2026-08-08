@@ -15,7 +15,8 @@ import { useLeaderboard, useLeaderboardExams, useMyRank } from "@/hooks/leaderbo
 import { cn } from "@/lib/utils";
 import type { LeaderboardRange, LeaderboardRow } from "@/types/analytics";
 
-import { RankAvatar, formatScore } from "./rank-avatar";
+import { RankAvatar } from "./rank-avatar";
+import { formatScore } from "../utils";
 
 const RANGE_OPTIONS: { value: LeaderboardRange; label: string }[] = [
   { value: "all", label: "Semua" },

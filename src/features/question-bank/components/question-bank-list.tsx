@@ -19,7 +19,12 @@ import {
   EXAM_CATEGORIES,
   EXAM_DIFFICULTY_LABELS,
 } from "@/features/exam/exam.constants";
-import { useArchiveBankQuestion, useBankQuestions, useGrammarTags, useTags } from "@/hooks/question-bank";
+import {
+  useArchiveBankQuestion,
+  useBankQuestions,
+  useGrammarTags,
+  useTags,
+} from "@/hooks/question-bank";
 import {
   ORIGIN_LABELS,
   QUESTION_TYPE_LABELS,
@@ -85,7 +90,9 @@ export function QuestionBankList() {
             <Label>Source</Label>
             <Select
               value={filters.source ?? "semua"}
-              onValueChange={(v) => patch({ source: v as NonNullable<QuestionBankFilters["source"]> })}
+              onValueChange={(v) =>
+                patch({ source: v as NonNullable<QuestionBankFilters["source"]> })
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -103,10 +110,7 @@ export function QuestionBankList() {
 
           <div className="space-y-1">
             <Label>Grammar</Label>
-            <Select
-              value={filters.grammar ?? "semua"}
-              onValueChange={(v) => patch({ grammar: v })}
-            >
+            <Select value={filters.grammar ?? "semua"} onValueChange={(v) => patch({ grammar: v })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -145,7 +149,9 @@ export function QuestionBankList() {
             <Label>Difficulty</Label>
             <Select
               value={filters.difficulty ?? "semua"}
-              onValueChange={(v) => patch({ difficulty: v as NonNullable<QuestionBankFilters["difficulty"]> })}
+              onValueChange={(v) =>
+                patch({ difficulty: v as NonNullable<QuestionBankFilters["difficulty"]> })
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -165,7 +171,9 @@ export function QuestionBankList() {
             <Label>Media</Label>
             <Select
               value={filters.media ?? "semua"}
-              onValueChange={(v) => patch({ media: v as NonNullable<QuestionBankFilters["media"]> })}
+              onValueChange={(v) =>
+                patch({ media: v as NonNullable<QuestionBankFilters["media"]> })
+              }
             >
               <SelectTrigger>
                 <SelectValue />

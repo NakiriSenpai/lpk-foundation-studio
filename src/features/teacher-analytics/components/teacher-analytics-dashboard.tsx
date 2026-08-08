@@ -16,7 +16,8 @@ import { useAnalyticsOverview, useExamAnalytics, useStudentAnalytics } from "@/h
 import { RankAvatar } from "@/features/leaderboard/components/rank-avatar";
 import type { AnalyticsRange } from "@/types/analytics";
 
-import { MetricBar, StatCard, formatDurasiDetik, formatTanggal } from "./analytics-primitives";
+import { MetricBar, StatCard } from "./analytics-primitives";
+import { formatDurasiDetik, formatTanggal } from "../utils";
 import { ExamDetailDialog } from "./exam-detail-dialog";
 import { StudentDetailDialog } from "./student-detail-dialog";
 

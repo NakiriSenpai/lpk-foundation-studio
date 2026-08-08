@@ -112,10 +112,7 @@ export function AdminDashboard() {
           </div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
             <Stat label="Ujian Selesai" value={overview.data?.total_attempts ?? 0} />
-            <Stat
-              label="Rata-rata Nilai"
-              value={Math.round(overview.data?.average_score ?? 0)}
-            />
+            <Stat label="Rata-rata Nilai" value={Math.round(overview.data?.average_score ?? 0)} />
             <Stat label="Tingkat Lulus" value={`${Math.round(overview.data?.pass_rate ?? 0)}%`} />
           </div>
         </div>

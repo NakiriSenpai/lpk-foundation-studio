@@ -42,7 +42,6 @@ const NAV_BY_ROLE: Record<AppRole, NavItem[]> = {
   siswa: STUDENT_NAV,
 };
 
-
 /** Bottom navigation disembunyikan saat ujian berjalan di mode layar penuh. */
 function useIsFullscreen() {
   const [isFullscreen, setIsFullscreen] = useState(false);

@@ -73,8 +73,7 @@ export function RequireAnyRole({
       ) : (
         <AccessDenied
           message={
-            message ??
-            `Halaman ini hanya untuk ${roles.map((r) => ROLE_LABELS[r]).join(", ")}.`
+            message ?? `Halaman ini hanya untuk ${roles.map((r) => ROLE_LABELS[r]).join(", ")}.`
           }
         />
       )}

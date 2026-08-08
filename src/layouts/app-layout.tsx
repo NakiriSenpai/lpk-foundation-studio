@@ -9,38 +9,40 @@ import type { AppRole } from "@/types/auth";
 
 type NavItem = { to: string; label: string };
 
-const STUDENT_NAV: NavItem[] = [
-  { to: "/dashboard", label: "Dasbor" },
-  { to: "/materi", label: "Materi" },
-  { to: "/ujian", label: "Ujian" },
-  { to: "/leaderboard", label: "Peringkat" },
-  { to: "/profile", label: "Profil" },
-];
-
-/** Navigasi mengikuti permission matrix Sprint 14. */
+/**
+ * Bottom navigation hanya berisi FITUR APLIKASI (learning), bukan management.
+ * Seluruh menu management tetap berada di dashboard masing-masing role.
+ */
 const NAV_BY_ROLE: Record<AppRole, NavItem[]> = {
   owner: [
-    { to: "/owner", label: "Dasbor" },
-    { to: "/owner/tenants", label: "Tenant" },
-    { to: "/owner/users", label: "User" },
-    { to: "/teacher/analytics", label: "Analitik" },
+    { to: "/owner", label: "Beranda" },
+    { to: "/ujian", label: "Ujian" },
+    { to: "/materi", label: "Materi" },
     { to: "/profile", label: "Profil" },
   ],
   admin: [
-    { to: "/admin", label: "Dasbor" },
-    { to: "/admin/users", label: "User" },
-    { to: "/admin/analytics", label: "Analitik" },
+    { to: "/admin", label: "Beranda" },
+    { to: "/ujian", label: "Ujian" },
+    { to: "/materi", label: "Materi" },
     { to: "/profile", label: "Profil" },
   ],
   guru: [
-    { to: "/teacher", label: "Dasbor" },
-    { to: "/teacher/analytics", label: "Analitik" },
+    { to: "/teacher", label: "Beranda" },
+    { to: "/ujian", label: "Ujian" },
     { to: "/materi", label: "Materi" },
     { to: "/leaderboard", label: "Peringkat" },
     { to: "/profile", label: "Profil" },
   ],
-  siswa: STUDENT_NAV,
+  siswa: [
+    { to: "/dashboard", label: "Beranda" },
+    { to: "/materi", label: "Materi" },
+    { to: "/ujian", label: "Ujian" },
+    { to: "/leaderboard", label: "Peringkat" },
+    { to: "/profile", label: "Profil" },
+  ],
 };
+
+const STUDENT_NAV: NavItem[] = NAV_BY_ROLE.siswa;
 
 /** Bottom navigation disembunyikan saat ujian berjalan di mode layar penuh. */
 function useIsFullscreen() {

@@ -5,6 +5,7 @@ import { AppLayout } from "@/layouts/app-layout";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { LoadingScreen } from "@/components/common/loading-screen";
 import { useAuth } from "@/hooks/auth";
+import { resolvePostLoginTarget } from "@/lib/auth/landing";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
@@ -29,9 +30,10 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const { redirect } = Route.useSearch();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, role } = useAuth();
   const navigate = useNavigate();
-  const target = redirect && redirect !== "/login" ? redirect : "/dashboard";
+  // Role berasal dari tabel `profiles` (server), bukan penyimpanan klien.
+  const target = resolvePostLoginTarget(role, redirect);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -52,7 +54,7 @@ function LoginPage() {
         {isLoading ? (
           <LoadingScreen label="Memeriksa sesi…" />
         ) : (
-          <LoginForm onSuccess={() => void navigate({ to: target, replace: true })} />
+          <LoginForm onSuccess={() => undefined} />
         )}
       </section>
     </AppLayout>

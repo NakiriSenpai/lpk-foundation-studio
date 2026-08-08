@@ -1,13 +1,17 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { lessonCategoryLabel } from "@/features/lesson/lesson.constants";
 import { useStudentDetail } from "@/hooks/analytics";
+import { useStudentLessonAnalytics } from "@/hooks/lesson";
 import type { AnalyticsRange } from "@/types/analytics";
 
 import { RankAvatar } from "@/features/leaderboard/components/rank-avatar";
 import { MetricBar, StatCard } from "./analytics-primitives";
 import { formatDurasiDetik, formatTanggal } from "../utils";
+
 
 /** Detail analitik satu siswa. */
 export function StudentDetailDialog({

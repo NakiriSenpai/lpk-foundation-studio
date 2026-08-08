@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/auth";
 import { useAttemptSession, useSaveAnswer, useSetFlag, useSubmitAttempt } from "@/hooks/attempt";
+import { ExamAttemptExpiredError } from "@/services/attempt";
+
 import type { AnswerLabel } from "@/types/exam";
 import type { AttemptAnswerRow } from "@/types/attempt";
 import { ATTEMPT_STATUS_LABELS } from "@/types/attempt";
@@ -50,8 +52,17 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     isError,
     error,
   } = useAttemptSession(attemptId, !authLoading && isAuthenticated);
+  const expiredAttempt = error instanceof ExamAttemptExpiredError;
   // Exam Runner tidak pernah dirender sebelum attempt + snapshot tersedia.
   const isLoading = authLoading || (isAuthenticated && !isError && (sessionLoading || !data));
+
+  // Attempt yang sudah lewat waktu: sudah difinalisasi di data layer → buka hasil.
+  useEffect(() => {
+    if (!expiredAttempt) return;
+    toast.info("Waktu ujian telah habis.");
+    void navigate({ to: "/ujian/hasil/$attemptId", params: { attemptId } });
+  }, [expiredAttempt, attemptId, navigate]);
+
   const saveAnswer = useSaveAnswer();
   const setFlagMutation = useSetFlag();
   const submit = useSubmitAttempt();

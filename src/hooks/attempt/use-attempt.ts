@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+  ExamAttemptExpiredError,
+  ExamSnapshotMissingError,
   getActiveAttempt,
   getAttemptResult,
   getAttemptReview,
@@ -47,7 +49,10 @@ export function useAttemptSession(attemptId: string, enabled = true) {
     enabled: Boolean(attemptId) && enabled,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
-    retry: 2,
+    // Expired / snapshot hilang bukan error jaringan → jangan diulang.
+    retry: (failureCount, err) =>
+      !(err instanceof ExamAttemptExpiredError || err instanceof ExamSnapshotMissingError) &&
+      failureCount < 2,
     retryDelay: (attempt) => Math.min(1500, 400 * (attempt + 1)),
   });
 }

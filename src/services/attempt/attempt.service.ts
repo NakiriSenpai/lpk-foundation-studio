@@ -110,11 +110,42 @@ async function buildSnapshot(exam: ExamRow) {
   return { payload, studentPayload };
 }
 
+/** Attempt yang sudah lewat `expires_at` (waktu server) — bukan lagi attempt aktif. */
+export class ExamAttemptExpiredError extends Error {
+  constructor() {
+    super("Waktu ujian telah habis.");
+    this.name = "ExamAttemptExpiredError";
+  }
+}
+
+/** Data ujian benar-benar tidak ada (snapshot hilang) meski attempt masih valid. */
+export class ExamSnapshotMissingError extends Error {
+  constructor() {
+    super("Data ujian tidak dapat dipulihkan.");
+    this.name = "ExamSnapshotMissingError";
+  }
+}
+
+/**
+ * Finalisasi seluruh attempt kadaluarsa milik user (waktu server, bukan browser).
+ * Reuse lifecycle existing: submit_exam_attempt('time_up') di dalam function DB.
+ */
+export async function finalizeMyStaleAttempts(): Promise<void> {
+  const { error } = await supabase.rpc("finalize_my_stale_attempts");
+  if (error) {
+    // Non-fatal: pembacaan tetap dilanjutkan, filter status tetap berlaku.
+    console.warn("finalize_my_stale_attempts gagal", error.message);
+  }
+}
+
 /** Attempt aktif milik user pada exam tertentu (anti duplicate). */
 export async function getActiveAttempt(examId: string): Promise<AttemptRow | null> {
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData.user?.id;
   if (!userId) throw new Error("Sesi tidak ditemukan. Silakan masuk kembali.");
+
+  // Stale attempt difinalisasi dulu sehingga tidak pernah dikembalikan sebagai aktif.
+  await finalizeMyStaleAttempts();
 
   const { data, error } = await supabase
     .from(ATTEMPT_TABLES.attempts)
@@ -206,13 +237,20 @@ export async function getAttemptSession(attemptId: string): Promise<AttemptSessi
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error("Sesi tidak ditemukan. Silakan masuk kembali.");
 
+  // VALIDASI SEBELUM SNAPSHOT: attempt ada? masih in_progress? belum lewat waktu?
+  const { data: state } = await supabase.rpc("finalize_attempt_if_stale", {
+    p_attempt_id: attemptId,
+  });
+  if (state === "not_found") throw new Error("Ujian tidak ditemukan.");
+  if (state === "finalized" || state === "missing_snapshot") throw new ExamAttemptExpiredError();
+
   const { data: attempt, error } = await supabase
     .from(ATTEMPT_TABLES.attempts)
     .select("*")
     .eq("id", attemptId)
     .maybeSingle();
   if (error) throw new Error("Gagal memuat ujian. Periksa koneksi Anda.");
-  if (!attempt) throw new Error("Attempt tidak ditemukan.");
+  if (!attempt) throw new Error("Ujian tidak ditemukan.");
 
   const [{ data: snapshot, error: snapshotError }, { data: answers }] = await Promise.all([
     supabase
@@ -228,7 +266,7 @@ export async function getAttemptSession(attemptId: string): Promise<AttemptSessi
   ]);
 
   if (snapshotError) throw new Error("Gagal memuat soal ujian. Periksa koneksi Anda.");
-  if (!snapshot) throw new Error("Snapshot ujian tidak ditemukan.");
+  if (!snapshot) throw new ExamSnapshotMissingError();
 
   return {
     attempt: attempt as AttemptRow,
@@ -367,6 +405,11 @@ export async function listMyAttempts(): Promise<AttemptRow[]> {
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData.user?.id;
   if (!userId) return [];
+
+  // Cleanup lifecycle: attempt kadaluarsa difinalisasi sebelum daftar dibaca,
+  // sehingga tidak pernah muncul sebagai "Lanjutkan Ujian".
+  await finalizeMyStaleAttempts();
+
   const { data, error } = await supabase
     .from(ATTEMPT_TABLES.attempts)
     .select("*")

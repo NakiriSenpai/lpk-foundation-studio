@@ -1,41 +1,25 @@
 import { useEffect, type ReactNode } from "react";
-import { Maximize, RotateCw } from "lucide-react";
+import { RotateCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { WorkspaceSidebar, type PaletteGroup } from "./workspace-sidebar";
 
 /**
- * Shell Exam Workspace (Sprint 11).
- * Struktur tetap: HEADER → BODY → FOOTER, sidebar di kiri BODY.
+ * Shell Exam Workspace (Sprint 11A).
+ * Struktur tetap: HEADER → MAIN → FOOTER. Landscape only.
  * Dipakai bersama oleh Exam, Result, dan Review.
  */
 export function WorkspaceShell({
   header,
   footer,
   children,
-  sidebar,
   portrait,
   onRotateRetry,
-  fullscreenBanner,
 }: {
   header: ReactNode;
   footer?: ReactNode;
   children: ReactNode;
-  sidebar?:
-    | {
-        groups: PaletteGroup[];
-        activeIndex: number;
-        collapsed: boolean;
-        disabled: boolean;
-        mode: "exam" | "review";
-        onToggle: () => void;
-        onJump: (index: number) => void;
-      }
-    | undefined;
   portrait: boolean;
   onRotateRetry: () => void;
-  fullscreenBanner?: ReactNode;
 }) {
   // ANTI COPY — hanya pada Workspace.
   useEffect(() => {
@@ -61,17 +45,12 @@ export function WorkspaceShell({
         {header}
       </header>
 
-      {fullscreenBanner}
-
-      <div className="flex min-h-0 flex-1">
-        {sidebar ? <WorkspaceSidebar {...sidebar} /> : null}
-        <main className="min-w-0 flex-1 overflow-y-auto overscroll-contain">
-          <div className="mx-auto w-full max-w-[1120px] p-3">{children}</div>
-        </main>
-      </div>
+      <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div className="mx-auto w-full max-w-[1200px] p-3">{children}</div>
+      </main>
 
       {footer ? (
-        <footer className="flex h-14 shrink-0 items-center gap-2 border-t border-border bg-card px-3">
+        <footer className="grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 border-t border-border bg-card px-3">
           {footer}
         </footer>
       ) : null}
@@ -87,35 +66,6 @@ export function WorkspaceShell({
           </Button>
         </div>
       ) : null}
-    </div>
-  );
-}
-
-/** Banner kecil saat keluar dari mode layar penuh (tanpa popup). */
-export function FullscreenBanner({
-  violations,
-  limit,
-  onRequest,
-}: {
-  violations: number;
-  limit: number;
-  onRequest: () => void;
-}) {
-  return (
-    <div
-      className={cn(
-        "flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-b px-3 py-1.5 text-xs",
-        "border-destructive/40 bg-destructive/10 text-destructive",
-      )}
-    >
-      <span className="font-medium">Anda keluar dari mode layar penuh.</span>
-      <span className="tabular-nums">
-        Pelanggaran: {violations} / {limit}
-      </span>
-      <span>Kembali ke mode layar penuh.</span>
-      <Button size="sm" className="ml-auto h-7 px-2 text-xs" onClick={onRequest}>
-        <Maximize className="mr-1 size-3.5" /> Masuk Fullscreen
-      </Button>
     </div>
   );
 }

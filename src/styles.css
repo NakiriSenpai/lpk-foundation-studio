@@ -140,6 +140,15 @@
   --sidebar-accent-foreground: oklch(0.97 0.008 260);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.62 0.19 285 / 70%);
+
+  /* Sprint 16 — Lesson design system (mengikuti referensi visual). */
+  --progress-track: oklch(1 0 0 / 8%);
+  --cat-grammar: oklch(0.63 0.2 292);
+  --cat-vocab: oklch(0.62 0.17 258);
+  --cat-culture: oklch(0.66 0.16 152);
+  --cat-conversation: oklch(0.73 0.16 62);
+  --cat-listening: oklch(0.72 0.11 195);
+  --cat-bookmark: oklch(0.66 0.19 5);
 }
 
 @layer base {

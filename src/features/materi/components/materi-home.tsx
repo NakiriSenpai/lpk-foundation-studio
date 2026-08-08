@@ -9,16 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useLessonsWithProgress } from "@/hooks/lesson";
-import {
-  BOOKMARK_META,
-  CATEGORY_ORDER,
-  categoryMeta,
-} from "@/features/materi/materi.constants";
-import {
-  CategoryRow,
-  CategoryTile,
-  ToneBar,
-} from "@/features/materi/components/materi-primitives";
+import { BOOKMARK_META, CATEGORY_ORDER, categoryMeta } from "@/features/materi/materi.constants";
+import { CategoryRow, CategoryTile, ToneBar } from "@/features/materi/components/materi-primitives";
 import { cn } from "@/lib/utils";
 import type { LessonWithProgress } from "@/types/lesson";
 
@@ -30,7 +22,6 @@ function pad(value: number) {
 export function MateriHome() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-
 
   const { data, isLoading, isError, refetch } = useLessonsWithProgress();
   const lessons = useMemo(() => data ?? [], [data]);
@@ -71,7 +62,6 @@ export function MateriHome() {
 
   const allCompleted =
     lessons.length > 0 && lessons.every((l) => l.progress?.status === "completed");
-
 
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -128,7 +118,6 @@ export function MateriHome() {
       </header>
 
       {lessons.length > 0 ? (
-
         <section
           aria-label="Progress belajar"
           className="relative overflow-hidden rounded-3xl border border-primary/25 bg-gradient-to-br from-primary/25 via-card to-card p-5"
@@ -190,7 +179,6 @@ export function MateriHome() {
                 </div>
                 <ToneBar value={entry.percent} bar={meta.tone.bar} />
               </div>
-
             );
           })}
         </div>
@@ -215,7 +203,9 @@ export function MateriHome() {
           >
             <CategoryTile meta={resumeMeta} />
             <span className="min-w-0 space-y-1">
-              <span className={cn("block truncate text-[11px] font-semibold", resumeMeta.tone.text)}>
+              <span
+                className={cn("block truncate text-[11px] font-semibold", resumeMeta.tone.text)}
+              >
                 {resumeMeta.label}
               </span>
               <span className="block truncate text-sm font-medium text-foreground">
@@ -238,7 +228,6 @@ export function MateriHome() {
           Semua materi sudah Anda selesaikan. Kerja bagus!
         </section>
       ) : null}
-
 
       <section className="space-y-3">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
@@ -310,7 +299,6 @@ export function MateriHome() {
               caption={BOOKMARK_META.listDescription}
               onClick={() => openCategory(BOOKMARK_META.slug)}
             />
-
           </div>
         )}
       </section>

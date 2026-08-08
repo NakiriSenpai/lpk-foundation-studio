@@ -27,7 +27,6 @@ import { cn } from "@/lib/utils";
 import { LessonBlockRenderer } from "./lesson-block-renderer";
 import { LessonPractice } from "./lesson-practice";
 
-
 /**
  * Lesson Viewer (Sprint 17).
  *
@@ -35,13 +34,7 @@ import { LessonPractice } from "./lesson-practice";
  * SEMUA role memiliki personal progress; penyimpanan dilakukan di latar
  * belakang (debounce + retry terbatas) sehingga navigasi tidak pernah macet.
  */
-export function LessonViewer({
-  lessonId,
-  onBack,
-}: {
-  lessonId: string;
-  onBack: () => void;
-}) {
+export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: () => void }) {
   const { isAuthenticated, profile } = useAuth();
   const canLearn = isAuthenticated && Boolean(profile);
 
@@ -139,7 +132,6 @@ export function LessonViewer({
     });
   };
 
-
   if (lessonQuery.isLoading || sectionsQuery.isLoading) {
     return (
       <div className="space-y-3">
@@ -166,7 +158,6 @@ export function LessonViewer({
     : sections.length > 0
       ? Math.round(((step + 1) / sections.length) * 100)
       : 0;
-
 
   const meta = categoryMeta(lesson.category);
 
@@ -201,7 +192,12 @@ export function LessonViewer({
         <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
           <CategoryTile meta={meta} />
           <div className="min-w-0">
-            <p className={cn("truncate text-xs font-semibold uppercase tracking-wide", meta.tone.text)}>
+            <p
+              className={cn(
+                "truncate text-xs font-semibold uppercase tracking-wide",
+                meta.tone.text,
+              )}
+            >
               {lessonCategoryLabel(lesson.category)}
             </p>
             <h1 className="text-xl font-semibold leading-tight text-foreground">{lesson.title}</h1>
@@ -277,7 +273,6 @@ export function LessonViewer({
                 </p>
               ) : null}
             </div>
-
 
             <div className="grid grid-cols-2 gap-2">
               <Button

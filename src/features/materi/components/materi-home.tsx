@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { BookOpen, PlayCircle, Search } from "lucide-react";
+import { ArrowRight, BookOpen, Search } from "lucide-react";
 
 import progressIllustration from "@/assets/progress-illustration.png";
 import { Button } from "@/components/ui/button";
@@ -72,8 +72,7 @@ export function MateriHome() {
     const q = query.trim().toLowerCase();
     if (!q) return [];
     return lessons.filter(
-      (l) =>
-        l.title.toLowerCase().includes(q) || (l.description ?? "").toLowerCase().includes(q),
+      (l) => l.title.toLowerCase().includes(q) || (l.description ?? "").toLowerCase().includes(q),
     );
   }, [lessons, query]);
 
@@ -107,16 +106,18 @@ export function MateriHome() {
     );
   }
 
+  const resumeMeta = resume ? categoryMeta(resume.category) : null;
+
   return (
     <div className="space-y-6 pb-4">
       <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
-        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-background">
-          <BookOpen className="size-5" aria-hidden />
+        <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-background shadow-sm">
+          <BookOpen className="size-6" aria-hidden />
         </span>
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-semibold text-foreground">Materi</h1>
+          <h1 className="truncate text-xl font-bold text-foreground">Belajar Bahasa Korea</h1>
           <p className="truncate text-xs text-muted-foreground">
-            Belajar terstruktur per kategori
+            Kurikulum EPS-TOPIK untuk pekerja dan pemula
           </p>
         </div>
       </header>
@@ -127,10 +128,10 @@ export function MateriHome() {
           className="relative overflow-hidden rounded-3xl border border-primary/25 bg-gradient-to-br from-primary/25 via-card to-card p-5"
         >
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-            <div className="min-w-0 space-y-2">
+            <div className="min-w-0 space-y-1">
               <p className="text-sm font-semibold text-foreground">Progress kamu</p>
               <p className="text-xs text-muted-foreground">Total pembelajaran selesai</p>
-              <p className="text-2xl font-bold tracking-tight text-foreground">
+              <p className="pt-1 text-3xl font-bold tracking-tight text-foreground">
                 {pad(stats.completed)}
                 <span className="text-base font-medium text-muted-foreground">
                   {" "}
@@ -148,9 +149,9 @@ export function MateriHome() {
               className="size-24 shrink-0 object-contain"
             />
           </div>
-          <div className="mt-3 space-y-1.5">
+          <div className="mt-4 space-y-1.5">
             <ToneBar value={stats.percent} bar="bg-primary" />
-            <p className="text-right text-xs text-muted-foreground">{stats.percent}% selesai</p>
+            <p className="text-right text-xs font-medium text-primary">{stats.percent}% selesai</p>
           </div>
         </section>
       ) : null}
@@ -161,7 +162,8 @@ export function MateriHome() {
           {CATEGORY_ORDER.map((slug, index) => {
             const meta = categoryMeta(slug);
             const entry = perCategory.get(slug) ?? { total: 0, completed: 0, percent: 0 };
-            const isLastOdd = index === CATEGORY_ORDER.length - 1 && CATEGORY_ORDER.length % 2 === 1;
+            const isLastOdd =
+              index === CATEGORY_ORDER.length - 1 && CATEGORY_ORDER.length % 2 === 1;
             return (
               <button
                 key={slug}
@@ -173,79 +175,73 @@ export function MateriHome() {
                   isLastOdd && "col-span-2",
                 )}
               >
-                <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
-                  <CategoryTile meta={meta} />
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-semibold text-foreground">
-                      {meta.label}
-                    </span>
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {entry.total} materi
-                    </span>
+                <CategoryTile meta={meta} />
+                <div className="min-w-0 space-y-0.5">
+                  <span className="block truncate text-sm font-semibold text-foreground">
+                    {meta.label}
+                  </span>
+                  <span className={cn("block text-xs font-medium", meta.tone.text)}>
+                    {pad(entry.completed)} / {pad(entry.total)}
                   </span>
                 </div>
-                {isStudent ? (
-                  <div className="space-y-1.5">
-                    <ToneBar value={entry.percent} bar={meta.tone.bar} />
-                    <span className={cn("block text-xs font-medium", meta.tone.text)}>
-                      {entry.percent}% selesai
-                    </span>
-                  </div>
-                ) : null}
+                <ToneBar value={entry.percent} bar={meta.tone.bar} />
               </button>
             );
           })}
         </div>
       </section>
 
-      {isStudent && resume ? (
+      {isStudent && resume && resumeMeta ? (
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-foreground">Lanjutkan materi</h2>
-          <Card className={cn("ring-1 ring-inset", categoryMeta(resume.category).tone.ring)}>
-            <CardContent className="space-y-3 p-4">
-              <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
-                <CategoryTile meta={categoryMeta(resume.category)} />
-                <div className="min-w-0">
-                  <p
-                    className={cn(
-                      "truncate text-xs font-semibold uppercase tracking-wide",
-                      categoryMeta(resume.category).tone.text,
-                    )}
-                  >
-                    {categoryMeta(resume.category).label}
-                  </p>
-                  <p className="truncate text-sm font-medium text-foreground">{resume.title}</p>
-                </div>
-              </div>
+          <div className="space-y-0.5">
+            <h2 className="text-sm font-semibold text-foreground">Lanjutkan materi</h2>
+            <p className="text-xs text-muted-foreground">Teruskan dari tempat terakhir Anda</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => openLesson(resume.id)}
+            className={cn(
+              "grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left ring-1 ring-inset transition-colors hover:border-primary/50",
+              resumeMeta.tone.ring,
+            )}
+          >
+            <CategoryTile meta={resumeMeta} />
+            <span className="min-w-0 space-y-1">
+              <span className={cn("block truncate text-[11px] font-semibold", resumeMeta.tone.text)}>
+                {resumeMeta.label}
+              </span>
+              <span className="block truncate text-sm font-medium text-foreground">
+                {resume.title}
+              </span>
               <ToneBar
                 value={resume.progress?.progress_percent ?? 0}
-                bar={categoryMeta(resume.category).tone.bar}
+                bar={resumeMeta.tone.bar}
+                className="mt-1"
               />
-              <Button className="h-11 w-full" onClick={() => openLesson(resume.id)}>
-                <PlayCircle className="mr-2 size-4" aria-hidden /> Lanjutkan (
-                {resume.progress?.progress_percent ?? 0}%)
-              </Button>
-            </CardContent>
-          </Card>
+            </span>
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">
+              Lanjutkan <ArrowRight className="size-3.5" aria-hidden />
+            </span>
+          </button>
         </section>
       ) : null}
 
       <section className="space-y-3">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <h2 className="truncate text-sm font-semibold text-foreground">Daftar materi</h2>
-        </div>
-        <div className="relative">
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden
-          />
-          <Input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Cari materi"
-            aria-label="Cari materi"
-            className="h-11 pl-9"
-          />
+          <div className="relative w-36 shrink-0 sm:w-52">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden
+            />
+            <Input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Cari"
+              aria-label="Cari materi"
+              className="h-10 rounded-full pl-9"
+            />
+          </div>
         </div>
 
         {query.trim() ? (
@@ -282,7 +278,7 @@ export function MateriHome() {
             </ul>
           )
         ) : (
-          <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-3">
             {CATEGORY_ORDER.map((slug) => {
               const meta = categoryMeta(slug);
               const entry = perCategory.get(slug) ?? { total: 0, completed: 0, percent: 0 };
@@ -290,7 +286,7 @@ export function MateriHome() {
                 <CategoryRow
                   key={slug}
                   meta={meta}
-                  caption={`${meta.listDescription} • ${entry.total} materi`}
+                  caption={`${entry.total} materi`}
                   onClick={() => openCategory(slug)}
                 />
               );

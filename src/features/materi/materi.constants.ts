@@ -97,7 +97,7 @@ function tone(color: string): CategoryTone {
 export const CATEGORY_META: Record<string, CategoryMeta> = {
   "tata-bahasa": {
     slug: "tata-bahasa",
-    label: "Tata Bahasa",
+    label: "Tatabahasa",
     subtitle: "Pola kalimat dan aturan bahasa Korea",
     listDescription: "Pola kalimat & rumus",
     searchPlaceholder: "Cari tata bahasa",

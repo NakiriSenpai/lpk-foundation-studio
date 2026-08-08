@@ -3,9 +3,18 @@ import { Bookmark, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { CategoryMeta } from "@/features/materi/materi.constants";
+import type { ExamDifficulty } from "@/types/exam";
 
 /** Bar progres beraksen kategori. */
-export function ToneBar({ value, bar, className }: { value: number; bar: string; className?: string }) {
+export function ToneBar({
+  value,
+  bar,
+  className,
+}: {
+  value: number;
+  bar: string;
+  className?: string;
+}) {
   const safe = Math.max(0, Math.min(100, Math.round(value)));
   return (
     <div
@@ -29,7 +38,8 @@ export function CategoryTile({
   size?: "sm" | "md" | "lg";
 }) {
   const Icon = meta.icon;
-  const box = size === "lg" ? "size-14 rounded-2xl" : size === "sm" ? "size-9 rounded-xl" : "size-11 rounded-2xl";
+  const box =
+    size === "lg" ? "size-14 rounded-2xl" : size === "sm" ? "size-9 rounded-xl" : "size-11 rounded-2xl";
   const glyph = size === "lg" ? "size-7" : size === "sm" ? "size-4.5" : "size-5";
   return (
     <span className={cn("grid shrink-0 place-items-center shadow-sm", box, meta.tone.tile)}>
@@ -61,7 +71,7 @@ export function BookmarkButton({
         onToggle();
       }}
       className={cn(
-        "grid size-9 shrink-0 place-items-center rounded-full border transition-colors",
+        "grid size-9 shrink-0 place-items-center rounded-xl border transition-colors",
         active
           ? "border-cat-bookmark/40 bg-cat-bookmark/15 text-cat-bookmark"
           : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground",
@@ -77,10 +87,13 @@ export function FilterChip({
   active,
   children,
   onClick,
+  tone,
 }: {
   active: boolean;
   children: ReactNode;
   onClick: () => void;
+  /** Kelas warna aktif khusus (mis. level kesulitan). */
+  tone?: string | undefined;
 }) {
   return (
     <button
@@ -89,7 +102,7 @@ export function FilterChip({
       className={cn(
         "min-h-9 shrink-0 rounded-full border px-3.5 text-xs font-medium transition-colors",
         active
-          ? "border-primary bg-primary/15 text-foreground"
+          ? (tone ?? "border-primary bg-primary/15 text-foreground")
           : "border-border bg-secondary/40 text-muted-foreground hover:border-primary/40",
       )}
     >
@@ -97,6 +110,22 @@ export function FilterChip({
     </button>
   );
 }
+
+/** Warna aksen per level kesulitan (dipakai chip filter & badge materi). */
+export const DIFFICULTY_TONE: Record<ExamDifficulty, { chip: string; badge: string }> = {
+  mudah: {
+    chip: "border-success/50 bg-success/15 text-success",
+    badge: "border-success/40 bg-success/10 text-success",
+  },
+  sedang: {
+    chip: "border-warning/50 bg-warning/15 text-warning",
+    badge: "border-warning/40 bg-warning/10 text-warning",
+  },
+  sulit: {
+    chip: "border-destructive/50 bg-destructive/15 text-destructive",
+    badge: "border-destructive/40 bg-destructive/10 text-destructive",
+  },
+};
 
 /** Baris navigasi kategori pada "Daftar materi". */
 export function CategoryRow({
@@ -112,7 +141,7 @@ export function CategoryRow({
     <button
       type="button"
       onClick={onClick}
-      className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border bg-card p-3 text-left transition-colors hover:border-primary/50"
+      className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-border bg-card p-3 text-left transition-colors hover:border-primary/50"
     >
       <CategoryTile meta={meta} size="sm" />
       <span className="min-w-0">

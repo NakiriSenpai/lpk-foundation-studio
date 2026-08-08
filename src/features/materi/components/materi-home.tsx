@@ -7,18 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/hooks/auth";
+
 import { useLessonsWithProgress } from "@/hooks/lesson";
-import {
-  BOOKMARK_META,
-  CATEGORY_ORDER,
-  categoryMeta,
-} from "@/features/materi/materi.constants";
-import {
-  CategoryRow,
-  CategoryTile,
-  ToneBar,
-} from "@/features/materi/components/materi-primitives";
+import { BOOKMARK_META, CATEGORY_ORDER, categoryMeta } from "@/features/materi/materi.constants";
+import { CategoryRow, CategoryTile, ToneBar } from "@/features/materi/components/materi-primitives";
 import { cn } from "@/lib/utils";
 import type { LessonWithProgress } from "@/types/lesson";
 
@@ -29,8 +21,6 @@ function pad(value: number) {
 /** Halaman utama Materi (referensi Gambar 1). */
 export function MateriHome() {
   const navigate = useNavigate();
-  const { profile } = useAuth();
-  const isStudent = profile?.role === "siswa";
   const [query, setQuery] = useState("");
 
   const { data, isLoading, isError, refetch } = useLessonsWithProgress();
@@ -58,15 +48,20 @@ export function MateriHome() {
     return map;
   }, [lessons]);
 
-  const resume: LessonWithProgress | undefined = useMemo(
-    () =>
-      lessons
-        .filter((l) => l.progress?.status === "in_progress")
-        .sort((a, b) =>
-          (b.progress?.last_activity_at ?? "").localeCompare(a.progress?.last_activity_at ?? ""),
-        )[0],
-    [lessons],
-  );
+  // Prioritas: lesson terakhir yang sedang dikerjakan (progress terbaru),
+  // lalu lesson pertama yang belum pernah diselesaikan.
+  const resume: LessonWithProgress | undefined = useMemo(() => {
+    const inProgress = lessons
+      .filter((l) => l.progress && l.progress.status !== "completed")
+      .sort((a, b) =>
+        (b.progress?.last_activity_at ?? "").localeCompare(a.progress?.last_activity_at ?? ""),
+      )[0];
+    if (inProgress) return inProgress;
+    return lessons.find((l) => !l.progress);
+  }, [lessons]);
+
+  const allCompleted =
+    lessons.length > 0 && lessons.every((l) => l.progress?.status === "completed");
 
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -122,7 +117,7 @@ export function MateriHome() {
         </div>
       </header>
 
-      {isStudent ? (
+      {lessons.length > 0 ? (
         <section
           aria-label="Progress belajar"
           className="relative overflow-hidden rounded-3xl border border-primary/25 bg-gradient-to-br from-primary/25 via-card to-card p-5"
@@ -165,12 +160,10 @@ export function MateriHome() {
             const isLastOdd =
               index === CATEGORY_ORDER.length - 1 && CATEGORY_ORDER.length % 2 === 1;
             return (
-              <button
+              <div
                 key={slug}
-                type="button"
-                onClick={() => openCategory(slug)}
                 className={cn(
-                  "space-y-3 rounded-2xl border border-border bg-card p-4 text-left ring-1 ring-inset transition-colors hover:border-primary/50",
+                  "space-y-3 rounded-2xl border border-border bg-card p-4 text-left ring-1 ring-inset",
                   meta.tone.ring,
                   isLastOdd && "col-span-2",
                 )}
@@ -185,18 +178,21 @@ export function MateriHome() {
                   </span>
                 </div>
                 <ToneBar value={entry.percent} bar={meta.tone.bar} />
-              </button>
+              </div>
             );
           })}
         </div>
       </section>
 
-      {isStudent && resume && resumeMeta ? (
+      {resume && resumeMeta ? (
         <section className="space-y-3">
           <div className="space-y-0.5">
             <h2 className="text-sm font-semibold text-foreground">Lanjutkan materi</h2>
-            <p className="text-xs text-muted-foreground">Teruskan dari tempat terakhir Anda</p>
+            <p className="text-xs text-muted-foreground">
+              {resume.progress ? "Teruskan dari tempat terakhir Anda" : "Mulai materi berikutnya"}
+            </p>
           </div>
+
           <button
             type="button"
             onClick={() => openLesson(resume.id)}
@@ -207,7 +203,9 @@ export function MateriHome() {
           >
             <CategoryTile meta={resumeMeta} />
             <span className="min-w-0 space-y-1">
-              <span className={cn("block truncate text-[11px] font-semibold", resumeMeta.tone.text)}>
+              <span
+                className={cn("block truncate text-[11px] font-semibold", resumeMeta.tone.text)}
+              >
                 {resumeMeta.label}
               </span>
               <span className="block truncate text-sm font-medium text-foreground">
@@ -220,9 +218,14 @@ export function MateriHome() {
               />
             </span>
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">
-              Lanjutkan <ArrowRight className="size-3.5" aria-hidden />
+              {resume.progress ? "Lanjutkan" : "Mulai"}{" "}
+              <ArrowRight className="size-3.5" aria-hidden />
             </span>
           </button>
+        </section>
+      ) : allCompleted ? (
+        <section className="rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">
+          Semua materi sudah Anda selesaikan. Kerja bagus!
         </section>
       ) : null}
 
@@ -291,13 +294,11 @@ export function MateriHome() {
                 />
               );
             })}
-            {isStudent ? (
-              <CategoryRow
-                meta={BOOKMARK_META}
-                caption={BOOKMARK_META.listDescription}
-                onClick={() => openCategory(BOOKMARK_META.slug)}
-              />
-            ) : null}
+            <CategoryRow
+              meta={BOOKMARK_META}
+              caption={BOOKMARK_META.listDescription}
+              onClick={() => openCategory(BOOKMARK_META.slug)}
+            />
           </div>
         )}
       </section>

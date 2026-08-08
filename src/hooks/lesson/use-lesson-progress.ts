@@ -15,11 +15,15 @@ import {
   type LessonAnalyticsFilters,
 } from "@/services/lesson/lesson-progress.service";
 
-/** Hanya siswa yang menghasilkan/menyimpan progres materi. */
-function useIsStudent() {
+/**
+ * Sprint 17: SEMUA role (owner/admin/guru/siswa) memiliki personal lesson
+ * progress. Pembatasan role hanya berlaku pada Teacher Analytics.
+ */
+function useLearnerEnabled() {
   const { isAuthenticated, profile } = useAuth();
-  return isAuthenticated && profile?.role === "siswa";
+  return isAuthenticated && Boolean(profile);
 }
+
 
 function useStaffEnabled() {
   const { isAuthenticated, profile } = useAuth();
@@ -37,7 +41,7 @@ function useInvalidateProgress() {
 }
 
 export function useLessonProgress(lessonId: string) {
-  const isStudent = useIsStudent();
+  const isStudent = useLearnerEnabled();
   return useQuery({
     queryKey: ["lesson-progress", lessonId],
     queryFn: () => getLessonProgress(lessonId),
@@ -90,7 +94,7 @@ export function useLessonsWithProgress() {
 }
 
 export function useStudentLessonProgress() {
-  const isStudent = useIsStudent();
+  const isStudent = useLearnerEnabled();
   return useQuery({
     queryKey: ["student-lesson-progress"],
     queryFn: getStudentLessonProgress,
@@ -100,7 +104,7 @@ export function useStudentLessonProgress() {
 }
 
 export function useStudentCategoryProgress() {
-  const isStudent = useIsStudent();
+  const isStudent = useLearnerEnabled();
   return useQuery({
     queryKey: ["student-category-progress"],
     queryFn: getStudentCategoryProgress,

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, BookOpenCheck, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import { lessonCategoryLabel } from "@/features/lesson/lesson.constants";
+import { useLessonProgressSaver } from "@/features/lesson/hooks/use-lesson-progress-saver";
 import { useAuth } from "@/hooks/auth";
 import {
   useCompleteLesson,
@@ -16,7 +18,6 @@ import {
   useLessonQuestions,
   useLessonSections,
   useStartLesson,
-  useUpdateLessonProgress,
 } from "@/hooks/lesson";
 
 import { CategoryTile, ToneBar } from "@/features/materi/components/materi-primitives";
@@ -27,21 +28,15 @@ import { LessonBlockRenderer } from "./lesson-block-renderer";
 import { LessonPractice } from "./lesson-practice";
 
 /**
- * Student Lesson Viewer (Sprint 16).
+ * Lesson Viewer (Sprint 17).
  *
  * Materi dibaca per bagian (section) mengikuti struktur Lesson Studio.
- * Progress ditulis lewat RPC server; staf (owner/admin/guru) boleh membaca
- * materi tanpa menghasilkan lesson_progress.
+ * SEMUA role memiliki personal progress; penyimpanan dilakukan di latar
+ * belakang (debounce + retry terbatas) sehingga navigasi tidak pernah macet.
  */
-export function LessonViewer({
-  lessonId,
-  onBack,
-}: {
-  lessonId: string;
-  onBack: () => void;
-}) {
-  const { profile } = useAuth();
-  const isStudent = profile?.role === "siswa";
+export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: () => void }) {
+  const { isAuthenticated, profile } = useAuth();
+  const canLearn = isAuthenticated && Boolean(profile);
 
   const lessonQuery = useLesson(lessonId);
   const sectionsQuery = useLessonSections(lessonId);
@@ -50,14 +45,23 @@ export function LessonViewer({
   const progressQuery = useLessonProgress(lessonId);
 
   const startLesson = useStartLesson();
-  const markProgress = useUpdateLessonProgress();
   const completeLesson = useCompleteLesson();
+  const queryClient = useQueryClient();
 
   const [step, setStep] = useState(0);
   const [resumed, setResumed] = useState(false);
   const startedRef = useRef<string | null>(null);
   const markedRef = useRef<Set<string>>(new Set());
   const topRef = useRef<HTMLDivElement>(null);
+
+  const saver = useLessonProgressSaver(lessonId, {
+    enabled: canLearn,
+    onSaved: () => {
+      void queryClient.invalidateQueries({ queryKey: ["lesson-progress", lessonId] });
+      void queryClient.invalidateQueries({ queryKey: ["lessons-with-progress"] });
+      void queryClient.invalidateQueries({ queryKey: ["student-category-progress"] });
+    },
+  });
 
   const lesson = lessonQuery.data;
   const sections = useMemo(() => sectionsQuery.data ?? [], [sectionsQuery.data]);
@@ -78,9 +82,9 @@ export function LessonViewer({
   const isLast = sections.length > 0 && step >= sections.length - 1;
   const completed = progress?.status === "completed";
 
-  // Resume: posisi terakhir siswa diambil dari database, bukan localStorage.
+  // Resume: posisi terakhir diambil dari database, bukan localStorage.
   useEffect(() => {
-    if (resumed || !isStudent || sections.length === 0 || blocks.length === 0) return;
+    if (resumed || !canLearn || sections.length === 0 || blocks.length === 0) return;
     if (progressQuery.isLoading) return;
     const blockId = progress?.current_block_id;
     if (blockId) {
@@ -89,48 +93,42 @@ export function LessonViewer({
       if (index >= 0) setStep(index);
     }
     setResumed(true);
-  }, [resumed, isStudent, sections, blocks, progress, progressQuery.isLoading]);
+  }, [resumed, canLearn, sections, blocks, progress, progressQuery.isLoading]);
 
-  // Membuka materi = membuat/menyegarkan progress (idempotent, siswa saja).
+  // Membuka materi = membuat/menyegarkan progress (idempotent, sekali saja).
   useEffect(() => {
-    if (!isStudent || !lesson || startedRef.current === lessonId) return;
+    if (!canLearn || !lesson || startedRef.current === lessonId) return;
     startedRef.current = lessonId;
-    startLesson.mutate(lessonId, {
-      onError: () => toast.error("Progres materi belum tersimpan. Periksa koneksi Anda."),
-    });
-  }, [isStudent, lesson, lessonId, startLesson]);
+    startLesson.mutate(lessonId);
+  }, [canLearn, lesson, lessonId, startLesson]);
 
-  // Berpindah bagian = menandai block bagian tersebut sebagai selesai dibaca.
+  // Berpindah bagian = mengantrikan block bagian tersebut (tanpa memblokir UI).
   useEffect(() => {
-    if (!isStudent || !resumed || !currentSection || sectionBlocks.length === 0) return;
+    if (!canLearn || !resumed || !currentSection || sectionBlocks.length === 0) return;
     if (markedRef.current.has(currentSection.id)) return;
     markedRef.current.add(currentSection.id);
-    markProgress.mutate(
-      {
-        lessonId,
-        blockIds: sectionBlocks.filter((b) => b.type !== "divider").map((b) => b.id),
-        currentBlockId: sectionBlocks[0]?.id ?? null,
-      },
-      {
-        onError: () => {
-          markedRef.current.delete(currentSection.id);
-          toast.error("Progres belum tersimpan. Akan dicoba lagi.");
-        },
-      },
+    saver.queue(
+      sectionBlocks.filter((b) => b.type !== "divider").map((b) => b.id),
+      sectionBlocks[0]?.id ?? null,
     );
-  }, [isStudent, resumed, currentSection, sectionBlocks, lessonId, markProgress]);
+  }, [canLearn, resumed, currentSection, sectionBlocks, saver]);
 
   const goTo = (next: number) => {
+    // Navigasi tidak pernah menunggu penyimpanan progres.
     setStep(next);
     topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleFinish = () => {
-    if (!isStudent || progress?.status === "completed") return onBack();
+    if (!canLearn || completed) return onBack();
 
     completeLesson.mutate(lessonId, {
-      onSuccess: () => toast.success("Materi selesai dipelajari."),
-      onError: () => toast.error("Gagal menyelesaikan materi. Coba lagi."),
+      onSuccess: () => {
+        toast.success("Materi selesai dipelajari.", { id: "lesson-complete" });
+        onBack();
+      },
+      onError: () =>
+        toast.error("Gagal menyelesaikan materi. Coba lagi.", { id: "lesson-complete" }),
     });
   };
 
@@ -155,7 +153,7 @@ export function LessonViewer({
     );
   }
 
-  const percent = isStudent
+  const percent = canLearn
     ? (progress?.progress_percent ?? 0)
     : sections.length > 0
       ? Math.round(((step + 1) / sections.length) * 100)
@@ -194,7 +192,12 @@ export function LessonViewer({
         <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
           <CategoryTile meta={meta} />
           <div className="min-w-0">
-            <p className={cn("truncate text-xs font-semibold uppercase tracking-wide", meta.tone.text)}>
+            <p
+              className={cn(
+                "truncate text-xs font-semibold uppercase tracking-wide",
+                meta.tone.text,
+              )}
+            >
               {lessonCategoryLabel(lesson.category)}
             </p>
             <h1 className="text-xl font-semibold leading-tight text-foreground">{lesson.title}</h1>
@@ -245,6 +248,30 @@ export function LessonViewer({
                 <span>{percent}% selesai</span>
               </div>
               <ToneBar value={percent} bar={meta.tone.bar} />
+              {canLearn && saver.status !== "idle" ? (
+                <p
+                  aria-live="polite"
+                  className={cn(
+                    "text-xs",
+                    saver.status === "error" ? "text-destructive" : "text-muted-foreground",
+                  )}
+                >
+                  {saver.status === "saving" ? "Menyimpan progres..." : null}
+                  {saver.status === "saved" ? "Progres tersimpan" : null}
+                  {saver.status === "error" ? (
+                    <>
+                      Progres gagal disimpan.{" "}
+                      <button
+                        type="button"
+                        onClick={saver.retry}
+                        className="underline underline-offset-2"
+                      >
+                        Coba lagi
+                      </button>
+                    </>
+                  ) : null}
+                </p>
+              ) : null}
             </div>
 
             <div className="grid grid-cols-2 gap-2">

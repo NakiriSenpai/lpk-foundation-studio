@@ -367,7 +367,7 @@ export type QuestionImportOptions = {
   strategy: ConflictStrategy;
   /** Jika false, item dengan lesson tidak ditemukan akan dilewati. */
   allowMissingLesson: boolean;
-  onProgress?: (done: number, total: number) => void;
+  onProgress?: ((done: number, total: number) => void) | undefined;
 };
 
 /**
@@ -497,7 +497,7 @@ export type ExamImportOptions = {
   strategy: ConflictStrategy;
   /** Lanjutkan walau ada soal yang tidak ditemukan. */
   allowMissingQuestions: boolean;
-  onProgress?: (done: number, total: number) => void;
+  onProgress?: ((done: number, total: number) => void) | undefined;
 };
 
 /** Import Exam. Hasil SELALU berstatus draft. */

@@ -75,10 +75,16 @@ export function WorkspaceBody({
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col gap-2 p-2 sm:gap-3 sm:p-3">
-      <div className="grid min-h-0 flex-1 gap-2 sm:gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <div className="min-h-0 min-w-0 overflow-y-auto overscroll-contain">{question}</div>
+      {/* QuestionPanel & AnswerPanel = direct siblings.
+          Portrait sempit: 1 kolom (soal auto, jawaban scroll).
+          Landscape / >=768px: 2 kolom sejajar, tidak pernah wrap. */}
+      <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] gap-2 sm:gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:grid-rows-1 landscape:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] landscape:grid-rows-1">
+        <div className="min-h-0 min-w-0 max-h-[45vh] overflow-y-auto overscroll-contain md:max-h-none landscape:max-h-none">
+          {question}
+        </div>
         <div className="min-h-0 min-w-0 overflow-y-auto overscroll-contain">{answers}</div>
       </div>
+
       {explanation ? (
         <div className="min-h-0 shrink-0 basis-[34%] overflow-hidden">{explanation}</div>
       ) : null}

@@ -12,12 +12,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * - Tidak ada counter pelanggaran dan tidak ada banner.
  */
 export type ExamFullscreenPhase =
-  | "IDLE"
-  | "REQUESTING"
-  | "ACTIVE"
-  | "EXIT_REQUESTED"
-  | "SUBMITTING"
-  | "FINISHED";
+  "IDLE" | "REQUESTING" | "ACTIVE" | "EXIT_REQUESTED" | "SUBMITTING" | "FINISHED";
 
 type Options = {
   /** Workspace siap dan attempt masih berjalan. */

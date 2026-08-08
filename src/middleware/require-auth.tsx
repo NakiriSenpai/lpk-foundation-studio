@@ -31,7 +31,6 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-
 /** Layar penolakan akses standar (dipakai semua guard role). */
 export function AccessDenied({ message }: { message: string }) {
   const { role } = useAuth();

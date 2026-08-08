@@ -39,12 +39,7 @@ export function StatCard({
     <Card className={cn(emphasis && "border-primary/40 bg-primary/5")}>
       <CardContent className="p-4">
         <p className="text-xs text-muted-foreground">{label}</p>
-        <p
-          className={cn(
-            "mt-1 font-semibold text-foreground",
-            emphasis ? "text-2xl" : "text-xl",
-          )}
-        >
+        <p className={cn("mt-1 font-semibold text-foreground", emphasis ? "text-2xl" : "text-xl")}>
           {value}
         </p>
         {hint ? <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p> : null}

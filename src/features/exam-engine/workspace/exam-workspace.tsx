@@ -302,16 +302,6 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
               >
                 <ChevronLeft className="mr-1 size-4" /> Sebelumnya
               </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant={local[current.question_id]?.flagged ? "default" : "outline"}
-                disabled={locked}
-                onClick={toggleFlag}
-              >
-                <Flag className="mr-1.5 size-4" />
-                {local[current.question_id]?.flagged ? "Ditandai" : "Tandai"}
-              </Button>
             </div>
             <Button
               type="button"
@@ -346,10 +336,25 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
               text={current.text}
               imageUrl={current.image_url}
               audioUrl={current.audio_url}
+              right={
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={local[current.question_id]?.flagged ? "default" : "outline"}
+                  disabled={locked}
+                  onClick={toggleFlag}
+                >
+                  <Flag className="mr-1.5 size-4" />
+                  {local[current.question_id]?.flagged ? "Ditandai" : "Tandai"}
+                </Button>
+              }
             />
           }
           answers={
-            <div className="space-y-2">
+            <div>
+              <AnswerPanelHeader title="Pilih jawaban yang tepat" />
+              <div className="space-y-2">
+
               {current.answers.map((answer, answerIndex) => (
                 <AnswerShell
                   key={answer.label}

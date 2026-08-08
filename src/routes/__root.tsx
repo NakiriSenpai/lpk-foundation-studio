@@ -16,6 +16,7 @@ import { ErrorBoundary } from "@/components/common/error-boundary";
 import { registerServiceWorker } from "@/lib/pwa/register-sw";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/auth/auth-context";
+import { AppConfigProvider } from "@/contexts/config/app-config-context";
 
 function NotFoundComponent() {
   return (

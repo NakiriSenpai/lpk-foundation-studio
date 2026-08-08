@@ -110,11 +110,8 @@ export function LessonList() {
         >
           <Plus className="mr-1 size-4" /> Tambah Lesson
         </Button>
-        <Button variant="outline" className="min-h-11" disabled title="Belum tersedia">
+        <Button variant="outline" className="min-h-11" onClick={() => setImportOpen(true)}>
           <Upload className="mr-1 size-4" /> Import
-        </Button>
-        <Button variant="outline" className="min-h-11" disabled title="Belum tersedia">
-          <Download className="mr-1 size-4" /> Export
         </Button>
       </div>
 

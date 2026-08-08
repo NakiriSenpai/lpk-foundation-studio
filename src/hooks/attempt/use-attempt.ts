@@ -57,7 +57,6 @@ export function useAttemptSession(attemptId: string, enabled = true) {
   });
 }
 
-
 export function useStartAttempt() {
   const queryClient = useQueryClient();
   return useMutation({

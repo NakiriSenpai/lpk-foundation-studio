@@ -158,7 +158,6 @@ export async function getActiveAttempt(examId: string): Promise<AttemptRow | nul
   return (data as AttemptRow | null) ?? null;
 }
 
-
 /**
  * MULAI UJIAN: satu klik = satu attempt + satu snapshot immutable.
  * Jika sudah ada attempt aktif, attempt tersebut yang dikembalikan.
@@ -268,7 +267,6 @@ export async function getAttemptSession(attemptId: string): Promise<AttemptSessi
 
   if (snapshotError) throw new Error("Gagal memuat soal ujian. Periksa koneksi Anda.");
   if (!snapshot) throw new ExamSnapshotMissingError();
-
 
   return {
     attempt: attempt as AttemptRow,

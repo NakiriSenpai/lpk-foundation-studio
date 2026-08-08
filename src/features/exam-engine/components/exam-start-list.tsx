@@ -38,7 +38,6 @@ export function ExamStartList() {
       .map((a) => [a.exam_id, a]),
   );
 
-
   const finishedExamIds = new Set(
     (attempts ?? [])
       .filter((a) => a.status !== "in_progress" && a.status !== "cancelled")

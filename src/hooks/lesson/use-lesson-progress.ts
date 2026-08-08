@@ -24,7 +24,6 @@ function useLearnerEnabled() {
   return isAuthenticated && Boolean(profile);
 }
 
-
 function useStaffEnabled() {
   const { isAuthenticated, profile } = useAuth();
   return isAuthenticated && Boolean(profile) && profile?.role !== "siswa";

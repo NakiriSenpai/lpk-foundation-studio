@@ -187,9 +187,7 @@ export function MateriHome() {
         <section className="space-y-3">
           <div className="space-y-0.5">
             <h2 className="text-sm font-semibold text-foreground">Lanjutkan materi</h2>
-            <p className="text-xs text-muted-foreground">
-              Teruskan dari tempat terakhir Anda
-            </p>
+            <p className="text-xs text-muted-foreground">Teruskan dari tempat terakhir Anda</p>
           </div>
 
           <button
@@ -217,8 +215,7 @@ export function MateriHome() {
               />
             </span>
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">
-              Lanjutkan{" "}
-              <ArrowRight className="size-3.5" aria-hidden />
+              Lanjutkan <ArrowRight className="size-3.5" aria-hidden />
             </span>
           </button>
         </section>

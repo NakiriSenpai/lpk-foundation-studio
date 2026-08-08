@@ -46,6 +46,7 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
 
   const startLesson = useStartLesson();
   const completeLesson = useCompleteLesson();
+  const startLessonMutate = startLesson.mutate;
   const queryClient = useQueryClient();
 
   const [step, setStep] = useState(0);
@@ -99,8 +100,8 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
   useEffect(() => {
     if (!canLearn || !lesson || startedRef.current === lessonId) return;
     startedRef.current = lessonId;
-    startLesson.mutate(lessonId);
-  }, [canLearn, lesson, lessonId, startLesson.mutate]);
+    startLessonMutate(lessonId);
+  }, [canLearn, lesson, lessonId, startLessonMutate]);
 
   // Berpindah bagian = mengantrikan block bagian tersebut (tanpa memblokir UI).
   useEffect(() => {
@@ -250,7 +251,8 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
                 <span>{percent}% selesai</span>
               </div>
               <ToneBar value={percent} bar={meta.tone.bar} />
-              {canLearn && (startLesson.isPending || startLesson.isError || saver.status !== "idle") ? (
+              {canLearn &&
+              (startLesson.isPending || startLesson.isError || saver.status !== "idle") ? (
                 <p
                   aria-live="polite"
                   className={cn(
@@ -260,7 +262,9 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
                       : "text-muted-foreground",
                   )}
                 >
-                  {startLesson.isPending || saver.status === "saving" ? "Menyimpan progres..." : null}
+                  {startLesson.isPending || saver.status === "saving"
+                    ? "Menyimpan progres..."
+                    : null}
                   {!startLesson.isPending && !startLesson.isError && saver.status === "saved"
                     ? "Progres tersimpan"
                     : null}
@@ -269,7 +273,7 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
                       Progress gagal dibuat.{" "}
                       <button
                         type="button"
-                        onClick={() => startLesson.mutate(lessonId)}
+                        onClick={() => startLessonMutate(lessonId)}
                         className="underline underline-offset-2"
                       >
                         Coba lagi

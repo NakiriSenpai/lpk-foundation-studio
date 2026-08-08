@@ -21,11 +21,7 @@ import { listPublishedLessons } from "./lesson.service";
 
 type ProgressOperation = "SELECT" | "START" | "UPDATE" | "COMPLETE";
 
-function progressError(
-  operation: ProgressOperation,
-  lessonId: string | null,
-  error: unknown,
-) {
+function progressError(operation: ProgressOperation, lessonId: string | null, error: unknown) {
   const details = error && typeof error === "object" ? (error as Record<string, unknown>) : {};
   const code = typeof details["code"] === "string" ? details["code"] : "UNKNOWN";
   const message =
@@ -55,7 +51,11 @@ function progressError(
 async function getProgressScope() {
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData.user) {
-    throw progressError("SELECT", null, authError ?? { code: "NO_SESSION", message: "Sesi tidak tersedia." });
+    throw progressError(
+      "SELECT",
+      null,
+      authError ?? { code: "NO_SESSION", message: "Sesi tidak tersedia." },
+    );
   }
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
@@ -73,10 +73,9 @@ async function getProgressScope() {
   return { userId: authData.user.id, tenantId: (profile.tenant_id as string | null) ?? null };
 }
 
-function withTenant<T extends { eq: (column: string, value: string) => T; is: (column: string, value: null) => T }>(
-  query: T,
-  tenantId: string | null,
-) {
+function withTenant<
+  T extends { eq: (column: string, value: string) => T; is: (column: string, value: null) => T },
+>(query: T, tenantId: string | null) {
   return tenantId ? query.eq("tenant_id", tenantId) : query.is("tenant_id", null);
 }
 
@@ -101,7 +100,7 @@ export async function getLessonProgress(lessonId: string): Promise<LessonProgres
     .from(LESSON_TABLES.progress)
     .select("*")
     .eq("user_id", scope.userId)
-    .eq("lesson_id", lessonId)
+    .eq("lesson_id", lessonId);
   const { data, error } = await withTenant(query, scope.tenantId).maybeSingle();
   if (error) throw progressError("SELECT", lessonId, error);
   return asProgress(data);

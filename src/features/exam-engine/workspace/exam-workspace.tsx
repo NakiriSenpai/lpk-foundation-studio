@@ -396,7 +396,9 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
                   ) : null}
                 </AnswerShell>
               ))}
+              </div>
             </div>
+
           }
         />
       </WorkspaceShell>

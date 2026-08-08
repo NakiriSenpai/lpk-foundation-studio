@@ -52,6 +52,27 @@ export function LessonList() {
   const [page, setPage] = useState(1);
   const [formOpen, setFormOpen] = useState(false);
   const [selected, setSelected] = useState<LessonDetailRow | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [exportingId, setExportingId] = useState<string | null>(null);
+
+  const handleExport = async (lesson: LessonDetailRow) => {
+    setExportingId(lesson.id);
+    try {
+      const bundle = await buildLessonBundle(lesson.id, true);
+      downloadBundle(bundle, `lesson-${lesson.slug}`);
+      toast.success("Bundle lesson berhasil diunduh.");
+      void recordContentIoAudit({
+        action: "export_lesson",
+        entity: lesson.slug,
+        count: 1,
+        result: "success",
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengekspor lesson.");
+    } finally {
+      setExportingId(null);
+    }
+  };
 
   const params = useMemo(
     () => ({ search, status, category, difficulty, page, pageSize: PAGE_SIZE }),

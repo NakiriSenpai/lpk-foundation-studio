@@ -90,14 +90,14 @@ export function ContinueExamDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Melanjutkan ujian</AlertDialogTitle>
+          <AlertDialogTitle>Anda memiliki ujian yang belum selesai</AlertDialogTitle>
           <AlertDialogDescription>
-            Anda masih memiliki ujian yang belum selesai. Waktu ujian terus berjalan di latar
-            belakang. Lanjutkan sekarang?
+            Ujian akan dilanjutkan dari posisi terakhir. Jawaban yang sudah tersimpan tetap
+            tersedia. Lanjutkan ujian?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Nanti saja</AlertDialogCancel>
+          <AlertDialogCancel>Batalkan</AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm}>Lanjutkan</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

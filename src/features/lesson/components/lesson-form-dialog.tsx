@@ -22,12 +22,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { MediaPicker } from "@/features/media/components/media-picker";
+import { EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import {
-  CATEGORY_LABELS,
-  EXAM_CATEGORIES,
-  EXAM_DIFFICULTY_LABELS,
-} from "@/features/exam/exam.constants";
-import { LESSON_STATUS_LABELS } from "@/features/lesson/lesson.constants";
+  LESSON_CATEGORIES,
+  LESSON_STATUS_LABELS,
+  lessonCategoryLabel,
+} from "@/features/lesson/lesson.constants";
 import { useCreateLesson, useUpdateLesson } from "@/hooks/lesson";
 import type { ExamDifficulty } from "@/types/exam";
 import type { LessonDetailRow, LessonStatus } from "@/types/lesson";
@@ -52,7 +52,7 @@ export function LessonFormDialog({ open, onOpenChange, lesson = null }: Props) {
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("umum");
+  const [category, setCategory] = useState<string>("tata-bahasa");
   const [difficulty, setDifficulty] = useState<ExamDifficulty>("sedang");
   const [status, setStatus] = useState<LessonStatus>("draft");
   const [thumbnail, setThumbnail] = useState<string | null>(null);
@@ -69,7 +69,7 @@ export function LessonFormDialog({ open, onOpenChange, lesson = null }: Props) {
     setTitle(lesson?.title ?? "");
     setSlug(lesson?.slug ?? "");
     setDescription(lesson?.description ?? "");
-    setCategory(lesson?.category ?? "umum");
+    setCategory(lesson?.category ?? "tata-bahasa");
     setDifficulty(lesson?.difficulty ?? "sedang");
     setStatus(lesson?.status ?? "draft");
     setThumbnail(lesson?.thumbnail_url ?? null);
@@ -163,9 +163,9 @@ export function LessonFormDialog({ open, onOpenChange, lesson = null }: Props) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {EXAM_CATEGORIES.map((item) => (
+                  {LESSON_CATEGORIES.map((item) => (
                     <SelectItem key={item} value={item}>
-                      {CATEGORY_LABELS[item] ?? item}
+                      {lessonCategoryLabel(item)}
                     </SelectItem>
                   ))}
                 </SelectContent>

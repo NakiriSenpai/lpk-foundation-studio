@@ -152,14 +152,13 @@ export function useAudioManager(): AudioContextValue {
 }
 
 /**
- * Tombol audio premium (Sprint 11 FINAL).
- * Tanpa player native, tanpa durasi/timeline/counter/teks status.
- * State: idle (▶) → playing (waveform animasi + glow) → locked (✓).
+ * Player audio premium (Sprint UI Final).
+ * Pill compact: [ ▶  Dengarkan audio  ~~~~~ ]. Tanpa timeline, durasi, atau counter.
  */
 export function AudioButton({
   audioKey,
   src,
-  label = "Putar audio",
+  label = "Dengarkan audio",
   size = "default",
 }: {
   audioKey: string;
@@ -171,7 +170,7 @@ export function AudioButton({
   const isPlaying = playingKey === audioKey;
   const lockedState = isLocked(audioKey);
   const disabled = lockedState || (busy && !isPlaying);
-  const dimension = size === "sm" ? "size-11" : "size-12";
+  const compact = size === "sm";
 
   return (
     <button
@@ -181,38 +180,52 @@ export function AudioButton({
       disabled={disabled || isPlaying}
       onClick={() => play(audioKey, src)}
       className={cn(
-        "group relative inline-flex shrink-0 items-center justify-center rounded-full border transition-all duration-200",
-        dimension,
+        "group inline-flex max-w-full items-center gap-2.5 rounded-full border transition-all duration-200",
+        compact ? "px-2.5 py-1.5" : "px-3 py-2",
         lockedState
           ? "border-border-subtle bg-surface text-muted-foreground"
           : isPlaying
-            ? "border-primary/70 bg-linear-to-br from-primary/35 to-accent/25 text-foreground glow-primary"
-            : "border-primary/45 bg-linear-to-br from-primary/25 to-accent/15 text-foreground hover:border-primary hover:from-primary/40 hover:to-accent/25 active:scale-95",
+            ? "border-primary/70 bg-primary-muted text-foreground glow-primary"
+            : "border-primary/45 bg-primary-muted text-foreground hover:border-primary active:scale-[0.98]",
         "disabled:cursor-not-allowed",
         disabled && !lockedState && !isPlaying && "opacity-45",
       )}
     >
-      {lockedState ? (
-        <Check className="size-4" />
-      ) : isPlaying ? (
-        <AudioWave />
-      ) : (
-        <Play className={cn("fill-current", size === "sm" ? "size-4" : "size-4.5")} />
-      )}
+      <span
+        className={cn(
+          "grid shrink-0 place-items-center rounded-full",
+          compact ? "size-7" : "size-8",
+          lockedState ? "bg-surface-elevated" : "bg-primary text-primary-foreground",
+        )}
+      >
+        {lockedState ? (
+          <Check className="size-3.5" />
+        ) : (
+          <Play className={cn("fill-current", compact ? "size-3.5" : "size-4")} />
+        )}
+      </span>
+      <span className={cn("truncate font-medium", compact ? "text-xs" : "text-sm")}>
+        {lockedState ? "Audio selesai" : label}
+      </span>
+      <AudioWave active={isPlaying} />
     </button>
   );
 }
 
-/** Waveform sederhana 5 bar. */
-function AudioWave() {
+/** Waveform 5 bar — bergerak saat aktif, statis saat idle. */
+function AudioWave({ active }: { active: boolean }) {
   const delays = ["0ms", "120ms", "240ms", "120ms", "0ms"];
+  const heights = ["40%", "70%", "100%", "60%", "45%"];
   return (
-    <span className="flex h-4 items-center gap-[3px]" aria-hidden>
+    <span className="ml-auto flex h-4 shrink-0 items-end gap-[3px]" aria-hidden>
       {delays.map((delay, index) => (
         <span
           key={index}
-          className="audio-wave-bar block h-full w-[3px] rounded-full bg-primary-foreground/90"
-          style={{ animationDelay: delay }}
+          className={cn(
+            "block w-[3px] rounded-full",
+            active ? "audio-wave-bar h-full bg-primary" : "bg-muted-foreground/45",
+          )}
+          style={active ? { animationDelay: delay } : { height: heights[index] }}
         />
       ))}
     </span>

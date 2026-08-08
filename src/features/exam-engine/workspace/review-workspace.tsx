@@ -26,7 +26,7 @@ import {
   type PaletteGroup,
   type PaletteItem,
 } from "./question-list-dialog";
-import { AnswerShell, QuestionStem } from "./question-stem";
+import { AnswerPanelHeader, AnswerShell, QuestionStem } from "./question-stem";
 import { useAntiCopy } from "./use-anti-copy";
 import { useOrientation } from "./use-orientation";
 import { WorkspaceGate } from "./workspace-gate";
@@ -259,45 +259,54 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
             />
           }
           answers={
-            <div className="space-y-2">
-              {question.answers.map((answer, answerIndex) => {
-                const isCorrect = answer.label === correct;
-                const isChosen = answer.label === selected;
-                return (
-                  <AnswerShell
-                    key={answer.label}
-                    index={answerIndex}
-                    tone={isCorrect ? "correct" : isChosen ? "wrong" : undefined}
-                  >
-                    {answer.text ? (
-                      <span className="block whitespace-pre-wrap text-sm text-foreground">
-                        {answer.text}
+            <div>
+              <AnswerPanelHeader
+                title={
+                  selected
+                    ? `Jawaban Anda: ${question.answers.findIndex((a) => a.label === selected) + 1} (${status === "benar" ? "Benar" : "Salah"})`
+                    : "Anda tidak menjawab soal ini"
+                }
+              />
+              <div className="space-y-2">
+                {question.answers.map((answer, answerIndex) => {
+                  const isCorrect = answer.label === correct;
+                  const isChosen = answer.label === selected;
+                  return (
+                    <AnswerShell
+                      key={answer.label}
+                      index={answerIndex}
+                      tone={isCorrect ? "correct" : isChosen ? "wrong" : undefined}
+                    >
+                      {answer.text ? (
+                        <span className="block whitespace-pre-wrap text-sm text-foreground">
+                          {answer.text}
+                        </span>
+                      ) : null}
+                      {answer.image_url ? (
+                        <img
+                          src={answer.image_url}
+                          alt={`Pilihan ${answerIndex + 1}`}
+                          loading="lazy"
+                          draggable={false}
+                          className="h-[88px] w-auto max-w-full rounded-lg border border-border object-contain"
+                        />
+                      ) : null}
+                      {answer.audio_url ? (
+                        <AudioButton
+                          size="sm"
+                          audioKey={`review:${question.question_id}:${answer.label}`}
+                          src={answer.audio_url}
+                          label={`Audio pilihan ${answerIndex + 1}`}
+                        />
+                      ) : null}
+                      <span className="flex flex-wrap gap-2 text-xs">
+                        {isChosen ? <Badge variant="outline">Jawaban Anda</Badge> : null}
+                        {isCorrect ? <Badge variant="outline">Jawaban Benar</Badge> : null}
                       </span>
-                    ) : null}
-                    {answer.image_url ? (
-                      <img
-                        src={answer.image_url}
-                        alt={`Pilihan ${answerIndex + 1}`}
-                        loading="lazy"
-                        draggable={false}
-                        className="h-[88px] w-auto max-w-full rounded-lg border border-border object-contain"
-                      />
-                    ) : null}
-                    {answer.audio_url ? (
-                      <AudioButton
-                        size="sm"
-                        audioKey={`review:${question.question_id}:${answer.label}`}
-                        src={answer.audio_url}
-                        label={`Audio pilihan ${answerIndex + 1}`}
-                      />
-                    ) : null}
-                    <span className="flex flex-wrap gap-2 text-xs">
-                      {isChosen ? <Badge variant="outline">Jawaban Anda</Badge> : null}
-                      {isCorrect ? <Badge variant="outline">Jawaban Benar</Badge> : null}
-                    </span>
-                  </AnswerShell>
-                );
-              })}
+                    </AnswerShell>
+                  );
+                })}
+              </div>
             </div>
           }
           explanation={

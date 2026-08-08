@@ -136,7 +136,7 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
     const lessonId = lessonDialog.id;
     setLessonDialog(null);
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
-    void navigate({ to: "/materi", search: { lesson: lessonId } });
+    void navigate({ to: "/materi/lesson/$lessonId", params: { lessonId } });
   };
 
   return (

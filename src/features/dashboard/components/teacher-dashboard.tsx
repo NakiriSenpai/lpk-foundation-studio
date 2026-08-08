@@ -1,4 +1,4 @@
-import { BarChart3, BookOpen, GraduationCap, Users } from "lucide-react";
+import { BarChart3, BookOpen, GraduationCap } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -83,5 +83,3 @@ export function TeacherDashboard() {
     </section>
   );
 }
-
-export const TEACHER_QUICK_ICON = Users;

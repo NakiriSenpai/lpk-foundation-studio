@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Loader2, Play } from "lucide-react";
+import { Check, Loader2, Play } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 

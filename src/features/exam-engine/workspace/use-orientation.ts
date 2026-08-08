@@ -63,6 +63,7 @@ export function useOrientation() {
   return {
     /** Orientasi nyata perangkat. */
     isLandscape,
+    isSmallScreen,
     /** Perlu gate rotasi hanya untuk layar kecil yang masih portrait. */
     needsRotate: isSmallScreen && !isLandscape,
     lockSupported: isOrientationLockSupported(),

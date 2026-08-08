@@ -151,7 +151,11 @@ export function useAudioManager(): AudioContextValue {
   return ctx;
 }
 
-/** Tombol audio minimalis: ▶ atau spinner saat berjalan. */
+/**
+ * Tombol audio premium (Sprint 11 FINAL).
+ * Tanpa player native, tanpa durasi/timeline/counter/teks status.
+ * State: idle (▶) → playing (waveform animasi + glow) → locked (✓).
+ */
 export function AudioButton({
   audioKey,
   src,
@@ -165,7 +169,9 @@ export function AudioButton({
 }) {
   const { play, playingKey, isLocked, busy } = useAudioManager();
   const isPlaying = playingKey === audioKey;
-  const disabled = isLocked(audioKey) || (busy && !isPlaying);
+  const lockedState = isLocked(audioKey);
+  const disabled = lockedState || (busy && !isPlaying);
+  const dimension = size === "sm" ? "size-11" : "size-12";
 
   return (
     <button
@@ -175,17 +181,41 @@ export function AudioButton({
       disabled={disabled || isPlaying}
       onClick={() => play(audioKey, src)}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-full border transition",
-        "border-border bg-muted/60 text-foreground hover:bg-muted",
-        "disabled:cursor-not-allowed disabled:opacity-45",
-        size === "sm" ? "size-8" : "size-10",
+        "group relative inline-flex shrink-0 items-center justify-center rounded-full border transition-all duration-200",
+        dimension,
+        lockedState
+          ? "border-border-subtle bg-surface text-muted-foreground"
+          : isPlaying
+            ? "border-primary/70 bg-linear-to-br from-primary/35 to-accent/25 text-foreground glow-primary"
+            : "border-primary/45 bg-linear-to-br from-primary/25 to-accent/15 text-foreground hover:border-primary hover:from-primary/40 hover:to-accent/25 active:scale-95",
+        "disabled:cursor-not-allowed",
+        disabled && !lockedState && !isPlaying && "opacity-45",
       )}
     >
-      {isPlaying ? (
-        <Loader2 className={cn("animate-spin", size === "sm" ? "size-4" : "size-5")} />
+      {lockedState ? (
+        <Check className="size-4" />
+      ) : isPlaying ? (
+        <AudioWave />
       ) : (
-        <Play className={cn("fill-current", size === "sm" ? "size-3.5" : "size-4")} />
+        <Play className={cn("fill-current", size === "sm" ? "size-4" : "size-4.5")} />
       )}
     </button>
   );
 }
+
+/** Waveform sederhana 5 bar. */
+function AudioWave() {
+  const delays = ["0ms", "120ms", "240ms", "120ms", "0ms"];
+  return (
+    <span className="flex h-4 items-center gap-[3px]" aria-hidden>
+      {delays.map((delay, index) => (
+        <span
+          key={index}
+          className="audio-wave-bar block h-full w-[3px] rounded-full bg-primary-foreground/90"
+          style={{ animationDelay: delay }}
+        />
+      ))}
+    </span>
+  );
+}
+

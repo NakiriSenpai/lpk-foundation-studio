@@ -16,12 +16,19 @@ import {
   SubmitExamDialog,
 } from "../components/exam-dialogs";
 import { AudioButton, AudioManagerProvider, useAudioManager } from "./audio-manager";
-import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./question-list-dialog";
+import {
+  QuestionListDialog,
+  QuestionListPanel,
+  type PaletteGroup,
+  type PaletteItem,
+} from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
 import { useExamTimer } from "../hooks/use-exam-timer";
 import { useExamFullscreen } from "./use-exam-fullscreen";
-import { useLandscapeLock } from "./use-landscape";
-import { WorkspaceShell } from "./workspace-shell";
+import { useAntiCopy } from "./use-anti-copy";
+import { useOrientation } from "./use-orientation";
+import { WorkspaceGate } from "./workspace-gate";
+import { WorkspaceBody, WorkspaceShell } from "./workspace-shell";
 
 type LocalAnswer = { label: AnswerLabel | null; flagged: boolean };
 
@@ -40,11 +47,14 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   const setFlagMutation = useSetFlag();
   const submit = useSubmitAttempt();
   const { busy: audioBusy } = useAudioManager();
-  const { isPortrait, retry } = useLandscapeLock();
+  const orientation = useOrientation();
+  useAntiCopy();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [local, setLocal] = useState<Record<string, LocalAnswer>>({});
   const [listOpen, setListOpen] = useState(false);
+  const [asideOpen, setAsideOpen] = useState(false);
+  const [gatePending, setGatePending] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
@@ -133,6 +143,27 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     return groups;
   }, [snapshot, questions, local]);
 
+  const needGate =
+    Boolean(isRunning) &&
+    !submitting &&
+    !fullscreen.isExitRequested &&
+    (orientation.needsRotate || !fullscreen.isActive);
+
+  const enterExamMode = useCallback(async () => {
+    setGatePending(true);
+    try {
+      if (orientation.needsRotate) await orientation.lock();
+      await fullscreen.request();
+    } finally {
+      setGatePending(false);
+    }
+  }, [fullscreen, orientation]);
+
+  const openQuestionList = () => {
+    if (orientation.isSmallScreen) setListOpen(true);
+    else setAsideOpen((value) => !value);
+  };
+
   const answeredCount = Object.values(local).filter((a) => a.label).length;
   const locked = audioBusy;
 
@@ -212,8 +243,26 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   return (
     <>
       <WorkspaceShell
-        portrait={isPortrait}
-        onRotateRetry={retry}
+        asideOpen={asideOpen && !orientation.isSmallScreen}
+        aside={
+          <QuestionListPanel
+            groups={paletteGroups}
+            activeIndex={activeIndex}
+            mode="exam"
+            columns="compact"
+            onJump={setActiveIndex}
+          />
+        }
+        gate={
+          needGate ? (
+            <WorkspaceGate
+              needsRotate={orientation.needsRotate}
+              lockSupported={orientation.lockSupported}
+              pending={gatePending}
+              onEnter={() => void enterExamMode()}
+            />
+          ) : null
+        }
         header={
           <>
             <div className="min-w-0 flex-1">
@@ -268,7 +317,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
               type="button"
               size="sm"
               disabled={locked}
-              onClick={() => setListOpen(true)}
+              onClick={openQuestionList}
               className="px-6"
             >
               <List className="mr-1.5 size-4" /> Daftar Soal ({questions.length})
@@ -286,61 +335,65 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
           </>
         }
       >
-        <div className="grid gap-3 lg:grid-cols-2 lg:items-start">
-          <QuestionStem
-            questionId={current.question_id}
-            number={activeIndex + 1}
-            total={questions.length}
-            sectionTitle={section?.title}
-            sectionInstruction={section?.instruction}
-            text={current.text}
-            imageUrl={current.image_url}
-            audioUrl={current.audio_url}
-          />
-          <div className="space-y-2">
-            {current.answers.map((answer, answerIndex) => (
-              <AnswerShell
-                key={answer.label}
-                index={answerIndex}
-                selected={local[current.question_id]?.label === answer.label}
-                disabled={locked}
-                onClick={() => choose(answer.label)}
-              >
-                {answer.text ? (
-                  <span className="block text-sm text-foreground">{answer.text}</span>
-                ) : null}
-                {answer.image_url ? (
-                  <img
-                    src={answer.image_url}
-                    alt={`Pilihan ${answerIndex + 1}`}
-                    loading="lazy"
-                    draggable={false}
-                    className="h-[88px] w-auto max-w-full rounded-lg border border-border object-contain"
-                  />
-                ) : null}
-                {answer.audio_url ? (
-                  <span
-                    className="block"
-                    role="presentation"
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    <AudioButton
-                      size="sm"
-                      audioKey={`${current.question_id}:${answer.label}`}
-                      src={answer.audio_url}
-                      label={`Audio pilihan ${answerIndex + 1}`}
+        <WorkspaceBody
+          question={
+            <QuestionStem
+              questionId={current.question_id}
+              number={activeIndex + 1}
+              total={questions.length}
+              sectionTitle={section?.title}
+              sectionInstruction={section?.instruction}
+              text={current.text}
+              imageUrl={current.image_url}
+              audioUrl={current.audio_url}
+            />
+          }
+          answers={
+            <div className="space-y-2">
+              {current.answers.map((answer, answerIndex) => (
+                <AnswerShell
+                  key={answer.label}
+                  index={answerIndex}
+                  selected={local[current.question_id]?.label === answer.label}
+                  disabled={locked}
+                  onClick={() => choose(answer.label)}
+                >
+                  {answer.text ? (
+                    <span className="block text-sm text-foreground">{answer.text}</span>
+                  ) : null}
+                  {answer.image_url ? (
+                    <img
+                      src={answer.image_url}
+                      alt={`Pilihan ${answerIndex + 1}`}
+                      loading="lazy"
+                      draggable={false}
+                      className="h-[88px] w-auto max-w-full rounded-lg border border-border object-contain"
                     />
-                  </span>
-                ) : null}
-                {!answer.text && !answer.image_url && !answer.audio_url ? (
-                  <span className="block text-sm text-muted-foreground">
-                    Pilihan {answerIndex + 1}
-                  </span>
-                ) : null}
-              </AnswerShell>
-            ))}
-          </div>
-        </div>
+                  ) : null}
+                  {answer.audio_url ? (
+                    <span
+                      className="block"
+                      role="presentation"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <AudioButton
+                        size="sm"
+                        audioKey={`${current.question_id}:${answer.label}`}
+                        src={answer.audio_url}
+                        label={`Audio pilihan ${answerIndex + 1}`}
+                      />
+                    </span>
+                  ) : null}
+                  {!answer.text && !answer.image_url && !answer.audio_url ? (
+                    <span className="block text-sm text-muted-foreground">
+                      Pilihan {answerIndex + 1}
+                    </span>
+                  ) : null}
+                </AnswerShell>
+              ))}
+            </div>
+          }
+        />
       </WorkspaceShell>
 
       <QuestionListDialog

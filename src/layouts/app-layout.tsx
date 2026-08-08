@@ -1,7 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 
-import { ThemeToggle } from "@/components/common/theme-toggle";
 import { AuthButton } from "@/features/auth/components/auth-button";
 import { appConfig } from "@/lib/env";
 import { cn } from "@/lib/utils";
@@ -37,7 +36,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
     );
   }
 
-
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
@@ -47,7 +45,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </Link>
           <div className="flex items-center gap-1">
             <AuthButton />
-            <ThemeToggle />
           </div>
         </div>
       </header>

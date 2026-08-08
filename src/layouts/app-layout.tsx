@@ -57,7 +57,10 @@ function useIsFullscreen() {
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { role } = useAuth();
+  const navItems = role ? NAV_BY_ROLE[role] : STUDENT_NAV;
   const isFullscreen = useIsFullscreen();
+
   if (isFullscreen) {
     return (
       <div className="min-h-screen bg-background text-foreground">

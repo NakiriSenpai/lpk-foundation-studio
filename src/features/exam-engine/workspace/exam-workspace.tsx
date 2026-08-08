@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/auth";
 import { useAttemptSession, useSaveAnswer, useSetFlag, useSubmitAttempt } from "@/hooks/attempt";
+import { ExamAttemptExpiredError } from "@/services/attempt";
+
 import type { AnswerLabel } from "@/types/exam";
 import type { AttemptAnswerRow } from "@/types/attempt";
 import { ATTEMPT_STATUS_LABELS } from "@/types/attempt";

@@ -24,23 +24,30 @@ type ProgressOperation = "SELECT" | "START" | "UPDATE" | "COMPLETE";
 function progressError(
   operation: ProgressOperation,
   lessonId: string | null,
-  error: { code?: string; message?: string; details?: string; hint?: string },
+  error: unknown,
 ) {
-  const code = error.code ?? "UNKNOWN";
+  const details = error && typeof error === "object" ? (error as Record<string, unknown>) : {};
+  const code = typeof details["code"] === "string" ? details["code"] : "UNKNOWN";
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof details["message"] === "string"
+        ? details["message"]
+        : "Unknown database error";
   if (import.meta.env.DEV) {
     console.error("Lesson progress database error", {
       operation,
       table: LESSON_TABLES.progress,
       code,
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
+      message,
+      details: details["details"],
+      hint: details["hint"],
       lessonId,
     });
   }
   return new Error(
     import.meta.env.DEV
-      ? `${operation} progress gagal [${code}]: ${error.message ?? "Unknown database error"}`
+      ? `${operation} progress gagal [${code}]: ${message}`
       : `Progress materi gagal diproses (${code}).`,
   );
 }

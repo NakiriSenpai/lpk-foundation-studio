@@ -109,8 +109,9 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
         </>
       }
     >
-      <div className="h-full min-h-0 overflow-y-auto overscroll-contain p-3">
+      <div className="w-full">
         <div className="mx-auto w-full max-w-3xl space-y-3">
+
           <div className="grid items-stretch gap-3 md:grid-cols-2">
             <Card className="h-full">
               <CardContent className="flex h-full flex-col gap-3 p-4 text-center">

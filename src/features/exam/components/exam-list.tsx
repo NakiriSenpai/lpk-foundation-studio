@@ -22,6 +22,9 @@ import {
   EXAM_STATUS_LABELS,
 } from "@/features/exam/exam.constants";
 import type { ExamRow, ExamStatus } from "@/types/exam";
+import { ImportBundleDialog } from "@/features/content-io/components/import-bundle-dialog";
+import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
+import { buildExamBundle, downloadBundle } from "@/services/content/bundle/bundle-export.service";
 import { ExamFormDialog } from "./exam-form-dialog";
 
 const PAGE_SIZE = 10;

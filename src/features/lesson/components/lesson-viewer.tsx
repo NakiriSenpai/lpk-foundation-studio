@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, BookOpenCheck, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import { lessonCategoryLabel } from "@/features/lesson/lesson.constants";
+import { useLessonProgressSaver } from "@/features/lesson/hooks/use-lesson-progress-saver";
 import { useAuth } from "@/hooks/auth";
 import {
   useCompleteLesson,
@@ -16,7 +18,6 @@ import {
   useLessonQuestions,
   useLessonSections,
   useStartLesson,
-  useUpdateLessonProgress,
 } from "@/hooks/lesson";
 
 import { CategoryTile, ToneBar } from "@/features/materi/components/materi-primitives";
@@ -25,6 +26,7 @@ import { cn } from "@/lib/utils";
 
 import { LessonBlockRenderer } from "./lesson-block-renderer";
 import { LessonPractice } from "./lesson-practice";
+
 
 /**
  * Lesson Viewer (Sprint 17).

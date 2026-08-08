@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Archive, ArchiveRestore, Image as ImageIcon, Music } from "lucide-react";
+import {
+  Archive,
+  ArchiveRestore,
+  Download,
+  Image as ImageIcon,
+  Music,
+  Upload,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";

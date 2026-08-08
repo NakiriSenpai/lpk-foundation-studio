@@ -1,19 +1,11 @@
-import type { QuestionBankRow } from "@/types/question-bank";
-
-/**
- * Placeholder Import/Export Question Bank.
- * Sprint 7 hanya menyiapkan struktur service; implementasi menyusul.
- */
-
-export type QuestionIOFormat = "json";
-
-export async function exportQuestions(
-  _rows: QuestionBankRow[],
-  _format: QuestionIOFormat = "json",
-) {
-  throw new Error("Fitur export belum tersedia.");
-}
-
-export async function importQuestions(_file: File) {
-  throw new Error("Fitur import belum tersedia.");
-}
+/** Sprint 13 — Import/Export Question Bank kini ditangani bundle service. */
+export {
+  buildQuestionBundle,
+  downloadBundle,
+} from "@/services/content/bundle/bundle-export.service";
+export {
+  analyzeQuestionBundle,
+  importQuestions,
+  readBundleFile,
+  validateBundle,
+} from "@/services/content/bundle/bundle-import.service";

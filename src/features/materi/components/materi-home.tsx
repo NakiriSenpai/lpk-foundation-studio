@@ -29,9 +29,8 @@ function pad(value: number) {
 /** Halaman utama Materi (referensi Gambar 1). */
 export function MateriHome() {
   const navigate = useNavigate();
-  const { profile } = useAuth();
-  const isStudent = profile?.role === "siswa";
   const [query, setQuery] = useState("");
+
 
   const { data, isLoading, isError, refetch } = useLessonsWithProgress();
   const lessons = useMemo(() => data ?? [], [data]);

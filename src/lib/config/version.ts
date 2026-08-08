@@ -5,9 +5,8 @@
  */
 export const APP_VERSION = "1.0.0";
 
-export const BUILD_ID: string = (import.meta.env as Record<string, string | undefined>)[
-  "VITE_BUILD_ID"
-] ??
+export const BUILD_ID: string =
+  (import.meta.env as Record<string, string | undefined>)["VITE_BUILD_ID"] ??
   `${new Date().getUTCFullYear()}.${String(new Date().getUTCMonth() + 1).padStart(2, "0")}`;
 
 export type AppEnvironment = "development" | "staging" | "production";

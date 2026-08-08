@@ -137,12 +137,16 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
           <>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-foreground">
-                Review — {snapshot.exam.title}
+                {snapshot.exam.title}
+                {section ? <span className="text-muted-foreground"> · {section.title}</span> : null}
               </p>
               <p className="text-[11px] text-muted-foreground">
-                {questions.length} soal · dari snapshot ujian
+                Review Jawaban · {questions.length} soal
               </p>
             </div>
+            <Badge variant="secondary" className="shrink-0">
+              Review Jawaban
+            </Badge>
             <Button size="sm" variant="outline" onClick={() => exitWorkspace("hasil")}>
               Hasil
             </Button>
@@ -151,6 +155,7 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
             </Button>
           </>
         }
+
         footer={
           <>
             <div className="flex min-w-0 items-center">
@@ -180,8 +185,8 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
           </>
         }
       >
-        <div className="grid gap-3 lg:grid-cols-2 lg:items-start">
-          <div className="space-y-3">
+        <div className="space-y-3">
+          <div className="grid gap-3 lg:grid-cols-2 lg:items-start">
             <QuestionStem
               questionId={question.question_id}
               number={activeIndex + 1}
@@ -214,94 +219,96 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
               }
             />
 
-            <div className="space-y-2 rounded-xl border border-border bg-card p-3 text-sm">
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Pembahasan
-                </p>
-                <p className="whitespace-pre-wrap text-foreground">
-                  {question.explanation?.trim() ? question.explanation : "Belum ada pembahasan."}
-                </p>
-              </div>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Grammar Tag
-                </p>
-                {question.grammar_tags.length > 0 ? (
-                  <div className="mt-1 flex flex-wrap gap-1.5">
-                    {question.grammar_tags.map((tag) => (
-                      <Badge key={tag.id} variant="secondary">
-                        {tag.name}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">Belum dihubungkan.</p>
-                )}
-              </div>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Materi Terkait
-                </p>
-                {question.lesson_id && lessonTitle ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="mt-1"
-                    onClick={() =>
-                      setLessonDialog({ id: question.lesson_id as string, title: lessonTitle })
-                    }
+            <div className="space-y-2">
+              {question.answers.map((answer, answerIndex) => {
+                const isCorrect = answer.label === correct;
+                const isChosen = answer.label === selected;
+                return (
+                  <AnswerShell
+                    key={answer.label}
+                    index={answerIndex}
+                    tone={isCorrect ? "correct" : isChosen ? "wrong" : undefined}
                   >
-                    <BookOpen className="mr-1.5 size-4" />
-                    {lessonTitle}
-                  </Button>
-                ) : (
-                  <p className="text-muted-foreground">Belum dihubungkan.</p>
-                )}
-              </div>
+                    {answer.text ? (
+                      <span className="block whitespace-pre-wrap text-sm text-foreground">
+                        {answer.text}
+                      </span>
+                    ) : null}
+                    {answer.image_url ? (
+                      <img
+                        src={answer.image_url}
+                        alt={`Pilihan ${answerIndex + 1}`}
+                        loading="lazy"
+                        draggable={false}
+                        className="h-[88px] w-auto max-w-full rounded-lg border border-border object-contain"
+                      />
+                    ) : null}
+                    {answer.audio_url ? (
+                      <AudioButton
+                        size="sm"
+                        audioKey={`review:${question.question_id}:${answer.label}`}
+                        src={answer.audio_url}
+                        label={`Audio pilihan ${answerIndex + 1}`}
+                      />
+                    ) : null}
+                    <span className="flex flex-wrap gap-2 text-xs">
+                      {isChosen ? <Badge variant="outline">Jawaban Anda</Badge> : null}
+                      {isCorrect ? <Badge variant="outline">Jawaban Benar</Badge> : null}
+                    </span>
+                  </AnswerShell>
+                );
+              })}
             </div>
           </div>
 
-          <div className="space-y-2">
-            {question.answers.map((answer, answerIndex) => {
-              const isCorrect = answer.label === correct;
-              const isChosen = answer.label === selected;
-              return (
-                <AnswerShell
-                  key={answer.label}
-                  index={answerIndex}
-                  tone={isCorrect ? "correct" : isChosen ? "wrong" : undefined}
-                >
-                  {answer.text ? (
-                    <span className="block whitespace-pre-wrap text-sm text-foreground">
-                      {answer.text}
-                    </span>
-                  ) : null}
-                  {answer.image_url ? (
-                    <img
-                      src={answer.image_url}
-                      alt={`Pilihan ${answerIndex + 1}`}
-                      loading="lazy"
-                      draggable={false}
-                      className="h-[88px] w-auto max-w-full rounded-lg border border-border object-contain"
-                    />
-                  ) : null}
-                  {answer.audio_url ? (
-                    <AudioButton
+          <section className="rounded-xl border border-border bg-card">
+            <p className="border-b border-border px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              Pembahasan
+            </p>
+            <div className="max-h-[38vh] space-y-3 overflow-y-auto overscroll-contain p-3 text-sm">
+              <p className="whitespace-pre-wrap text-foreground">
+                {question.explanation?.trim() ? question.explanation : "Belum ada pembahasan."}
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Grammar
+                  </p>
+                  {question.grammar_tags.length > 0 ? (
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {question.grammar_tags.map((tag) => (
+                        <Badge key={tag.id} variant="secondary">
+                          {tag.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">Belum dihubungkan.</p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Materi Terkait
+                  </p>
+                  {question.lesson_id && lessonTitle ? (
+                    <Button
                       size="sm"
-                      audioKey={`review:${question.question_id}:${answer.label}`}
-                      src={answer.audio_url}
-                      label={`Audio pilihan ${answerIndex + 1}`}
-                    />
-                  ) : null}
-                  <span className="flex flex-wrap gap-2 text-xs">
-                    {isChosen ? <Badge variant="outline">Jawaban Anda</Badge> : null}
-                    {isCorrect ? <Badge variant="outline">Jawaban Benar</Badge> : null}
-                  </span>
-                </AnswerShell>
-              );
-            })}
-          </div>
+                      variant="outline"
+                      className="mt-1 h-auto max-w-full whitespace-normal py-1.5 text-left"
+                      onClick={() =>
+                        setLessonDialog({ id: question.lesson_id as string, title: lessonTitle })
+                      }
+                    >
+                      <BookOpen className="mr-1.5 size-4 shrink-0" />
+                      {lessonTitle}
+                    </Button>
+                  ) : (
+                    <p className="text-muted-foreground">Belum dihubungkan.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </WorkspaceShell>
 

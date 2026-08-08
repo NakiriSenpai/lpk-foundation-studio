@@ -50,8 +50,17 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     isError,
     error,
   } = useAttemptSession(attemptId, !authLoading && isAuthenticated);
+  const expiredAttempt = error instanceof ExamAttemptExpiredError;
   // Exam Runner tidak pernah dirender sebelum attempt + snapshot tersedia.
   const isLoading = authLoading || (isAuthenticated && !isError && (sessionLoading || !data));
+
+  // Attempt yang sudah lewat waktu: sudah difinalisasi di data layer → buka hasil.
+  useEffect(() => {
+    if (!expiredAttempt) return;
+    toast.info("Waktu ujian telah habis.");
+    void navigate({ to: "/ujian/hasil/$attemptId", params: { attemptId } });
+  }, [expiredAttempt, attemptId, navigate]);
+
   const saveAnswer = useSaveAnswer();
   const setFlagMutation = useSetFlag();
   const submit = useSubmitAttempt();

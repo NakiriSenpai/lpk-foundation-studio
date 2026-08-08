@@ -172,12 +172,10 @@ export function MateriHome() {
             const isLastOdd =
               index === CATEGORY_ORDER.length - 1 && CATEGORY_ORDER.length % 2 === 1;
             return (
-              <button
+              <div
                 key={slug}
-                type="button"
-                onClick={() => openCategory(slug)}
                 className={cn(
-                  "space-y-3 rounded-2xl border border-border bg-card p-4 text-left ring-1 ring-inset transition-colors hover:border-primary/50",
+                  "space-y-3 rounded-2xl border border-border bg-card p-4 text-left ring-1 ring-inset",
                   meta.tone.ring,
                   isLastOdd && "col-span-2",
                 )}
@@ -192,7 +190,8 @@ export function MateriHome() {
                   </span>
                 </div>
                 <ToneBar value={entry.percent} bar={meta.tone.bar} />
-              </button>
+              </div>
+
             );
           })}
         </div>

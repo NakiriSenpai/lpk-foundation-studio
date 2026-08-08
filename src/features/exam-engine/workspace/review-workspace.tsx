@@ -305,6 +305,15 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
         </div>
       </WorkspaceShell>
 
+      <QuestionListDialog
+        open={listOpen}
+        onOpenChange={setListOpen}
+        groups={paletteGroups}
+        activeIndex={activeIndex}
+        mode="review"
+        onJump={setActiveIndex}
+      />
+
       <OpenLessonDialog
         open={Boolean(lessonDialog)}
         lessonTitle={lessonDialog?.title ?? ""}

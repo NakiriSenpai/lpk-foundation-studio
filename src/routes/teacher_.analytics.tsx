@@ -1,10 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { LoadingScreen } from "@/components/common/loading-screen";
 import { TeacherAnalyticsDashboard } from "@/features/teacher-analytics/components/teacher-analytics-dashboard";
-import { useAuth } from "@/hooks/auth";
 import { AppLayout } from "@/layouts/app-layout";
-import { RequireAuth } from "@/middleware";
+import { RequireStaff } from "@/middleware";
 
 export const Route = createFileRoute("/teacher_/analytics")({
   head: () => ({
@@ -20,29 +18,13 @@ export const Route = createFileRoute("/teacher_/analytics")({
   component: TeacherAnalyticsPage,
 });
 
-/** Analytics hanya untuk staf (guru, admin, owner). Siswa ditolak. */
-function StaffOnly() {
-  const { isLoading, profile } = useAuth();
-  if (isLoading) return <LoadingScreen label="Memeriksa akses…" />;
-  if (!profile || profile.role === "siswa") {
-    return (
-      <div className="space-y-2 rounded-lg border border-border p-6 text-center">
-        <h1 className="text-lg font-semibold">Akses ditolak</h1>
-        <p className="text-sm text-muted-foreground">
-          Halaman ini hanya untuk pengajar, admin, dan owner.
-        </p>
-      </div>
-    );
-  }
-  return <TeacherAnalyticsDashboard />;
-}
-
+/** Analytics hanya untuk staf (guru, admin, owner). Siswa ditolak oleh guard. */
 function TeacherAnalyticsPage() {
   return (
     <AppLayout>
-      <RequireAuth>
-        <StaffOnly />
-      </RequireAuth>
+      <RequireStaff>
+        <TeacherAnalyticsDashboard />
+      </RequireStaff>
     </AppLayout>
   );
 }

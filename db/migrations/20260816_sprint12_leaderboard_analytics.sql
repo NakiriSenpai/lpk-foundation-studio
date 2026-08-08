@@ -514,17 +514,6 @@ declare
   v_questions jsonb;
   v_grammar jsonb;
 begin
-  create temporary table if not exists tmp_scoped_answers (
-    question_id uuid,
-    question_index integer,
-    question_text text,
-    lesson_title text,
-    grammar_tags jsonb,
-    is_correct boolean,
-    answered boolean
-  ) on commit drop;
-  delete from tmp_scoped_answers;
-
   select jsonb_build_object(
     'exam_id', p_exam_id,
     'exam_title', coalesce(max(r.exam_title), ''),
@@ -544,32 +533,30 @@ begin
     and r.submitted_at >= v_since
     and (p_student_id is null or r.user_id = p_student_id);
 
-  insert into tmp_scoped_answers
-  select
-    (item ->> 'question_id')::uuid,
-    coalesce((item ->> 'index')::int, 0),
-    coalesce(item ->> 'text', ''),
-    l.title,
-    coalesce(item -> 'grammar_tags', '[]'::jsonb),
-    (ans.selected_label is not null and ans.selected_label = item ->> 'correct_label'),
-    (ans.selected_label is not null)
-  from public.exam_attempt_results r
-  join public.profiles p on p.id = r.user_id
-  join public.exam_attempt_snapshots s on s.attempt_id = r.attempt_id
-  cross join lateral jsonb_array_elements(s.payload -> 'questions') as item
-  left join public.exam_attempt_answers ans
-    on ans.attempt_id = r.attempt_id
-   and ans.question_id = (item ->> 'question_id')::uuid
-  left join public.lessons l on l.id = nullif(item ->> 'lesson_id', '')::uuid
-  where r.exam_id = p_exam_id
-    and p.tenant_id is not distinct from v_tenant
-    and p.role = 'siswa'
-    and r.submitted_at >= v_since
-    and (p_student_id is null or r.user_id = p_student_id);
-
-  select coalesce(jsonb_agg(q order by q.question_index), '[]'::jsonb)
-  into v_questions
-  from (
+  with scoped as (
+    select
+      (item ->> 'question_id')::uuid as question_id,
+      coalesce((item ->> 'index')::int, 0) as question_index,
+      coalesce(item ->> 'text', '') as question_text,
+      l.title as lesson_title,
+      coalesce(item -> 'grammar_tags', '[]'::jsonb) as grammar_tags,
+      (ans.selected_label is not null and ans.selected_label = item ->> 'correct_label') as is_correct,
+      (ans.selected_label is not null) as answered
+    from public.exam_attempt_results r
+    join public.profiles p on p.id = r.user_id
+    join public.exam_attempt_snapshots s on s.attempt_id = r.attempt_id
+    cross join lateral jsonb_array_elements(s.payload -> 'questions') as item
+    left join public.exam_attempt_answers ans
+      on ans.attempt_id = r.attempt_id
+     and ans.question_id = (item ->> 'question_id')::uuid
+    left join public.lessons l on l.id = nullif(item ->> 'lesson_id', '')::uuid
+    where r.exam_id = p_exam_id
+      and p.tenant_id is not distinct from v_tenant
+      and p.role = 'siswa'
+      and r.submitted_at >= v_since
+      and (p_student_id is null or r.user_id = p_student_id)
+  ),
+  per_question as (
     select
       t.question_id,
       min(t.question_index) as question_index,
@@ -581,23 +568,25 @@ begin
       count(*) filter (where t.answered and not t.is_correct)::int as wrong_count,
       count(*) filter (where not t.answered)::int as skipped_count,
       round(100.0 * count(*) filter (where t.is_correct) / count(*), 2) as accuracy
-    from tmp_scoped_answers t
+    from scoped t
     group by t.question_id
-  ) q;
-
-  select coalesce(jsonb_agg(g order by g.accuracy), '[]'::jsonb)
-  into v_grammar
-  from (
+  ),
+  per_grammar as (
     select
       tag ->> 'id' as tag_id,
       max(tag ->> 'name') as tag_name,
       count(*)::int as attempts,
       count(*) filter (where t.is_correct)::int as correct_count,
       round(100.0 * count(*) filter (where t.is_correct) / count(*), 2) as accuracy
-    from tmp_scoped_answers t
+    from scoped t
     cross join lateral jsonb_array_elements(t.grammar_tags) as tag
     group by tag ->> 'id'
-  ) g;
+  )
+  select
+    coalesce((select jsonb_agg(q order by q.question_index) from per_question q), '[]'::jsonb),
+    coalesce((select jsonb_agg(g order by g.accuracy) from per_grammar g), '[]'::jsonb)
+  into v_questions, v_grammar;
+
 
   return jsonb_build_object(
     'summary', coalesce(v_summary, '{}'::jsonb),

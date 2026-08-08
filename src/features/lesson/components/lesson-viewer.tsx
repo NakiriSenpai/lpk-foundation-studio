@@ -46,6 +46,8 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
 
   const startLesson = useStartLesson();
   const completeLesson = useCompleteLesson();
+  const startLessonMutate = startLesson.mutate;
+  const resetStartLesson = startLesson.reset;
   const queryClient = useQueryClient();
 
   const [step, setStep] = useState(0);
@@ -55,10 +57,11 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
   const topRef = useRef<HTMLDivElement>(null);
 
   const saver = useLessonProgressSaver(lessonId, {
-    enabled: canLearn,
+    enabled: canLearn && startLesson.isSuccess,
     onSaved: () => {
       void queryClient.invalidateQueries({ queryKey: ["lesson-progress", lessonId] });
       void queryClient.invalidateQueries({ queryKey: ["lessons-with-progress"] });
+      void queryClient.invalidateQueries({ queryKey: ["student-lesson-progress"] });
       void queryClient.invalidateQueries({ queryKey: ["student-category-progress"] });
     },
   });
@@ -82,6 +85,16 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
   const isLast = sections.length > 0 && step >= sections.length - 1;
   const completed = progress?.status === "completed";
 
+  // Route parameter dapat berubah tanpa unmount. Reset seluruh state lokal agar
+  // posisi, dedupe, dan start mutation lesson sebelumnya tidak bocor ke lesson baru.
+  useEffect(() => {
+    setStep(0);
+    setResumed(false);
+    startedRef.current = null;
+    markedRef.current.clear();
+    resetStartLesson();
+  }, [lessonId, resetStartLesson]);
+
   // Resume: posisi terakhir diambil dari database, bukan localStorage.
   useEffect(() => {
     if (resumed || !canLearn || sections.length === 0 || blocks.length === 0) return;
@@ -99,8 +112,8 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
   useEffect(() => {
     if (!canLearn || !lesson || startedRef.current === lessonId) return;
     startedRef.current = lessonId;
-    startLesson.mutate(lessonId);
-  }, [canLearn, lesson, lessonId, startLesson]);
+    startLessonMutate(lessonId);
+  }, [canLearn, lesson, lessonId, startLessonMutate]);
 
   // Berpindah bagian = mengantrikan block bagian tersebut (tanpa memblokir UI).
   useEffect(() => {
@@ -127,8 +140,10 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
         toast.success("Materi selesai dipelajari.", { id: "lesson-complete" });
         onBack();
       },
-      onError: () =>
-        toast.error("Gagal menyelesaikan materi. Coba lagi.", { id: "lesson-complete" }),
+      onError: (error) =>
+        toast.error(error instanceof Error ? error.message : "Gagal menyelesaikan materi.", {
+          id: "lesson-complete",
+        }),
     });
   };
 
@@ -248,17 +263,35 @@ export function LessonViewer({ lessonId, onBack }: { lessonId: string; onBack: (
                 <span>{percent}% selesai</span>
               </div>
               <ToneBar value={percent} bar={meta.tone.bar} />
-              {canLearn && saver.status !== "idle" ? (
+              {canLearn &&
+              (startLesson.isPending || startLesson.isError || saver.status !== "idle") ? (
                 <p
                   aria-live="polite"
                   className={cn(
                     "text-xs",
-                    saver.status === "error" ? "text-destructive" : "text-muted-foreground",
+                    startLesson.isError || saver.status === "error"
+                      ? "text-destructive"
+                      : "text-muted-foreground",
                   )}
                 >
-                  {saver.status === "saving" ? "Menyimpan progres..." : null}
-                  {saver.status === "saved" ? "Progres tersimpan" : null}
-                  {saver.status === "error" ? (
+                  {startLesson.isPending || saver.status === "saving"
+                    ? "Menyimpan progres..."
+                    : null}
+                  {!startLesson.isPending && !startLesson.isError && saver.status === "saved"
+                    ? "Progres tersimpan"
+                    : null}
+                  {startLesson.isError ? (
+                    <>
+                      Progress gagal dibuat.{" "}
+                      <button
+                        type="button"
+                        onClick={() => startLessonMutate(lessonId)}
+                        className="underline underline-offset-2"
+                      >
+                        Coba lagi
+                      </button>
+                    </>
+                  ) : saver.status === "error" ? (
                     <>
                       Progres gagal disimpan.{" "}
                       <button

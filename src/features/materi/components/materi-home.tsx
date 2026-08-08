@@ -48,16 +48,15 @@ export function MateriHome() {
     return map;
   }, [lessons]);
 
-  // Prioritas: lesson terakhir yang sedang dikerjakan (progress terbaru),
-  // lalu lesson pertama yang belum pernah diselesaikan.
+  // Database adalah source of truth: hanya progress belum selesai yang paling
+  // baru diakses, tanpa fallback ke lesson acak/belum pernah dibuka.
   const resume: LessonWithProgress | undefined = useMemo(() => {
     const inProgress = lessons
       .filter((l) => l.progress && l.progress.status !== "completed")
       .sort((a, b) =>
         (b.progress?.last_activity_at ?? "").localeCompare(a.progress?.last_activity_at ?? ""),
       )[0];
-    if (inProgress) return inProgress;
-    return lessons.find((l) => !l.progress);
+    return inProgress;
   }, [lessons]);
 
   const allCompleted =
@@ -188,9 +187,7 @@ export function MateriHome() {
         <section className="space-y-3">
           <div className="space-y-0.5">
             <h2 className="text-sm font-semibold text-foreground">Lanjutkan materi</h2>
-            <p className="text-xs text-muted-foreground">
-              {resume.progress ? "Teruskan dari tempat terakhir Anda" : "Mulai materi berikutnya"}
-            </p>
+            <p className="text-xs text-muted-foreground">Teruskan dari tempat terakhir Anda</p>
           </div>
 
           <button
@@ -218,8 +215,7 @@ export function MateriHome() {
               />
             </span>
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">
-              {resume.progress ? "Lanjutkan" : "Mulai"}{" "}
-              <ArrowRight className="size-3.5" aria-hidden />
+              Lanjutkan <ArrowRight className="size-3.5" aria-hidden />
             </span>
           </button>
         </section>

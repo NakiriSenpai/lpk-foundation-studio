@@ -298,7 +298,9 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
                   </AnswerShell>
                 );
               })}
+              </div>
             </div>
+
           }
           explanation={
             <section className="flex h-full min-h-0 flex-col rounded-xl border border-border bg-surface">

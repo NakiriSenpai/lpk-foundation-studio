@@ -27,39 +27,50 @@ export const QuestionStem = memo(function QuestionStem({
   right?: ReactNode;
 }) {
   return (
-    <div className="space-y-2 rounded-xl border border-border bg-card p-3">
+    <div className="space-y-2.5 rounded-2xl border border-border bg-card p-3 sm:p-4">
       <div className="flex items-center justify-between gap-2">
-        <Badge variant="outline" className="shrink-0">
+        <Badge variant="outline" className="shrink-0 bg-primary-muted text-foreground">
           Soal {number} dari {total}
         </Badge>
         {right}
       </div>
       {sectionTitle ? (
-        <p className="text-xs text-muted-foreground">
-          {sectionTitle}
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          <span className="font-semibold text-foreground/80">{sectionTitle}</span>
           {sectionInstruction ? ` — ${sectionInstruction}` : ""}
         </p>
       ) : null}
-      <div className="flex items-start gap-3">
-        {audioUrl ? (
-          <AudioButton audioKey={`${questionId}:soal`} src={audioUrl} label="Putar audio soal" />
-        ) : null}
-        <p className="min-w-0 flex-1 whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
-          {text}
-        </p>
-      </div>
+      <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground sm:text-base">
+        {text}
+      </p>
       {imageUrl ? (
         <img
           src={imageUrl}
           alt={`Gambar soal nomor ${number}`}
           loading="lazy"
           draggable={false}
-          className="mx-auto h-[168px] w-auto max-w-full rounded-lg border border-border object-contain"
+          className="mx-auto max-h-[38vh] w-auto max-w-full rounded-xl border border-border object-contain"
         />
+      ) : null}
+      {audioUrl ? (
+        <AudioButton audioKey={`${questionId}:soal`} src={audioUrl} label="Dengarkan audio" />
       ) : null}
     </div>
   );
 });
+
+/** Judul panel jawaban (kanan). */
+export function AnswerPanelHeader({ title, right }: { title: string; right?: ReactNode }) {
+  return (
+    <div className="mb-2 flex items-center justify-between gap-2">
+      <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+        {title}
+      </p>
+      {right}
+    </div>
+  );
+}
+
 
 /** Kerangka satu pilihan jawaban (nomor + konten). */
 export function AnswerShell({

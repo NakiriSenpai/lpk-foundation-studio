@@ -87,6 +87,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (credentials: LoginCredentials) => {
+      // Profil user sebelumnya tidak boleh dipakai untuk menentukan landing.
+      profileUserRef.current = null;
+      setProfile(null);
+      setIsProfileLoading(true);
       const next = await signInWithPassword(credentials);
       setSession(next);
       await loadProfile(next);
@@ -96,9 +100,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await signOut();
+    profileUserRef.current = null;
     setSession(null);
     setProfile(null);
+    setIsProfileLoading(false);
   }, []);
+
 
   const refreshProfile = useCallback(async () => {
     await loadProfile(session);

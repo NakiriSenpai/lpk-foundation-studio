@@ -26,7 +26,7 @@ import {
   type PaletteGroup,
   type PaletteItem,
 } from "./question-list-dialog";
-import { AnswerPanelHeader, AnswerShell, QuestionStem } from "./question-stem";
+import { AnswerShell, QuestionStem } from "./question-stem";
 import { useAntiCopy } from "./use-anti-copy";
 import { useOrientation } from "./use-orientation";
 import { WorkspaceGate } from "./workspace-gate";
@@ -266,13 +266,6 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
           }
           answers={
             <div>
-              <AnswerPanelHeader
-                title={
-                  selected
-                    ? `Jawaban Anda: ${question.answers.findIndex((a) => a.label === selected) + 1} (${status === "benar" ? "Benar" : "Salah"})`
-                    : "Anda tidak menjawab soal ini"
-                }
-              />
               <div className="space-y-2">
                 {question.answers.map((answer, answerIndex) => {
                   const isCorrect = answer.label === correct;

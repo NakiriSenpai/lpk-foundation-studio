@@ -93,7 +93,7 @@ export function FilterChip({
   children: ReactNode;
   onClick: () => void;
   /** Kelas warna aktif khusus (mis. level kesulitan). */
-  tone?: string;
+  tone?: string | undefined;
 }) {
   return (
     <button

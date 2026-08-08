@@ -1,29 +1,27 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Flag, Loader2 } from "lucide-react";
+import { useBlocker, useNavigate } from "@tanstack/react-router";
+import { ChevronLeft, ChevronRight, Flag, List, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  useAttemptSession,
-  useRecordViolation,
-  useSaveAnswer,
-  useSetFlag,
-  useSubmitAttempt,
-} from "@/hooks/attempt";
+import { useAttemptSession, useSaveAnswer, useSetFlag, useSubmitAttempt } from "@/hooks/attempt";
 import type { AnswerLabel } from "@/types/exam";
 import type { AttemptAnswerRow } from "@/types/attempt";
 import { ATTEMPT_STATUS_LABELS } from "@/types/attempt";
-import { SubmitExamDialog } from "../components/exam-dialogs";
+import {
+  ExitFullscreenDialog,
+  LeaveExamDialog,
+  SubmitExamDialog,
+} from "../components/exam-dialogs";
 import { AudioButton, AudioManagerProvider, useAudioManager } from "./audio-manager";
+import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
 import { useExamTimer } from "../hooks/use-exam-timer";
-import { useFullscreenManager } from "./use-fullscreen-manager";
+import { useExamFullscreen } from "./use-exam-fullscreen";
 import { useLandscapeLock } from "./use-landscape";
-import { FullscreenBanner, WorkspaceShell } from "./workspace-shell";
-import type { PaletteGroup, PaletteItem } from "./workspace-sidebar";
+import { WorkspaceShell } from "./workspace-shell";
 
 type LocalAnswer = { label: AnswerLabel | null; flagged: boolean };
 
@@ -40,15 +38,13 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   const { data, isLoading, isError, error } = useAttemptSession(attemptId);
   const saveAnswer = useSaveAnswer();
   const setFlagMutation = useSetFlag();
-  const recordViolation = useRecordViolation();
   const submit = useSubmitAttempt();
   const { busy: audioBusy } = useAudioManager();
   const { isPortrait, retry } = useLandscapeLock();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [local, setLocal] = useState<Record<string, LocalAnswer>>({});
-  const [violations, setViolations] = useState(0);
-  const [collapsed, setCollapsed] = useState(false);
+  const [listOpen, setListOpen] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
@@ -56,7 +52,6 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   const attempt = data?.attempt;
   const snapshot = data?.snapshot;
   const isRunning = attempt?.status === "in_progress";
-  const limit = attempt?.fullscreen_limit ?? 4;
 
   useEffect(() => {
     if (!data) return;
@@ -65,45 +60,31 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
       restored[row.question_id] = { label: row.selected_label, flagged: row.is_flagged };
     }
     setLocal(restored);
-    setViolations(data.attempt.fullscreen_violations);
   }, [data]);
 
-  const finishRef = useRef<
-    ((reason: "manual" | "time_up" | "fullscreen_violation") => void) | null
-  >(null);
-
-  const fullscreen = useFullscreenManager({
-    active: Boolean(isRunning) && !submitting,
-    onViolation: useCallback(() => {
-      if (submittingRef.current) return;
-      void recordViolation.mutateAsync(attemptId).then((count) => {
-        if (submittingRef.current) return;
-        setViolations(count);
-        if (count >= limit) finishRef.current?.("fullscreen_violation");
-      });
-    }, [attemptId, limit, recordViolation]),
-  });
+  // Fullscreen lifecycle: satu sumber kebenaran.
+  const fullscreen = useExamFullscreen({ enabled: Boolean(isRunning) && !submitting });
 
   const finish = useCallback(
-    async (reason: "manual" | "time_up" | "fullscreen_violation") => {
+    async (reason: "manual" | "time_up") => {
       if (submittingRef.current) return;
       submittingRef.current = true;
       setSubmitting(true);
       setConfirmSubmit(false);
-      fullscreen.finish();
+      fullscreen.beginSubmit();
       try {
         await submit.mutateAsync({ attemptId, reason });
+        fullscreen.finish();
         toast.success(
           reason === "time_up"
             ? "Waktu habis. Ujian dikumpulkan otomatis."
-            : reason === "fullscreen_violation"
-              ? "Batas pelanggaran layar penuh tercapai. Ujian dikumpulkan otomatis."
-              : "Ujian berhasil dikumpulkan.",
+            : "Ujian berhasil dikumpulkan.",
         );
         void navigate({ to: "/ujian/hasil/$attemptId", params: { attemptId } });
       } catch (submitError) {
         submittingRef.current = false;
         setSubmitting(false);
+        void fullscreen.request();
         toast.error(
           submitError instanceof Error ? submitError.message : "Gagal mengumpulkan ujian.",
         );
@@ -111,17 +92,23 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
     },
     [attemptId, fullscreen, navigate, submit],
   );
-  finishRef.current = (reason) => void finish(reason);
 
   const {
     label: timerLabel,
     remaining,
     isReady: timerReady,
-  } = useExamTimer(attempt?.expires_at, Boolean(isRunning), attempt?.started_at);
+  } = useExamTimer(attempt?.expires_at, Boolean(isRunning) && !submitting, attempt?.started_at);
 
   useEffect(() => {
     if (isRunning && timerReady && remaining <= 0) void finish("time_up");
   }, [isRunning, timerReady, remaining, finish]);
+
+  // Guard navigasi (browser back / link) — attempt TIDAK pernah disubmit karena ini.
+  const blocker = useBlocker({
+    shouldBlockFn: () => Boolean(isRunning) && !submittingRef.current,
+    withResolver: true,
+    enableBeforeUnload: false,
+  });
 
   const questions = useMemo(() => snapshot?.questions ?? [], [snapshot]);
   const current = questions[activeIndex];
@@ -227,29 +214,12 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
       <WorkspaceShell
         portrait={isPortrait}
         onRotateRetry={retry}
-        fullscreenBanner={
-          fullscreen.isOutside && !submitting ? (
-            <FullscreenBanner
-              violations={violations}
-              limit={limit}
-              onRequest={() => void fullscreen.request()}
-            />
-          ) : null
-        }
-        sidebar={{
-          groups: paletteGroups,
-          activeIndex,
-          collapsed,
-          disabled: locked,
-          mode: "exam",
-          onToggle: () => setCollapsed((v) => !v),
-          onJump: (index) => setActiveIndex(index),
-        }}
         header={
           <>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-foreground">
                 {snapshot.exam.title}
+                {section ? <span className="text-muted-foreground"> · {section.title}</span> : null}
               </p>
               <p className="text-[11px] text-muted-foreground">
                 {answeredCount}/{questions.length} terjawab · Auto Save aktif
@@ -273,26 +243,37 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
         }
         footer={
           <>
-            <Button
-              type="button"
-              size="sm"
-              variant={local[current.question_id]?.flagged ? "default" : "outline"}
-              disabled={locked}
-              onClick={toggleFlag}
-            >
-              <Flag className="mr-1.5 size-4" />
-              {local[current.question_id]?.flagged ? "Ditandai" : "Tandai"}
-            </Button>
-            <div className="ml-auto flex items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               <Button
                 type="button"
-                variant="outline"
                 size="sm"
+                variant="outline"
                 disabled={locked || activeIndex === 0}
                 onClick={() => setActiveIndex((i) => Math.max(0, i - 1))}
               >
                 <ChevronLeft className="mr-1 size-4" /> Sebelumnya
               </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={local[current.question_id]?.flagged ? "default" : "outline"}
+                disabled={locked}
+                onClick={toggleFlag}
+              >
+                <Flag className="mr-1.5 size-4" />
+                {local[current.question_id]?.flagged ? "Ditandai" : "Tandai"}
+              </Button>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              disabled={locked}
+              onClick={() => setListOpen(true)}
+              className="px-6"
+            >
+              <List className="mr-1.5 size-4" /> Daftar Soal ({questions.length})
+            </Button>
+            <div className="flex justify-end">
               <Button
                 type="button"
                 size="sm"
@@ -362,12 +343,37 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
         </div>
       </WorkspaceShell>
 
+      <QuestionListDialog
+        open={listOpen}
+        onOpenChange={setListOpen}
+        groups={paletteGroups}
+        activeIndex={activeIndex}
+        mode="exam"
+        onJump={setActiveIndex}
+      />
+
       <SubmitExamDialog
         open={confirmSubmit}
         unanswered={questions.length - answeredCount}
         onOpenChange={setConfirmSubmit}
         onConfirm={() => void finish("manual")}
         pending={submitting}
+      />
+
+      <ExitFullscreenDialog
+        open={fullscreen.isExitRequested && !submitting}
+        pending={submitting}
+        onStay={() => fullscreen.cancelExit()}
+        onExit={() => void finish("manual")}
+      />
+
+      <LeaveExamDialog
+        open={blocker.status === "blocked"}
+        onStay={() => blocker.reset?.()}
+        onLeave={() => {
+          fullscreen.release();
+          blocker.proceed?.();
+        }}
       />
     </>
   );

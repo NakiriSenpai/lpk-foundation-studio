@@ -18,10 +18,20 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   // Simpan tujuan awal agar tidak tertimpa saat proses pengalihan berlangsung.
   const intended = useRef(pathname);
+  // Bila sesi sempat aktif lalu hilang (logout), jangan bawa redirect sesi lama.
+  const hadSession = useRef(false);
+
+  useEffect(() => {
+    if (isAuthenticated) hadSession.current = true;
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      void navigate({ to: "/login", search: { redirect: intended.current }, replace: true });
+      void navigate({
+        to: "/login",
+        search: hadSession.current ? {} : { redirect: intended.current },
+        replace: true,
+      });
     }
   }, [isAuthenticated, isLoading, navigate]);
 

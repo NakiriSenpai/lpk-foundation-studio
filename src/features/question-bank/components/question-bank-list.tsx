@@ -438,6 +438,13 @@ export function QuestionBankList() {
           </Button>
         </div>
       </div>
+
+      <ImportBundleDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        bundleType="question_bank"
+        onImported={() => void bankQuery.refetch()}
+      />
     </section>
   );
 }

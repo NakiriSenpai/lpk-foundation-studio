@@ -22,18 +22,35 @@ const ROLE_PREFIX: Record<string, readonly AppRole[]> = {
   "/media": ["owner"],
 };
 
+function matchesPrefix(path: string, prefix: string) {
+  return path === prefix || path.startsWith(`${prefix}/`);
+}
+
 /**
- * Cegah "Akses ditolak" sebagai layar pertama: bila tujuan redirect tidak
- * diizinkan untuk role tersebut, arahkan ke landing page role.
+ * Landing page role adalah otoritas utama setelah login.
+ *
+ * `redirect` hanya boleh dipakai bila:
+ * - bukan landing page milik role lain (sisa sesi sebelumnya), dan
+ * - route tersebut memang diizinkan untuk role saat ini.
+ *
+ * Owner SELALU diarahkan ke `/owner` (tidak boleh mewarisi rute sesi lama).
  */
 export function resolvePostLoginTarget(role: AppRole | null, redirect?: string): string {
   const landing = landingPathFor(role);
+  if (!role) return landing;
+  // Owner absolut: abaikan seluruh redirect state dari sesi sebelumnya.
+  if (role === "owner") return landing;
   if (!redirect || !redirect.startsWith("/") || redirect === "/login" || redirect === "/") {
     return landing;
   }
-  const match = Object.entries(ROLE_PREFIX).find(
-    ([prefix]) => redirect === prefix || redirect.startsWith(`${prefix}/`),
+  // Redirect yang merupakan landing role lain = sisa sesi lama → buang.
+  const foreignLanding = Object.entries(ROLE_LANDING).some(
+    ([otherRole, path]) => otherRole !== role && matchesPrefix(redirect, path),
   );
-  if (match && role && !match[1].includes(role)) return landing;
+  if (foreignLanding) return landing;
+
+  const match = Object.entries(ROLE_PREFIX).find(([prefix]) => matchesPrefix(redirect, prefix));
+  if (match && !match[1].includes(role)) return landing;
   return redirect;
 }
+

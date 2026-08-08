@@ -9,7 +9,8 @@ import { Separator } from "@/components/ui/separator";
 import { useAttemptResult, useStartAttempt } from "@/hooks/attempt";
 import { formatDurasi } from "@/types/attempt";
 import { formatTanggal } from "@/utils/format";
-import { useLandscapeLock } from "./use-landscape";
+import { useOrientation } from "./use-orientation";
+import { WorkspaceGate } from "./workspace-gate";
 import { WorkspaceShell } from "./workspace-shell";
 
 /** Result — tetap fullscreen & landscape, hanya MEMBACA hasil yang tersimpan. */
@@ -17,7 +18,7 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useAttemptResult(attemptId);
   const startAttempt = useStartAttempt();
-  const { isPortrait, retry } = useLandscapeLock();
+  const orientation = useOrientation();
 
   if (isLoading) {
     return (
@@ -55,7 +56,7 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
   };
 
   const stats = [
-    { label: "Benar", value: data.correct_count, icon: CheckCircle2, tone: "text-emerald-600" },
+    { label: "Benar", value: data.correct_count, icon: CheckCircle2, tone: "text-success" },
     { label: "Salah", value: data.wrong_count, icon: XCircle, tone: "text-destructive" },
     {
       label: "Kosong",
@@ -67,8 +68,16 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
 
   return (
     <WorkspaceShell
-      portrait={isPortrait}
-      onRotateRetry={retry}
+      gate={
+        orientation.needsRotate ? (
+          <WorkspaceGate
+            needsRotate
+            lockSupported={orientation.lockSupported}
+            pending={false}
+            onEnter={() => void orientation.lock()}
+          />
+        ) : null
+      }
       header={
         <>
           <div className="min-w-0 flex-1">
@@ -100,52 +109,57 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
         </>
       }
     >
-      <div className="mx-auto grid w-full max-w-3xl gap-3 md:grid-cols-2 md:items-start">
-        <Card>
-          <CardContent className="space-y-3 p-4 text-center">
-            <p className="text-5xl font-bold tabular-nums text-foreground">
-              {Number(data.score).toLocaleString("id-ID")}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Passing score: {Number(data.passing_score).toLocaleString("id-ID")}
-            </p>
-            <Badge variant={data.passed ? "default" : "destructive"} className="px-4 py-1 text-sm">
-              {data.passed ? "LULUS" : "TIDAK LULUS"}
-            </Badge>
-            <Separator />
-            <div className="grid grid-cols-3 gap-2">
-              {stats.map((stat) => (
-                <div key={stat.label} className="rounded-xl border border-border p-2">
-                  <stat.icon className={`mx-auto size-5 ${stat.tone}`} />
-                  <p className="mt-1 text-lg font-semibold tabular-nums text-foreground">
-                    {stat.value}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="h-full min-h-0 overflow-y-auto overscroll-contain p-3">
+        <div className="mx-auto grid w-full max-w-3xl gap-3 md:grid-cols-2 md:items-start">
+          <Card>
+            <CardContent className="space-y-3 p-4 text-center">
+              <p className="text-5xl font-bold tabular-nums text-foreground">
+                {Number(data.score).toLocaleString("id-ID")}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Passing score: {Number(data.passing_score).toLocaleString("id-ID")}
+              </p>
+              <Badge
+                variant={data.passed ? "default" : "destructive"}
+                className="px-4 py-1 text-sm"
+              >
+                {data.passed ? "LULUS" : "TIDAK LULUS"}
+              </Badge>
+              <Separator />
+              <div className="grid grid-cols-3 gap-2">
+                {stats.map((stat) => (
+                  <div key={stat.label} className="rounded-xl border border-border p-2">
+                    <stat.icon className={`mx-auto size-5 ${stat.tone}`} />
+                    <p className="mt-1 text-lg font-semibold tabular-nums text-foreground">
+                      {stat.value}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <dl className="space-y-1.5 text-sm">
-              <Row label="Jumlah soal" value={String(data.total_questions)} />
-              <Row label="Durasi" value={formatDurasi(data.duration_seconds)} />
-              <Row label="Tanggal" value={formatTanggal(data.submitted_at)} />
-              {data.auto_submitted ? (
-                <Row
-                  label="Catatan"
-                  value={
-                    data.submit_reason === "time_up"
-                      ? "Dikumpulkan otomatis (waktu habis)"
-                      : "Dikumpulkan otomatis (pelanggaran layar penuh)"
-                  }
-                />
-              ) : null}
-            </dl>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardContent className="p-4">
+              <dl className="space-y-1.5 text-sm">
+                <Row label="Jumlah soal" value={String(data.total_questions)} />
+                <Row label="Durasi" value={formatDurasi(data.duration_seconds)} />
+                <Row label="Tanggal" value={formatTanggal(data.submitted_at)} />
+                {data.auto_submitted ? (
+                  <Row
+                    label="Catatan"
+                    value={
+                      data.submit_reason === "time_up"
+                        ? "Dikumpulkan otomatis (waktu habis)"
+                        : "Dikumpulkan otomatis (pelanggaran layar penuh)"
+                    }
+                  />
+                ) : null}
+              </dl>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </WorkspaceShell>
   );

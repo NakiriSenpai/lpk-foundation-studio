@@ -20,10 +20,17 @@ import { listLessonTitles } from "@/services/lesson";
 import type { AnswerLabel } from "@/types/exam";
 import { OpenLessonDialog } from "../components/open-lesson-dialog";
 import { AudioButton, AudioManagerProvider } from "./audio-manager";
-import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./question-list-dialog";
+import {
+  QuestionListDialog,
+  QuestionListPanel,
+  type PaletteGroup,
+  type PaletteItem,
+} from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
-import { useLandscapeLock } from "./use-landscape";
-import { WorkspaceShell } from "./workspace-shell";
+import { useAntiCopy } from "./use-anti-copy";
+import { useOrientation } from "./use-orientation";
+import { WorkspaceGate } from "./workspace-gate";
+import { WorkspaceBody, WorkspaceShell } from "./workspace-shell";
 
 /** Review memakai Workspace yang sama dengan Exam, ditambah pembahasan. */
 export function ReviewWorkspace({ attemptId }: { attemptId: string }) {
@@ -37,9 +44,12 @@ export function ReviewWorkspace({ attemptId }: { attemptId: string }) {
 function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useAttemptReview(attemptId);
-  const { isPortrait, retry } = useLandscapeLock();
+  const orientation = useOrientation();
+  useAntiCopy();
   const [activeIndex, setActiveIndex] = useState(0);
   const [listOpen, setListOpen] = useState(false);
+  const [asideOpen, setAsideOpen] = useState(false);
+  const [gatePending, setGatePending] = useState(false);
   const [lessonDialog, setLessonDialog] = useState<{ id: string; title: string } | null>(null);
 
   const questions = useMemo(() => data?.snapshot.questions ?? [], [data]);
@@ -131,8 +141,29 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
   return (
     <>
       <WorkspaceShell
-        portrait={isPortrait}
-        onRotateRetry={retry}
+        asideOpen={asideOpen && !orientation.isSmallScreen}
+        aside={
+          <QuestionListPanel
+            groups={paletteGroups}
+            activeIndex={activeIndex}
+            mode="review"
+            columns="compact"
+            onJump={setActiveIndex}
+          />
+        }
+        gate={
+          orientation.needsRotate ? (
+            <WorkspaceGate
+              needsRotate
+              lockSupported={orientation.lockSupported}
+              pending={gatePending}
+              onEnter={() => {
+                setGatePending(true);
+                void orientation.lock().finally(() => setGatePending(false));
+              }}
+            />
+          ) : null
+        }
         header={
           <>
             <div className="min-w-0 flex-1">
@@ -169,7 +200,15 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
                 <ChevronLeft className="mr-1 size-4" /> Sebelumnya
               </Button>
             </div>
-            <Button type="button" size="sm" className="px-6" onClick={() => setListOpen(true)}>
+            <Button
+              type="button"
+              size="sm"
+              className="px-6"
+              onClick={() => {
+                if (orientation.isSmallScreen) setListOpen(true);
+                else setAsideOpen((value) => !value);
+              }}
+            >
               <List className="mr-1.5 size-4" /> Daftar Soal ({questions.length})
             </Button>
             <div className="flex justify-end">
@@ -185,8 +224,8 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
           </>
         }
       >
-        <div className="space-y-3">
-          <div className="grid gap-3 lg:grid-cols-2 lg:items-start">
+        <WorkspaceBody
+          question={
             <QuestionStem
               questionId={question.question_id}
               number={activeIndex + 1}
@@ -218,7 +257,8 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
                 </Badge>
               }
             />
-
+          }
+          answers={
             <div className="space-y-2">
               {question.answers.map((answer, answerIndex) => {
                 const isCorrect = answer.label === correct;
@@ -259,57 +299,58 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
                 );
               })}
             </div>
-          </div>
-
-          <section className="rounded-xl border border-border bg-card">
-            <p className="border-b border-border px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              Pembahasan
-            </p>
-            <div className="max-h-[38vh] space-y-3 overflow-y-auto overscroll-contain p-3 text-sm">
-              <p className="whitespace-pre-wrap text-foreground">
-                {question.explanation?.trim() ? question.explanation : "Belum ada pembahasan."}
+          }
+          explanation={
+            <section className="flex h-full min-h-0 flex-col rounded-xl border border-border bg-surface">
+              <p className="shrink-0 border-b border-border px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                Pembahasan
               </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Grammar
-                  </p>
-                  {question.grammar_tags.length > 0 ? (
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      {question.grammar_tags.map((tag) => (
-                        <Badge key={tag.id} variant="secondary">
-                          {tag.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">Belum dihubungkan.</p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Materi Terkait
-                  </p>
-                  {question.lesson_id && lessonTitle ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="mt-1 h-auto max-w-full whitespace-normal py-1.5 text-left"
-                      onClick={() =>
-                        setLessonDialog({ id: question.lesson_id as string, title: lessonTitle })
-                      }
-                    >
-                      <BookOpen className="mr-1.5 size-4 shrink-0" />
-                      {lessonTitle}
-                    </Button>
-                  ) : (
-                    <p className="text-muted-foreground">Belum dihubungkan.</p>
-                  )}
+              <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain p-3 text-sm">
+                <p className="whitespace-pre-wrap text-foreground">
+                  {question.explanation?.trim() ? question.explanation : "Belum ada pembahasan."}
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Grammar
+                    </p>
+                    {question.grammar_tags.length > 0 ? (
+                      <div className="mt-1 flex flex-wrap gap-1.5">
+                        {question.grammar_tags.map((tag) => (
+                          <Badge key={tag.id} variant="secondary">
+                            {tag.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground">Belum dihubungkan.</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Materi Terkait
+                    </p>
+                    {question.lesson_id && lessonTitle ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="mt-1 h-auto max-w-full whitespace-normal py-1.5 text-left"
+                        onClick={() =>
+                          setLessonDialog({ id: question.lesson_id as string, title: lessonTitle })
+                        }
+                      >
+                        <BookOpen className="mr-1.5 size-4 shrink-0" />
+                        {lessonTitle}
+                      </Button>
+                    ) : (
+                      <p className="text-muted-foreground">Belum dihubungkan.</p>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </section>
-        </div>
+            </section>
+          }
+        />
       </WorkspaceShell>
 
       <QuestionListDialog

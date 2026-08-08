@@ -338,58 +338,58 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
         <WorkspaceBody
           question={
             <QuestionStem
-            questionId={current.question_id}
-            number={activeIndex + 1}
-            total={questions.length}
-            sectionTitle={section?.title}
-            sectionInstruction={section?.instruction}
-            text={current.text}
-            imageUrl={current.image_url}
+              questionId={current.question_id}
+              number={activeIndex + 1}
+              total={questions.length}
+              sectionTitle={section?.title}
+              sectionInstruction={section?.instruction}
+              text={current.text}
+              imageUrl={current.image_url}
               audioUrl={current.audio_url}
             />
           }
           answers={
             <div className="space-y-2">
-            {current.answers.map((answer, answerIndex) => (
-              <AnswerShell
-                key={answer.label}
-                index={answerIndex}
-                selected={local[current.question_id]?.label === answer.label}
-                disabled={locked}
-                onClick={() => choose(answer.label)}
-              >
-                {answer.text ? (
-                  <span className="block text-sm text-foreground">{answer.text}</span>
-                ) : null}
-                {answer.image_url ? (
-                  <img
-                    src={answer.image_url}
-                    alt={`Pilihan ${answerIndex + 1}`}
-                    loading="lazy"
-                    draggable={false}
-                    className="h-[88px] w-auto max-w-full rounded-lg border border-border object-contain"
-                  />
-                ) : null}
-                {answer.audio_url ? (
-                  <span
-                    className="block"
-                    role="presentation"
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    <AudioButton
-                      size="sm"
-                      audioKey={`${current.question_id}:${answer.label}`}
-                      src={answer.audio_url}
-                      label={`Audio pilihan ${answerIndex + 1}`}
+              {current.answers.map((answer, answerIndex) => (
+                <AnswerShell
+                  key={answer.label}
+                  index={answerIndex}
+                  selected={local[current.question_id]?.label === answer.label}
+                  disabled={locked}
+                  onClick={() => choose(answer.label)}
+                >
+                  {answer.text ? (
+                    <span className="block text-sm text-foreground">{answer.text}</span>
+                  ) : null}
+                  {answer.image_url ? (
+                    <img
+                      src={answer.image_url}
+                      alt={`Pilihan ${answerIndex + 1}`}
+                      loading="lazy"
+                      draggable={false}
+                      className="h-[88px] w-auto max-w-full rounded-lg border border-border object-contain"
                     />
-                  </span>
-                ) : null}
-                {!answer.text && !answer.image_url && !answer.audio_url ? (
-                  <span className="block text-sm text-muted-foreground">
-                    Pilihan {answerIndex + 1}
-                  </span>
-                ) : null}
-              </AnswerShell>
+                  ) : null}
+                  {answer.audio_url ? (
+                    <span
+                      className="block"
+                      role="presentation"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <AudioButton
+                        size="sm"
+                        audioKey={`${current.question_id}:${answer.label}`}
+                        src={answer.audio_url}
+                        label={`Audio pilihan ${answerIndex + 1}`}
+                      />
+                    </span>
+                  ) : null}
+                  {!answer.text && !answer.image_url && !answer.audio_url ? (
+                    <span className="block text-sm text-muted-foreground">
+                      Pilihan {answerIndex + 1}
+                    </span>
+                  ) : null}
+                </AnswerShell>
               ))}
             </div>
           }

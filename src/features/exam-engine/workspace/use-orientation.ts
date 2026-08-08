@@ -18,8 +18,24 @@ export function isOrientationLockSupported() {
   return typeof getOrientation()?.lock === "function";
 }
 
-/** Mencoba mengunci landscape dan MEMVERIFIKASI orientasi sebenarnya. */
+/**
+ * Mencoba mengunci landscape dan MEMVERIFIKASI orientasi sebenarnya.
+ *
+ * Sebagian besar peramban mobile (Android/Chrome) HANYA mengizinkan
+ * `screen.orientation.lock()` ketika dokumen berada dalam fullscreen. Karena
+ * itu fullscreen diminta lebih dulu — tetap dalam gesture user yang sama.
+ */
 export async function lockLandscape(): Promise<boolean> {
+  if (window.matchMedia("(orientation: landscape)").matches) return true;
+
+  if (!document.fullscreenElement) {
+    try {
+      await document.documentElement.requestFullscreen();
+    } catch {
+      /* fullscreen ditolak — tetap coba lock di bawah */
+    }
+  }
+
   const orientation = getOrientation();
   if (orientation && typeof orientation.lock === "function") {
     try {
@@ -28,7 +44,7 @@ export async function lockLandscape(): Promise<boolean> {
       /* ditolak peramban/perangkat — jatuh ke verifikasi manual di bawah */
     }
   }
-  await new Promise((resolve) => setTimeout(resolve, 120));
+  await new Promise((resolve) => setTimeout(resolve, 200));
   return window.matchMedia("(orientation: landscape)").matches;
 }
 

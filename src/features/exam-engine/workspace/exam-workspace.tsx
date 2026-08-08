@@ -22,7 +22,7 @@ import {
   type PaletteGroup,
   type PaletteItem,
 } from "./question-list-dialog";
-import { AnswerShell, QuestionStem } from "./question-stem";
+import { AnswerPanelHeader, AnswerShell, QuestionStem } from "./question-stem";
 import { useExamTimer } from "../hooks/use-exam-timer";
 import { useExamFullscreen } from "./use-exam-fullscreen";
 import { useAntiCopy } from "./use-anti-copy";

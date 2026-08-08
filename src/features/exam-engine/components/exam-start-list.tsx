@@ -9,23 +9,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import { useAvailableExams, useMyAttempts, useStartAttempt } from "@/hooks/attempt";
 import type { ExamRow } from "@/types/exam";
-import { lockLandscape } from "../workspace/use-landscape";
 import { ContinueExamDialog, StartExamDialog } from "./exam-dialogs";
 
-/** Sprint 11: fullscreen + landscape diminta pada gestur klik konfirmasi. */
-async function enterWorkspaceMode() {
-  const el = document.documentElement;
-  if (!document.fullscreenElement && typeof el.requestFullscreen === "function") {
-    try {
-      await el.requestFullscreen({ navigationUI: "hide" });
-    } catch {
-      /* peramban menolak — Workspace tetap menawarkan tombol fullscreen */
-    }
-  }
-  await lockLandscape();
-}
-
-/** Daftar ujian published + tombol Mulai Ujian (anti duplicate attempt). */
+/**
+ * Daftar ujian published.
+ * Sprint 11A: fullscreen & landscape TIDAK diminta di sini — Workspace yang
+ * memintanya setelah mounted, sehingga user tidak pernah tertinggal di halaman ini.
+ */
 export function ExamStartList() {
   const navigate = useNavigate();
   const { data: exams, isLoading } = useAvailableExams();
@@ -46,7 +36,6 @@ export function ExamStartList() {
   );
 
   const handleStart = (examId: string) => {
-    void enterWorkspaceMode();
     start.mutate(examId, {
       onSuccess: (attempt) => {
         setStartTarget(null);
@@ -147,7 +136,7 @@ export function ExamStartList() {
         onOpenChange={(open) => !open && setContinueTarget(null)}
         onConfirm={() => {
           if (!continueTarget) return;
-          void enterWorkspaceMode();
+
           void navigate({ to: "/ujian/$attemptId", params: { attemptId: continueTarget } });
         }}
       />

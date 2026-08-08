@@ -90,14 +90,14 @@ export function ContinueExamDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Melanjutkan ujian</AlertDialogTitle>
+          <AlertDialogTitle>Anda memiliki ujian yang belum selesai</AlertDialogTitle>
           <AlertDialogDescription>
-            Anda masih memiliki ujian yang belum selesai. Waktu ujian terus berjalan di latar
-            belakang. Lanjutkan sekarang?
+            Ujian akan dilanjutkan dari posisi terakhir. Jawaban yang sudah tersimpan tetap
+            tersedia. Lanjutkan ujian?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Nanti saja</AlertDialogCancel>
+          <AlertDialogCancel>Batalkan</AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm}>Lanjutkan</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -141,6 +141,68 @@ export function SubmitExamDialog({
           <AlertDialogAction disabled={pending} onClick={onConfirm}>
             Kumpulkan
           </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+/** Konfirmasi keluar fullscreen yang disengaja (Sprint 11A). */
+export function ExitFullscreenDialog({
+  open,
+  pending,
+  onStay,
+  onExit,
+}: {
+  open: boolean;
+  pending?: boolean;
+  onStay: () => void;
+  onExit: () => void;
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={(next) => !next && onStay()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Keluar dari mode ujian?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Jika Anda keluar dari mode layar penuh, ujian akan dikumpulkan secara otomatis. Apakah
+            Anda yakin ingin keluar?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onStay}>Tetap Mengerjakan</AlertDialogCancel>
+          <AlertDialogAction disabled={pending} onClick={onExit}>
+            Keluar &amp; Kumpulkan
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+/** Konfirmasi meninggalkan Workspace lewat navigasi peramban. Tidak pernah submit. */
+export function LeaveExamDialog({
+  open,
+  onStay,
+  onLeave,
+}: {
+  open: boolean;
+  onStay: () => void;
+  onLeave: () => void;
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={(next) => !next && onStay()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Ujian sedang berlangsung</AlertDialogTitle>
+          <AlertDialogDescription>
+            Jika Anda meninggalkan halaman ini, ujian tetap tersimpan dan dapat dilanjutkan kembali.
+            Apakah Anda ingin meninggalkan ujian?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onStay}>Tetap di Ujian</AlertDialogCancel>
+          <AlertDialogAction onClick={onLeave}>Tinggalkan Ujian</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

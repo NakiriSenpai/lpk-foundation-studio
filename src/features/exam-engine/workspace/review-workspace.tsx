@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleSlash,
+  List,
   Loader2,
   XCircle,
 } from "lucide-react";
@@ -19,10 +20,10 @@ import { listLessonTitles } from "@/services/lesson";
 import type { AnswerLabel } from "@/types/exam";
 import { OpenLessonDialog } from "../components/open-lesson-dialog";
 import { AudioButton, AudioManagerProvider } from "./audio-manager";
+import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
 import { useLandscapeLock } from "./use-landscape";
 import { WorkspaceShell } from "./workspace-shell";
-import type { PaletteGroup, PaletteItem } from "./workspace-sidebar";
 
 /** Review memakai Workspace yang sama dengan Exam, ditambah pembahasan. */
 export function ReviewWorkspace({ attemptId }: { attemptId: string }) {
@@ -38,7 +39,7 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
   const { data, isLoading, isError, error } = useAttemptReview(attemptId);
   const { isPortrait, retry } = useLandscapeLock();
   const [activeIndex, setActiveIndex] = useState(0);
-  const [collapsed, setCollapsed] = useState(false);
+  const [listOpen, setListOpen] = useState(false);
   const [lessonDialog, setLessonDialog] = useState<{ id: string; title: string } | null>(null);
 
   const questions = useMemo(() => data?.snapshot.questions ?? [], [data]);
@@ -132,15 +133,6 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
       <WorkspaceShell
         portrait={isPortrait}
         onRotateRetry={retry}
-        sidebar={{
-          groups: paletteGroups,
-          activeIndex,
-          collapsed,
-          disabled: false,
-          mode: "review",
-          onToggle: () => setCollapsed((v) => !v),
-          onJump: (index) => setActiveIndex(index),
-        }}
         header={
           <>
             <div className="min-w-0 flex-1">
@@ -160,25 +152,32 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
           </>
         }
         footer={
-          <div className="ml-auto flex items-center gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={activeIndex === 0}
-              onClick={() => setActiveIndex((i) => Math.max(0, i - 1))}
-            >
-              <ChevronLeft className="mr-1 size-4" /> Sebelumnya
+          <>
+            <div className="flex min-w-0 items-center">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={activeIndex === 0}
+                onClick={() => setActiveIndex((i) => Math.max(0, i - 1))}
+              >
+                <ChevronLeft className="mr-1 size-4" /> Sebelumnya
+              </Button>
+            </div>
+            <Button type="button" size="sm" className="px-6" onClick={() => setListOpen(true)}>
+              <List className="mr-1.5 size-4" /> Daftar Soal ({questions.length})
             </Button>
-            <Button
-              type="button"
-              size="sm"
-              disabled={activeIndex >= questions.length - 1}
-              onClick={() => setActiveIndex((i) => Math.min(questions.length - 1, i + 1))}
-            >
-              Berikutnya <ChevronRight className="ml-1 size-4" />
-            </Button>
-          </div>
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                size="sm"
+                disabled={activeIndex >= questions.length - 1}
+                onClick={() => setActiveIndex((i) => Math.min(questions.length - 1, i + 1))}
+              >
+                Berikutnya <ChevronRight className="ml-1 size-4" />
+              </Button>
+            </div>
+          </>
         }
       >
         <div className="grid gap-3 lg:grid-cols-2 lg:items-start">
@@ -305,6 +304,15 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
           </div>
         </div>
       </WorkspaceShell>
+
+      <QuestionListDialog
+        open={listOpen}
+        onOpenChange={setListOpen}
+        groups={paletteGroups}
+        activeIndex={activeIndex}
+        mode="review"
+        onJump={setActiveIndex}
+      />
 
       <OpenLessonDialog
         open={Boolean(lessonDialog)}

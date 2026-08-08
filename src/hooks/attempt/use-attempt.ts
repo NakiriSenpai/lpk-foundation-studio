@@ -35,14 +35,20 @@ export function useActiveAttempt(examId: string) {
   });
 }
 
-/** Sesi attempt lengkap (snapshot + jawaban). Sumber recovery setelah refresh. */
-export function useAttemptSession(attemptId: string) {
+/**
+ * Sesi attempt lengkap (snapshot immutable + jawaban tersimpan).
+ * Sumber tunggal recovery setelah refresh / force close browser.
+ * `enabled` dipakai untuk menunggu restorasi session auth (anti race condition).
+ */
+export function useAttemptSession(attemptId: string, enabled = true) {
   return useQuery({
     queryKey: ["attempt-session", attemptId],
     queryFn: () => getAttemptSession(attemptId),
-    enabled: Boolean(attemptId),
+    enabled: Boolean(attemptId) && enabled,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1500, 400 * (attempt + 1)),
   });
 }
 

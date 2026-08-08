@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/hooks/auth";
 import { useAttemptSession, useSaveAnswer, useSetFlag, useSubmitAttempt } from "@/hooks/attempt";
 import type { AnswerLabel } from "@/types/exam";
 import type { AttemptAnswerRow } from "@/types/attempt";
@@ -42,7 +43,15 @@ export function ExamWorkspace({ attemptId }: { attemptId: string }) {
 
 function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
-  const { data, isLoading, isError, error } = useAttemptSession(attemptId);
+  const { isLoading: authLoading, isAuthenticated } = useAuth();
+  const {
+    data,
+    isLoading: sessionLoading,
+    isError,
+    error,
+  } = useAttemptSession(attemptId, !authLoading && isAuthenticated);
+  // Exam Runner tidak pernah dirender sebelum attempt + snapshot tersedia.
+  const isLoading = authLoading || (isAuthenticated && (sessionLoading || !data));
   const saveAnswer = useSaveAnswer();
   const setFlagMutation = useSetFlag();
   const submit = useSubmitAttempt();

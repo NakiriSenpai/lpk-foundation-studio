@@ -11,7 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { ThemeProvider, themeInitScript } from "@/contexts/theme-context";
+import { ThemeProvider, } from "@/contexts/theme-context";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { registerServiceWorker } from "@/lib/pwa/register-sw";
 import { Toaster } from "@/components/ui/sonner";
@@ -120,7 +120,6 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="id" className="dark" style={{ colorScheme: "dark" }}>
       <head>
         <HeadContent />
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
         {children}

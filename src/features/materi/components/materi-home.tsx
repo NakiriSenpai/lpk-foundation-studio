@@ -197,12 +197,15 @@ export function MateriHome() {
         </div>
       </section>
 
-      {isStudent && resume && resumeMeta ? (
+      {resume && resumeMeta ? (
         <section className="space-y-3">
           <div className="space-y-0.5">
             <h2 className="text-sm font-semibold text-foreground">Lanjutkan materi</h2>
-            <p className="text-xs text-muted-foreground">Teruskan dari tempat terakhir Anda</p>
+            <p className="text-xs text-muted-foreground">
+              {resume.progress ? "Teruskan dari tempat terakhir Anda" : "Mulai materi berikutnya"}
+            </p>
           </div>
+
           <button
             type="button"
             onClick={() => openLesson(resume.id)}

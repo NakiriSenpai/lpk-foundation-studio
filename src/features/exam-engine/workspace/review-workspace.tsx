@@ -359,7 +359,6 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
               </div>
             </section>
           }
-
         />
       </WorkspaceShell>
 

@@ -34,9 +34,7 @@ export function WorkspaceShell({
       <div
         className={cn(
           "grid min-h-full w-full transition-[grid-template-columns] duration-300 ease-out",
-          aside && asideOpen
-            ? "grid-cols-[260px_minmax(0,1fr)]"
-            : "grid-cols-[0px_minmax(0,1fr)]",
+          aside && asideOpen ? "grid-cols-[260px_minmax(0,1fr)]" : "grid-cols-[0px_minmax(0,1fr)]",
         )}
       >
         {aside ? (

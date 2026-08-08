@@ -324,6 +324,7 @@ export function LessonList() {
       ) : null}
 
       <LessonFormDialog open={formOpen} onOpenChange={setFormOpen} lesson={selected} />
+      <ImportBundleDialog open={importOpen} onOpenChange={setImportOpen} bundleType="lesson" />
     </section>
   );
 }

@@ -49,6 +49,8 @@ export function StudentDashboard() {
         <SectionTitle>Belajar</SectionTitle>
         <ShortcutGrid items={LEARNING} />
       </div>
+      <StudentLessonProgressPanel />
     </section>
   );
 }
+

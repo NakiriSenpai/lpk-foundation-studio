@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/hooks/auth";
+
 import { useLessonsWithProgress } from "@/hooks/lesson";
 import {
   BOOKMARK_META,

@@ -123,7 +123,8 @@ export function LessonViewer({
   };
 
   const handleFinish = () => {
-    if (!isStudent) return onBack();
+    if (!isStudent || progress?.status === "completed") return onBack();
+
     completeLesson.mutate(lessonId, {
       onSuccess: () => toast.success("Materi selesai dipelajari."),
       onError: () => toast.error("Gagal menyelesaikan materi. Coba lagi."),

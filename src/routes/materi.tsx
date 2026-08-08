@@ -1,16 +1,9 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { LessonViewer } from "@/features/lesson/components/lesson-viewer";
-import { MateriList } from "@/features/materi/components/materi-list";
 import { AppLayout } from "@/layouts/app-layout";
 import { RequireAuth } from "@/middleware";
 
-type MateriSearch = { lesson?: string | undefined };
-
 export const Route = createFileRoute("/materi")({
-  validateSearch: (search: Record<string, unknown>): MateriSearch => ({
-    lesson: typeof search["lesson"] === "string" ? (search["lesson"] as string) : undefined,
-  }),
   head: () => ({
     meta: [
       { title: "Materi — LPK Learning" },
@@ -24,26 +17,14 @@ export const Route = createFileRoute("/materi")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: MateriPage,
+  component: MateriLayout,
 });
 
-function MateriPage() {
-  const navigate = useNavigate();
-  const { lesson } = Route.useSearch();
-
+function MateriLayout() {
   return (
     <AppLayout>
       <RequireAuth>
-        {lesson ? (
-          <LessonViewer
-            lessonId={lesson}
-            onBack={() => void navigate({ to: "/materi", search: {} })}
-          />
-        ) : (
-          <MateriList
-            onOpen={(lessonId) => void navigate({ to: "/materi", search: { lesson: lessonId } })}
-          />
-        )}
+        <Outlet />
       </RequireAuth>
     </AppLayout>
   );

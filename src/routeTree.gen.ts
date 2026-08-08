@@ -34,6 +34,7 @@ import { Route as OwnerUsersRouteImport } from './routes/owner_.users'
 import { Route as TeacherAnalyticsRouteImport } from './routes/teacher_.analytics'
 import { Route as UjianIndexRouteImport } from './routes/ujian.index'
 import { Route as UjianAttemptIdRouteImport } from './routes/ujian.$attemptId'
+import { Route as MateriLessonLessonIdRouteImport } from './routes/materi.lesson.$lessonId'
 import { Route as OwnerExamStudioIndexRouteImport } from './routes/owner_.exam-studio.index'
 import { Route as OwnerExamStudioExamIdRouteImport } from './routes/owner_.exam-studio.$examId'
 import { Route as OwnerLessonStudioIndexRouteImport } from './routes/owner_.lesson-studio.index'
@@ -168,6 +169,11 @@ const UjianAttemptIdRoute = UjianAttemptIdRouteImport.update({
   path: '/$attemptId',
   getParentRoute: () => UjianRoute,
 } as any)
+const MateriLessonLessonIdRoute = MateriLessonLessonIdRouteImport.update({
+  id: '/lesson/$lessonId',
+  path: '/lesson/$lessonId',
+  getParentRoute: () => MateriRoute,
+} as any)
 const OwnerExamStudioIndexRoute = OwnerExamStudioIndexRouteImport.update({
   id: '/owner_/exam-studio/',
   path: '/owner/exam-studio/',
@@ -237,6 +243,7 @@ export interface FileRoutesByFullPath {
   '/ujian/$attemptId': typeof UjianAttemptIdRoute
   '/materi/': typeof MateriIndexRoute
   '/ujian/': typeof UjianIndexRoute
+  '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
@@ -270,6 +277,7 @@ export interface FileRoutesByTo {
   '/ujian/$attemptId': typeof UjianAttemptIdRoute
   '/materi': typeof MateriIndexRoute
   '/ujian': typeof UjianIndexRoute
+  '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
   '/owner/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
@@ -306,6 +314,7 @@ export interface FileRoutesById {
   '/ujian/$attemptId': typeof UjianAttemptIdRoute
   '/materi/': typeof MateriIndexRoute
   '/ujian/': typeof UjianIndexRoute
+  '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
   '/owner_/exam-studio/$examId': typeof OwnerExamStudioExamIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
@@ -343,6 +352,7 @@ export interface FileRouteTypes {
     | '/ujian/$attemptId'
     | '/materi/'
     | '/ujian/'
+    | '/materi/lesson/$lessonId'
     | '/owner/exam-studio/$examId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
@@ -376,6 +386,7 @@ export interface FileRouteTypes {
     | '/ujian/$attemptId'
     | '/materi'
     | '/ujian'
+    | '/materi/lesson/$lessonId'
     | '/owner/exam-studio/$examId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
@@ -411,6 +422,7 @@ export interface FileRouteTypes {
     | '/ujian/$attemptId'
     | '/materi/'
     | '/ujian/'
+    | '/materi/lesson/$lessonId'
     | '/owner_/exam-studio/$examId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
@@ -627,6 +639,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UjianAttemptIdRouteImport
       parentRoute: typeof UjianRoute
     }
+    '/materi/lesson/$lessonId': {
+      id: '/materi/lesson/$lessonId'
+      path: '/lesson/$lessonId'
+      fullPath: '/materi/lesson/$lessonId'
+      preLoaderRoute: typeof MateriLessonLessonIdRouteImport
+      parentRoute: typeof MateriRoute
+    }
     '/owner_/exam-studio/': {
       id: '/owner_/exam-studio/'
       path: '/owner/exam-studio'
@@ -689,11 +708,13 @@ declare module '@tanstack/react-router' {
 interface MateriRouteChildren {
   MateriCategoryRoute: typeof MateriCategoryRoute
   MateriIndexRoute: typeof MateriIndexRoute
+  MateriLessonLessonIdRoute: typeof MateriLessonLessonIdRoute
 }
 
 const MateriRouteChildren: MateriRouteChildren = {
   MateriCategoryRoute: MateriCategoryRoute,
   MateriIndexRoute: MateriIndexRoute,
+  MateriLessonLessonIdRoute: MateriLessonLessonIdRoute,
 }
 
 const MateriRouteWithChildren =

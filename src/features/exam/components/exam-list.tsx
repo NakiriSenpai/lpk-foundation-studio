@@ -236,6 +236,15 @@ export function ExamList() {
                 >
                   <Pencil className="mr-1 size-4" /> Ubah
                 </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={exportingId === exam.id}
+                  onClick={() => void handleExport(exam)}
+                >
+                  <Download className="mr-1 size-4" />
+                  {exportingId === exam.id ? "Menyiapkan…" : "Export"}
+                </Button>
                 <Button size="sm" variant="outline" onClick={() => void handleDelete(exam)}>
                   <Trash2 className="mr-1 size-4" /> Hapus
                 </Button>

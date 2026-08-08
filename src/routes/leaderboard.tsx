@@ -8,7 +8,10 @@ export const Route = createFileRoute("/leaderboard")({
   head: () => ({
     meta: [
       { title: "Peringkat — LPK Learning" },
-      { name: "description", content: "Papan peringkat peserta pelatihan berdasarkan nilai ujian." },
+      {
+        name: "description",
+        content: "Papan peringkat peserta pelatihan berdasarkan nilai ujian.",
+      },
       { property: "og:title", content: "Peringkat — LPK Learning" },
       {
         property: "og:description",

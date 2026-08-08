@@ -57,10 +57,7 @@ export function TeacherAnalyticsDashboard() {
   const overviewQuery = useAnalyticsOverview({ range, examId, studentId });
   const examsQuery = useExamAnalytics({ range, studentId });
   const studentsQuery = useStudentAnalytics(
-    useMemo(
-      () => ({ range, examId, search, page, pageSize: 10 }),
-      [range, examId, search, page],
-    ),
+    useMemo(() => ({ range, examId, search, page, pageSize: 10 }), [range, examId, search, page]),
   );
 
   const overview = overviewQuery.data;
@@ -239,9 +236,7 @@ export function TeacherAnalyticsDashboard() {
                 >
                   <RankAvatar row={s} className="size-9" />
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {s.display_name}
-                    </p>
+                    <p className="truncate text-sm font-medium text-foreground">{s.display_name}</p>
                     <p className="truncate text-xs text-muted-foreground">
                       {s.attempts} percobaan · rata-rata {s.average_score} · lulus {s.pass_rate}% ·{" "}
                       {formatTanggal(s.last_submitted_at)}

@@ -101,7 +101,10 @@ export function ExamDetailDialog({
                   <p className="line-clamp-1 text-xs text-muted-foreground">
                     Soal {q.question_index + 1} — {q.question_text}
                   </p>
-                  <MetricBar label={`Benar (${q.correct_count}/${q.attempts})`} value={q.accuracy} />
+                  <MetricBar
+                    label={`Benar (${q.correct_count}/${q.attempts})`}
+                    value={q.accuracy}
+                  />
                 </div>
               ))}
             </section>

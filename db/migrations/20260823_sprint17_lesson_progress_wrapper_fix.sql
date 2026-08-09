@@ -16,18 +16,23 @@
 --   Karena tidak ada baris progress yang pernah tersimpan,
 --   "Lanjutkan Materi" juga tidak pernah muncul.
 --
--- FIX: expand komposit dengan (fn(...)).* — tanpa cast apa pun, tanpa
--- perubahan tipe kolom, trigger, RLS, maupun analytics.
+-- FIX: wrapper ditulis ulang sebagai plpgsql `return <komposit>;` sehingga
+-- tipe hasil identik dengan deklarasi. Bentuk SQL `(fn(...)).*` sengaja
+-- TIDAK dipakai karena Postgres mengekspansinya menjadi satu pemanggilan
+-- fungsi VOLATILE per kolom. Tanpa cast, tanpa perubahan tipe kolom,
+-- trigger, RLS, maupun analytics.
 -- =====================================================================
 
 create or replace function public.lesson_progress_start(p_lesson_id uuid)
 returns public.lesson_progress
-language sql
+language plpgsql
 volatile
 security definer
 set search_path = public
 as $$
-  select (public.lesson_progress_touch(p_lesson_id, '{}'::text[], null, false)).*;
+begin
+  return public.lesson_progress_touch(p_lesson_id, '{}'::text[], null, false);
+end;
 $$;
 
 create or replace function public.lesson_progress_mark(
@@ -36,22 +41,26 @@ create or replace function public.lesson_progress_mark(
   p_current_block_id uuid default null
 )
 returns public.lesson_progress
-language sql
+language plpgsql
 volatile
 security definer
 set search_path = public
 as $$
-  select (public.lesson_progress_touch(p_lesson_id, p_units, p_current_block_id, false)).*;
+begin
+  return public.lesson_progress_touch(p_lesson_id, p_units, p_current_block_id, false);
+end;
 $$;
 
 create or replace function public.lesson_progress_complete(p_lesson_id uuid)
 returns public.lesson_progress
-language sql
+language plpgsql
 volatile
 security definer
 set search_path = public
 as $$
-  select (public.lesson_progress_touch(p_lesson_id, '{}'::text[], null, true)).*;
+begin
+  return public.lesson_progress_touch(p_lesson_id, '{}'::text[], null, true);
+end;
 $$;
 
 -- Hak akses tetap: hanya user terautentikasi, tidak pernah anon/PUBLIC.
